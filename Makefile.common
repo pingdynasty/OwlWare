@@ -1,6 +1,6 @@
 # name of executable
-ELF=$(notdir $(CURDIR)).elf                    
-BIN=$(notdir $(CURDIR)).bin
+ELF=$(BUILD)/$(notdir $(CURDIR)).elf                    
+BIN=$(BUILD)/$(notdir $(CURDIR)).bin
 
 # Tool path
 TOOLROOT=$(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_7-2013q3/bin
@@ -31,8 +31,8 @@ vpath %.c $(DEVICE)
 vpath %.c $(SYSTEM_FILE)
 vpath %.s $(STARTUP_FILE)
 vpath %.c $(DISCOVERY_FILE)
-# vpath %.c $(DEMO_FILE)
-# vpath %.c $(DSPLIB)
+vpath %.c $(USB_DEVICE_FILE)/Core/src
+vpath %.c $(USB_OTG_FILE)/src/
 
 # Build executable 
 $(ELF) : $(OBJS) $(LDSCRIPT)
@@ -41,22 +41,22 @@ $(ELF) : $(OBJS) $(LDSCRIPT)
 # compile and generate dependency info
 $(BUILD)/%.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
-	$(CC) -MM $(CFLAGS) $< > $*.d
+	$(CC) -MM $(CFLAGS) $< > $@.d
 
-%.o: %.cpp
+$(BUILD)/%.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
-	$(CXX) -MM $(CXXFLAGS) $< > $*.d
+	$(CXX) -MM $(CXXFLAGS) $< > $@.d
 
-%.o: %.s
+$(BUILD)/%.o: %.s
 	$(CC) -c $(CFLAGS) $< -o $@
 
-%.s: %.c
+$(BUILD)/%.s: %.c
 	$(CC) -S $(CFLAGS) $< -o $@
 
-%.s: %.cpp
+$(BUILD)/%.s: %.cpp
 	$(CXX) -S $(CXXFLAGS) $< -o $@
 
-%.bin: %.elf
+$(BUILD)/%.bin: $(BUILD)%.elf
 	$(OBJCOPY) -O binary $< $@
 
 clean:

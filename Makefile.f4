@@ -19,15 +19,17 @@ USB_OTG_FILE=$(LIBROOT)/Libraries/STM32_USB_OTG_Driver
 
 # Processor specific
 LDSCRIPT ?= $(DEMO_FILE)/TrueSTUDIO/STM32F4-Discovery_Demo/stm32_flash.ld
-STARTUP ?= startup_stm32f4xx.o
-SYSTEM ?= system_stm32f4xx.o
-PERIPH = stm32f4xx_gpio.o stm32f4xx_adc.o stm32f4xx_rcc.o stm32f4xx_syscfg.o stm32f4xx_pwr.o 
-PERIPH += stm32f4xx_exti.o stm32f4xx_dac.o stm32f4xx_tim.o stm32f4xx_dma.o
-PERIPH += stm32f4xx_usart.o
-PERIPH += misc.o # stm32f4xx_comp.o 
-SYSCALLS = libnosys_gnu.o # Syscalls/syscalls.o
-USB_OTG = $(USB_OTG_FILE)/src/usb_dcd.o $(USB_OTG_FILE)/src/usb_core.o $(USB_OTG_FILE)/src/usb_dcd_int.o
-USB_DEVICE = $(USB_DEVICE_FILE)/Core/src/usbd_core.o $(USB_DEVICE_FILE)/Core/src/usbd_ioreq.o $(USB_DEVICE_FILE)/Core/src/usbd_req.o
+STARTUP ?= $(BUILD)/startup_stm32f4xx.o
+SYSTEM ?= $(BUILD)/system_stm32f4xx.o
+PERIPH = $(BUILD)/stm32f4xx_gpio.o $(BUILD)/stm32f4xx_adc.o $(BUILD)/stm32f4xx_rcc.o $(BUILD)/stm32f4xx_syscfg.o $(BUILD)/stm32f4xx_pwr.o 
+PERIPH += $(BUILD)/stm32f4xx_exti.o $(BUILD)/stm32f4xx_dac.o $(BUILD)/stm32f4xx_tim.o $(BUILD)/stm32f4xx_dma.o
+PERIPH += $(BUILD)/stm32f4xx_usart.o
+PERIPH += $(BUILD)/stm32f4xx_spi.o $(BUILD)/stm32f4xx_i2c.o $(BUILD)/stm32f4xx_dbgmcu.o 
+PERIPH += $(BUILD)/stm32f4xx_flash.o $(BUILD)/stm32f4xx_fsmc.o
+PERIPH += $(BUILD)/misc.o # stm32f4xx_comp.o 
+SYSCALLS = $(BUILD)/libnosys_gnu.o # Syscalls/syscalls.o
+USB_OTG = $(BUILD)/usb_dcd.o $(BUILD)/usb_core.o $(BUILD)/usb_dcd_int.o
+USB_DEVICE = $(BUILD)/usbd_core.o $(BUILD)/usbd_ioreq.o $(BUILD)/usbd_req.o
 
 # Compilation Flags
 ARCH_FLAGS = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
