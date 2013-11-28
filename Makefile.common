@@ -56,7 +56,7 @@ $(BUILD)/%.s: %.c
 $(BUILD)/%.s: %.cpp
 	$(CXX) -S $(CXXFLAGS) $< -o $@
 
-$(BUILD)/%.bin: $(BUILD)%.elf
+$(BUILD)/%.bin: $(BUILD)/%.elf
 	$(OBJCOPY) -O binary $< $@
 
 clean:
