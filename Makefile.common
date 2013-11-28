@@ -39,7 +39,7 @@ $(ELF) : $(OBJS) $(LDSCRIPT)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 # compile and generate dependency info
-%.o: %.c
+$(BUILD)/%.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 	$(CC) -MM $(CFLAGS) $< > $*.d
 
