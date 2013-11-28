@@ -1,0 +1,6 @@
+*.o
+*.elf
+*.bin
+*.d
+*.~
+gdbscript

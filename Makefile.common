@@ -1,0 +1,96 @@
+# name of executable
+ELF=$(notdir $(CURDIR)).elf                    
+BIN=$(notdir $(CURDIR)).bin
+
+# Tool path
+TOOLROOT=$(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_7-2013q3/bin
+STLINK=$(TEMPLATEROOT)/Tools/stlink/
+
+# Tools
+CC=$(TOOLROOT)/arm-none-eabi-gcc
+CXX=$(TOOLROOT)/arm-none-eabi-g++
+LD=$(TOOLROOT)/arm-none-eabi-gcc
+AR=$(TOOLROOT)/arm-none-eabi-ar
+AS=$(TOOLROOT)/arm-none-eabi-as
+GDB=$(TOOLROOT)/arm-none-eabi-gdb
+OBJCOPY=$(TOOLROOT)/arm-none-eabi-objcopy
+OBJDUMP=$(TOOLROOT)/arm-none-eabi-objdump
+STFLASH=$(STLINK)/st-flash
+STUTIL=$(STLINK)/st-util
+DFUUTIL=dfu-util
+
+# Set up search path
+vpath %.cpp $(TEMPLATEROOT)/Source
+vpath %.c $(TEMPLATEROOT)/Source
+vpath %.s $(TEMPLATEROOT)/Source
+vpath %.c $(TEMPLATEROOT)/Libraries/syscalls
+vpath %.c $(CORE)
+vpath %.c $(PERIPH_FILE)/src
+vpath %.c $(PERIPH_FILE)/inc
+vpath %.c $(DEVICE)
+vpath %.c $(SYSTEM_FILE)
+vpath %.s $(STARTUP_FILE)
+vpath %.c $(DISCOVERY_FILE)
+# vpath %.c $(DEMO_FILE)
+# vpath %.c $(DSPLIB)
+
+# Build executable 
+$(ELF) : $(OBJS) $(LDSCRIPT)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+
+# compile and generate dependency info
+%.o: %.c
+	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -MM $(CFLAGS) $< > $*.d
+
+%.o: %.cpp
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -MM $(CXXFLAGS) $< > $*.d
+
+%.o: %.s
+	$(CC) -c $(CFLAGS) $< -o $@
+
+%.s: %.c
+	$(CC) -S $(CFLAGS) $< -o $@
+
+%.s: %.cpp
+	$(CXX) -S $(CXXFLAGS) $< -o $@
+
+%.bin: %.elf
+	$(OBJCOPY) -O binary $< $@
+
+clean:
+	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) $(CLEANOTHER) $(BIN) gdbscript
+
+debug: $(ELF)
+	echo "target extended localhost:4242" > gdbscript
+	echo "load $(ELF)" >> gdbscript
+	$(GDB) -x gdbscript $(ELF)
+# 	bash -c "$(GDB) -x <(echo target extended localhost:4242) $(ELF)"
+
+flash: $(BIN)
+	$(STFLASH) write $(BIN) 0x8000000
+
+stlink:
+	echo "target extended localhost:4242" > gdbscript
+	$(GDB) -x gdbscript $(ELF)
+
+etags:
+	find $(PERIPH_FILE) -type f -iname "*.[ch]" | xargs etags --append
+	find $(DEVICE) -type f -iname "*.[ch]" | xargs etags --append
+	find $(CORE) -type f -iname "*.[ch]" | xargs etags --append
+	find $(DISCOVERY_FILE) -type f -iname "*.[ch]" | xargs etags --append
+	find . -type f -iname "*.[ch]" | xargs etags --append
+
+all: $(ELF)
+
+bin: $(BIN)
+
+as: $(ELF)
+	$(OBJDUMP) -S $(ELF) > $(ELF:.elf=.s)
+
+dfu: $(BIN)
+	$(DFUUTIL) -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8000000:leave -D $(BIN)
+
+# pull in dependencies
+-include $(OBJS:.o=.d)

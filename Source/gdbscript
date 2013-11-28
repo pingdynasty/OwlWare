@@ -1,0 +1,2 @@
+target extended localhost:4242
+load owl-rev-03.elf                    

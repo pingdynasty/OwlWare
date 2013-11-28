@@ -1,0 +1,3 @@
+[submodule "Libraries/OwlPatches"]
+	path = Libraries/OwlPatches
+	url = git@github.com:pingdynasty/OwlPatches.git
