@@ -25,9 +25,8 @@ public:
   uint32_t audio_samplingrate;
   uint8_t audio_bitdepth;
   uint32_t audio_blocksize;
-  uint8_t active_patch;
-  uint8_t patch_a;
-  uint8_t patch_b;
+  uint8_t patch_green;
+  uint8_t patch_red;
   uint8_t midi_channel;
 public:
   void init();
@@ -35,6 +34,7 @@ public:
   bool settingsInFlash();
   void loadFromFlash();
   void saveToFlash();
+  void clearFlash();
 };
 
 extern ApplicationSettings settings;
