@@ -20,15 +20,16 @@ enum OpenWareMidiControl {
   PATCH_PARAMETER_C      = 22, /*  */
   PATCH_PARAMETER_D      = 23, /*  */
   PATCH_PARAMETER_E      = 24, /*  */
+  PATCH_BUTTON           = 25, /*  */
 
-  PATCH_SLOT_A           = 28, /* load patch into slot A */
-  PATCH_SLOT_B           = 29, /* load patch into slot B */
+  PATCH_SLOT_GREEN       = 28, /* load patch into green slot */
+  PATCH_SLOT_RED         = 29, /* load patch into red slot */
 
   LED                    = 30, /* set/get LED value: 
 				  0-41 = off
 				  42-83 = green
 				  84-127 = red */
-  ACTIVE_PATCH           = 31, /* currently active patch, 0-number of available patches */
+  ACTIVE_SLOT            = 31, /* currently active slot: 0 for green slot, 127 for red */
 
   LEFT_INPUT_GAIN        = 32, /* left channel input gain, -34.5dB to +12dB (92 = 0dB) */
   RIGHT_INPUT_GAIN       = 33,

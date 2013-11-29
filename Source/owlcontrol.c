@@ -6,8 +6,12 @@
 #include "device.h"
 #include "gpio.h"
 
+bool getPushButton(){
+  return getPin(SWITCH_B_PORT, SWITCH_B_PIN);
+}
+
 char* getFirmwareVersion(){ 
-  return "Prototype Rev03"; 
+  return "OWL Revision 4"; 
 }
 
 bool isClockExternal(){
@@ -97,7 +101,6 @@ uint16_t getAnalogValue(uint8_t index){
   assert_param(index < sizeof(adc_values));
   return adc_values[index];
 }
-
 
 void (*externalInterruptCallbackA)();
 void (*externalInterruptCallbackB)();

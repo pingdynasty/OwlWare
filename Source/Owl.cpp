@@ -22,12 +22,15 @@ CodecController codec;
 MidiController midi;
 ApplicationSettings settings;
 PatchRegistry patches;
+Patch* activePatch = NULL;
+Patch* nextPatch = NULL;
+bool bypass = false;
+int activePatchIndex = 0;
 
 void updateLed(){
-  setLed(settings.active_patch == settings.patch_b ? RED : GREEN);
+  setLed(activePatchIndex == settings.patch_red ? RED : GREEN);
 }
 
-bool bypass = false;
 void updateBypassMode(){
   if(isStompSwitchPressed()){
     setLed(NONE);
@@ -38,21 +41,18 @@ void updateBypassMode(){
   }
 }
 
-Patch* activePatch = NULL;
-Patch* nextPatch = NULL;
-
-void bypassCallback(){
+void footSwitchCallback(){
   DEBOUNCE(bypass, 200);
   updateBypassMode();
 }
 
-void buttonCallback(){
+void pushButtonCallback(){
   DEBOUNCE(pushbutton, 200);
-  if(!getPin(SWITCH_B_PORT, SWITCH_B_PIN)){
-    if(settings.patch_a != settings.active_patch){
-      setActivePatch(settings.patch_a);
-    }else if(settings.patch_b != settings.active_patch){
-      setActivePatch(settings.patch_b);
+  if(!getPushButton()){
+    if(settings.patch_green != activePatchIndex){
+      setActivePatch(settings.patch_green);
+    }else if(settings.patch_red != activePatchIndex){
+      setActivePatch(settings.patch_red);
     }
   }
   updateLed();
@@ -87,16 +87,15 @@ Patch* createPatch(uint8_t index){
 
 void setActivePatch(uint8_t index){
   if(index < patches.getNumberOfPatches()){
-    settings.active_patch = index;
+    activePatchIndex = index;
     nextPatch = createPatch(index);
     codec.softMute(true);
   }
 }
 
 uint8_t getActivePatch(){
-  return settings.active_patch;
+  return activePatchIndex;
 }
-
 
 __attribute__ ((section (".coderam")))
 void run(){
@@ -147,11 +146,7 @@ void setup(){
   if(isPushButtonPressed())
     jump_to_bootloader();
 
-//   setupPatches();
-
-  activePatch = createPatch(settings.active_patch);
-//   setActivePatch(0);
-//   setActivePatch(settings.active_patch);
+  activePatch = createPatch(settings.patch_green);
 
   codec.setup();
   codec.init(settings);
@@ -160,8 +155,8 @@ void setup(){
 
   adcSetup();
   clockSetup();
-  setupSwitchA(bypassCallback);
-  setupSwitchB(buttonCallback);
+  setupSwitchA(footSwitchCallback);
+  setupSwitchB(pushButtonCallback);
 
 #ifdef EXPRESSION_PEDAL
   setupExpressionPedal();

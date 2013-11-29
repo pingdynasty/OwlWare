@@ -7,13 +7,16 @@
 #include "device.h"
 #include "gpio.h"
 
+/* functions defined in Owl.cpp */
 extern void setActivePatch(uint8_t index);
 extern uint8_t getActivePatch();
+extern void pushButtonCallback();
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
+   bool getPushButton();
    bool isClockExternal();
    uint32_t* getDeviceId();
    void jump_to_bootloader();
