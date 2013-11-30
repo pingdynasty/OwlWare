@@ -86,15 +86,27 @@ Patch* createPatch(uint8_t index){
 }
 
 void setActivePatch(uint8_t index){
-  if(index < patches.getNumberOfPatches()){
+  if(index < patches.getNumberOfPatches() && index != activePatchIndex){
     activePatchIndex = index;
     nextPatch = createPatch(index);
     codec.softMute(true);
   }
 }
 
+void setActiveSlot(uint8_t index){
+  if(index == GREEN){
+    setActivePatch(settings.patch_green);
+  }else if(index == RED){
+    setActivePatch(settings.patch_red);
+  }
+}
+
 uint8_t getActivePatch(){
   return activePatchIndex;
+}
+
+uint8_t getActiveSlot(){
+  return activePatchIndex == settings.patch_red ? RED : GREEN;
 }
 
 __attribute__ ((section (".coderam")))

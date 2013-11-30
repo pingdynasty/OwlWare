@@ -11,6 +11,8 @@
 extern void setActivePatch(uint8_t index);
 extern uint8_t getActivePatch();
 extern void pushButtonCallback();
+extern void setActiveSlot(uint8_t index);
+extern uint8_t getActiveSlot();
 
 #ifdef __cplusplus
  extern "C" {
