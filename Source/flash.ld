@@ -36,17 +36,6 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-/*   .fastcode : {	/\* used for code executed from RAM and copied from ROM *\/ */
-/*     _fastcode_load = LOADADDR (.fastcode); */
-/*     _fastcode_start = .; */
-/* /\*     *(.glue_7t) *(.glue_7) *\/ */
-/* /\* functions with __attribute__ ((section (".text.fastcode")))*\/ */
-/*     *(.text.fastcode) */
-/* /\* 	*(.text.Blinky_shift)	/\\* explicitly place Blinky_shift() function *\\/ (22)	/\\* add other modules here ... *\\/ *\/ */
-/*     . = ALIGN(4); */
-/*     _fastcode_end = .; */
-/*   } >RAM AT>FLASH */
-
   /* The program code and other data goes into FLASH */
   .text :
   {

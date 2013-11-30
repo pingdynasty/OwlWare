@@ -42,6 +42,12 @@ public:
     midi.sendCc(SAMPLING_SIZE, settings.audio_blocksize>>4);
     midi.sendCc(LEFT_RIGHT_SWAP, codec.getSwapLeftRight());
     sendPatchNames();
+    sendDeviceInfo();
+  }
+
+  void sendPatchNames(){
+    for(int i=0; i<patches.getNumberOfPatches(); ++i)
+      sendPatchName(i);
   }
 
   void sendPatchName(uint8_t index){
@@ -53,15 +59,32 @@ public:
     midi.sendSysEx(buffer, sizeof(buffer));
   }
 
-  void sendPatchNames(){
-    for(int i=0; i<patches.getNumberOfPatches(); ++i)
-      sendPatchName(i);
+  void sendDeviceInfo(){
+    sendFirmwareVersion();
+    sendDeviceId();
+  }
+
+  void sendFirmwareVersion(){
+    char* version = getFirmwareVersion();
+    uint8_t len = strlen(version);
+    uint8_t buffer[len+1];
+    buffer[0] = SYSEX_FIRMWARE_VERSION;
+    memcpy(buffer+1, version, len);
+    midi.sendSysEx(buffer, sizeof(buffer));
+  }
+
+  void sendDeviceId(){
+    uint8_t buffer[3*4+1];
+    buffer[0] = SYSEX_DEVICE_ID;
+    getDeviceId((uint32_t*)(buffer+1), (uint32_t*)(buffer+4+1), (uint32_t*)(buffer+8+1));
+    midi.sendSysEx(buffer, sizeof(buffer));
   }
 
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){
     case PATCH_BUTTON:
-      pushButtonCallback();
+      if(value == 127)
+	pushButtonCallback();
       break;
     case LED:
       if(value < 42){
@@ -197,8 +220,12 @@ public:
 	jump_to_bootloader();
       break;
     case FACTORY_RESET:
-      if(value == 127)
+      if(value == 127){
+	toggleLed();
 	settings.reset();
+	// settings.clearFlash();
+	toggleLed();
+      }
       break;
     }
   }
