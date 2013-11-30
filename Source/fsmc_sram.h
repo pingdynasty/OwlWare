@@ -14,8 +14,7 @@ void SRAM_ReadBuffer(uint16_t* pBuffer, uint32_t ReadAddr, uint32_t NumHalfwordT
 uint32_t SRAM_GetMemorySize();
 void* SRAM_GetMemoryAddress();
 
-uint32_t SRAM_Test(uint32_t addr, uint32_t NumHalfwordToWrite);
-void SRAM_TestMemory();
+bool SRAM_TestMemory();
 
 #ifdef __cplusplus
 }

@@ -12,7 +12,7 @@ C_SRC += system_hse.c
 C_SRC += usbd_desc.c usb_bsp.c usbd_usr.c
 C_SRC += usbd_audio_core.c usbd_audio_out_if.c 
 C_SRC += armcontrol.c usbcontrol.c owlcontrol.c midicontrol.c eepromcontrol.c
-C_SRC += clock.c operators.c serial.c gpio.c
+C_SRC += clock.c operators.c serial.c gpio.c sysex.c
 
 # C_SRC += $(DSPLIB)/FastMathFunctions/arm_sin_f32.c $(DSPLIB)/FastMathFunctions/arm_cos_f32.c
 

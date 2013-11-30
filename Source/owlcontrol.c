@@ -19,12 +19,22 @@ bool isClockExternal(){
   return RCC_WaitForHSEStartUp() == SUCCESS;
 }
 
-/* Unique device ID register (96 bits) */
-void getDeviceId(uint32_t* a, uint32_t* b, uint32_t* c){
+/* Unique device ID register (96 bits: 12 bytes) */
+uint8_t* getDeviceId(){
   const uint32_t* addr = (uint32_t*)0x1fff7a10;
-  a = addr[0];
-  b = addr[1];
-  c = addr[2];
+  static uint32_t deviceId[3];
+  deviceId[0] = addr[0];
+  deviceId[1] = addr[1];
+  deviceId[2] = addr[2];
+  return (uint8_t*)deviceId;
+
+  /* return (uint8_t*)0x1fff7a10; */
+
+  /* const uint32_t* addr = (uint32_t*)0x1fff7a10; */
+  /* a = addr[0]; */
+  /* b = addr[1]; */
+  /* c = addr[2]; */
+
   // read location 0xE0042000
   // 16 bits revision id, 4 bits reserved, 12 bits device id
   /* 0x1000 = Revision A, 0x1001 = Revision Z */

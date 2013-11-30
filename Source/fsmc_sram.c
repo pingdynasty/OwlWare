@@ -307,47 +307,6 @@ union ufloat {
   uint32_t u;
 };
 
-uint32_t SRAM_TestFloat(uint32_t addr, uint32_t sz){
-  float tx[16];
-  float rx[16];
-  for(int i=0; i<16; ++i)
-    tx[i] = i/8.0f - 1.0;
-  uint32_t result = 0;
-  union ufloat utx;
-  union ufloat urx;
-  for(int i=0; i<sz; i+=16){
-    SRAM_WriteBuffer((uint16_t*)tx, addr+i, 16*sizeof(float)/2);
-    memset(rx, 0, sizeof(rx));
-    SRAM_ReadBuffer((uint16_t*)rx, addr+i, 16*sizeof(float)/2);
-    for(int x=0; x<16; ++x){
-      utx.f = tx[i];
-      urx.f = rx[i];
-/*       if(rx[x] != tx[x]) */
-      if(urx.u != utx.u)
-	result++;
-    }
-  }
-  return result;
-}
-
-uint32_t SRAM_StraightFloat(uint32_t addr, uint32_t sz){
-  float tx, rx;
-  union ufloat utx, urx;
-  uint32_t result = 0;
-  __IO float* ptr = (__IO float*) (Bank1_SRAM3_ADDR + addr);
-  for(uint32_t i=0; i<sz; ++i){
-    tx = 2.0f*i/sz - 1.0f;
-    utx.f = tx;
-    *ptr = tx;
-    rx = *ptr;
-    urx.f = rx;
-    if(urx.u != utx.u)
-      result++;
-    ptr++;
-  }
-  return result;
-}
-
-void SRAM_TestMemory(){
-  assert_param(SRAM_Test(0, 512*1024) == 0);
+bool SRAM_TestMemory(){
+  return SRAM_Test(0, 512*1024) == 0;
 }

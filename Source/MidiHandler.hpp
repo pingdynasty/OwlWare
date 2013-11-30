@@ -3,10 +3,12 @@
 
 #include <string.h>
 #include "owlcontrol.h"
+#include "fsmc_sram.h"
 #include "MidiReader.hpp"
 #include "PatchRegistry.h"
 #include "MidiController.h"
 #include "ApplicationSettings.h"
+#include "sysex.h"
 
 class MidiHandler : public MidiReader {
 private:
@@ -62,6 +64,7 @@ public:
   void sendDeviceInfo(){
     sendFirmwareVersion();
     sendDeviceId();
+    sendSelfTest();
   }
 
   void sendFirmwareVersion(){
@@ -74,9 +77,17 @@ public:
   }
 
   void sendDeviceId(){
-    uint8_t buffer[3*4+1];
+    uint8_t buffer[15];
     buffer[0] = SYSEX_DEVICE_ID;
-    getDeviceId((uint32_t*)(buffer+1), (uint32_t*)(buffer+4+1), (uint32_t*)(buffer+8+1));
+    uint8_t* deviceId = getDeviceId();
+    data_to_sysex(deviceId, buffer+1, 3*4);
+    midi.sendSysEx(buffer, sizeof(buffer));
+  }
+
+  void sendSelfTest(){
+    uint8_t buffer[2];
+    buffer[0] = SYSEX_SELFTEST;
+    buffer[1] = (isClockExternal() << 2) | ( SRAM_TestMemory() << 1) | settings.settingsInFlash();
     midi.sendSysEx(buffer, sizeof(buffer));
   }
 

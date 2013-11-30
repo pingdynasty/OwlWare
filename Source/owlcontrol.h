@@ -20,7 +20,7 @@ extern uint8_t getActiveSlot();
 
    bool getPushButton();
    bool isClockExternal();
-   void getDeviceId(uint32_t* a, uint32_t* b, uint32_t* c);
+   uint8_t* getDeviceId();
    void jump_to_bootloader();
    char* getFirmwareVersion();
 

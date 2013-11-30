@@ -10,19 +10,20 @@ enum OpenWareMidiSysexCommand {
   SYSEX_PRESET_NAME_COMMAND     = 0x01,
   SYSEX_DFU_COMMAND             = 0x7e,
   SYSEX_FIRMWARE_VERSION        = 0x20,
-  SYSEX_DEVICE_ID               = 0x21
+  SYSEX_DEVICE_ID               = 0x21,
+  SYSEX_SELFTEST                = 0x22
 };
 
 /*
  MIDI Control Change Mappings
 */
 enum OpenWareMidiControl {
-  PATCH_PARAMETER_A      = 20, /*  */
+  PATCH_PARAMETER_A      = 20, /*  Left Knob */
   PATCH_PARAMETER_B      = 21, /*  */
   PATCH_PARAMETER_C      = 22, /*  */
-  PATCH_PARAMETER_D      = 23, /*  */
-  PATCH_PARAMETER_E      = 24, /*  */
-  PATCH_BUTTON           = 25, /*  */
+  PATCH_PARAMETER_D      = 23, /*  Right knob */
+  PATCH_PARAMETER_E      = 24, /*  Expression pedal */
+  PATCH_BUTTON           = 25, /*  0=not pressed, 127=pressed */
 
   PATCH_SLOT_GREEN       = 28, /* load patch into green slot */
   PATCH_SLOT_RED         = 29, /* load patch into red slot */
@@ -66,7 +67,7 @@ enum OpenWareMidiControl {
 
   LEFT_RIGHT_SWAP        = 63, /* swap left/right channels */
 
-  REQUEST_SETTINGS       = 67, /* load settings from device */
+  REQUEST_SETTINGS       = 67, /* load settings from device (127=all settings) (30 for LED) (more to come) */
   SAVE_SETTINGS          = 68, /* save settings to device */
   DEVICE_FIRMWARE_UPDATE = 69, /* enter Device Firmware Upgrade mode */
   FACTORY_RESET          = 70  /* reset all settings */
