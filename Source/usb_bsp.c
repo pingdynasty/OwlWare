@@ -31,61 +31,6 @@
 #include "usbd_conf.h"
 #include "device.h"
 
-/** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
-* @{
-*/
-
-/** @defgroup USB_BSP
-* @brief This file is responsible to offer board support package
-* @{
-*/
-
-/** @defgroup USB_BSP_Private_Defines
-* @{
-*/
-/**
-* @}
-*/
-
-
-/** @defgroup USB_BSP_Private_TypesDefinitions
-* @{
-*/
-/**
-* @}
-*/
-
-
-
-
-
-/** @defgroup USB_BSP_Private_Macros
-* @{
-*/
-/**
-* @}
-*/
-
-/** @defgroup USBH_BSP_Private_Variables
-* @{
-*/
-
-/**
-* @}
-*/
-
-/** @defgroup USBH_BSP_Private_FunctionPrototypes
-* @{
-*/
-/**
-* @}
-*/
-
-/** @defgroup USB_BSP_Private_Functions
-* @{
-*/
-
-
 /**
 * @brief  USB_OTG_BSP_Init
 *         Initilizes BSP configurations
@@ -100,7 +45,6 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 	/* Enable clocks */
 	RCC_AHB1PeriphClockCmd(USB_DATA_GPIO_CLK, ENABLE);
 	RCC_AHB1PeriphClockCmd(USB_VBUS_GPIO_CLK, ENABLE);
-	RCC_AHB1PeriphClockCmd(USB_DISC_GPIO_CLK, ENABLE);
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_OTG_FS, ENABLE) ;
@@ -123,14 +67,6 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
 	GPIO_Init(USB_VBUS_GPIO_PORT, &GPIO_InitStructure);
-
-	/* Configure DISC pin */
-	GPIO_InitStructure.GPIO_Pin = USB_DISC_PIN;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_Init(USB_DISC_GPIO_PORT, &GPIO_InitStructure);
 }
 /**
 * @brief  USB_OTG_BSP_EnableInterrupt

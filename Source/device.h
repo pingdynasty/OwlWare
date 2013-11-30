@@ -76,11 +76,6 @@
 #define USB_VBUS_GPIO_PORT           GPIOA
 #define USB_VBUS_GPIO_CLK            RCC_AHB1Periph_GPIOA
 
-/* Assuming this is USB ID pin on PA10 */
-#define USB_DISC_PIN                 GPIO_Pin_10
-#define USB_DISC_GPIO_PORT           GPIOA
-#define USB_DISC_GPIO_CLK            RCC_AHB1Periph_GPIOA
-
 #define WM8731_NUM_REGS 10
 
 #ifdef  USE_FULL_ASSERT
