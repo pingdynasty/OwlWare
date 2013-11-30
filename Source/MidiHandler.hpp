@@ -84,7 +84,7 @@ public:
     switch(cc){
     case PATCH_BUTTON:
       if(value == 127)
-	pushButtonCallback();
+	toggleActiveSlot();
       break;
     case LED:
       if(value < 42){
@@ -203,10 +203,19 @@ public:
     }
     case LEFT_RIGHT_SWAP:
       codec.setSwapLeftRight(value == 127);
-      break;      
+      break;
     case REQUEST_SETTINGS:
-      if(value == 127)
+      switch(value){
+      case PATCH_BUTTON:
+	midi.sendCc(PATCH_BUTTON, getPushButton() ? 127 : 0);
+	break;
+      case LED:
+	midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
+	break;
+      case 127:
 	sendSettings();
+	break;
+      }
       break;
     case SAVE_SETTINGS:
       if(value == 127){

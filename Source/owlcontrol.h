@@ -10,7 +10,7 @@
 /* functions defined in Owl.cpp */
 extern void setActivePatch(uint8_t index);
 extern uint8_t getActivePatch();
-extern void pushButtonCallback();
+extern void toggleActiveSlot();
 extern void setActiveSlot(uint8_t index);
 extern uint8_t getActiveSlot();
 

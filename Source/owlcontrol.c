@@ -7,7 +7,7 @@
 #include "gpio.h"
 
 bool getPushButton(){
-  return getPin(SWITCH_B_PORT, SWITCH_B_PIN);
+  return !getPin(SWITCH_B_PORT, SWITCH_B_PIN);
 }
 
 char* getFirmwareVersion(){ 

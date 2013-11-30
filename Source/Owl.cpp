@@ -46,16 +46,19 @@ void footSwitchCallback(){
   updateBypassMode();
 }
 
-void pushButtonCallback(){
-  DEBOUNCE(pushbutton, 200);
-  if(!getPushButton()){
-    if(settings.patch_green != activePatchIndex){
-      setActivePatch(settings.patch_green);
-    }else if(settings.patch_red != activePatchIndex){
-      setActivePatch(settings.patch_red);
-    }
+void toggleActiveSlot(){
+  if(settings.patch_green != activePatchIndex){
+    setActivePatch(settings.patch_green);
+  }else if(settings.patch_red != activePatchIndex){
+    setActivePatch(settings.patch_red);
   }
   updateLed();
+}
+
+void pushButtonCallback(){
+  DEBOUNCE(pushbutton, 200);
+  if(getPushButton())
+    toggleActiveSlot();
 }
 
 #if AUDIO_BITDEPTH == 32
