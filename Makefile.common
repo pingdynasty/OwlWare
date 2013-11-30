@@ -41,11 +41,11 @@ $(ELF) : $(OBJS) $(LDSCRIPT)
 # compile and generate dependency info
 $(BUILD)/%.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
-	$(CC) -MM -MT"$@" $(CFLAGS) $< > $@.d
+	$(CC) -MM -MT"$@" $(CFLAGS) $< > $(@:.o=.d)
 
 $(BUILD)/%.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
-	$(CXX) -MM -MT"$@" $(CXXFLAGS) $< > $@.d
+	$(CXX) -MM -MT"$@" $(CXXFLAGS) $< > $(@:.o=.d)
 
 $(BUILD)/%.o: %.s
 	$(CC) -c $(CFLAGS) $< -o $@
