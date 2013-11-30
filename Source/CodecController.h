@@ -42,13 +42,20 @@ public:
   void setBypass(bool bypass);
   bool getBypass();
 
-  /* input gain: 5 bit value 0-0x1f */
+  /* Input gain: 5 bit value 0-0x1f, decimal 0-31 */
+  /* One step equals 1.5dB */
+  /* 0dB equals 0x017, decimal 23 */
+  /* Range is -34.5dB to +12dB*/
   void setInputGainLeft(uint8_t gain);
   void setInputGainRight(uint8_t gain);
   uint8_t getInputGainLeft();
   uint8_t getInputGainRight();
 
-  /* output gain: 7 bit value 0-0x7f */
+  /* Output gain: 7 bit value 0x30-0x7f, decimal 48-127 */
+  /* One step equals 1dB */
+  /* 0dB equals 0x079, decimal 121 */
+  /* Range is -73dB to +6dB */
+  /* Anything below 0x30, decimal 48, is MUTE */
   void setOutputGainLeft(uint8_t gain);
   void setOutputGainRight(uint8_t gain);
   uint8_t getOutputGainLeft();
