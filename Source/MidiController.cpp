@@ -29,9 +29,9 @@ void MidiController::sendSysEx(uint8_t* data, uint16_t size){
   int count = size/3;
   uint8_t* src = data;
   while(count-- > 0){
-    packet[1] = *src++;
-    packet[2] = *src++;
-    packet[3] = *src++;
+    packet[1] = (*src++ & 0x7f);
+    packet[2] = (*src++ & 0x7f);
+    packet[3] = (*src++ & 0x7f);
     midi_send_usb_buffer(packet, sizeof(packet));
   }
   count = size % 3;
@@ -44,14 +44,14 @@ void MidiController::sendSysEx(uint8_t* data, uint16_t size){
     break;
   case 1:
     packet[0] = USB_COMMAND_SYSEX_EOX2;
-    packet[1] = *src++;
+    packet[1] = (*src++ & 0x7f);
     packet[2] = SYSEX_EOX;
     packet[3] = 0;
     break;
   case 2:
     packet[0] = USB_COMMAND_SYSEX_EOX3;
-    packet[1] = *src++;
-    packet[2] = *src++;
+    packet[1] = (*src++ & 0x7f);
+    packet[2] = (*src++ & 0x7f);
     packet[3] = SYSEX_EOX;
     break;
   }

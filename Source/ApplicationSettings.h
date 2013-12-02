@@ -28,6 +28,10 @@ public:
   uint8_t patch_green;
   uint8_t patch_red;
   uint8_t midi_channel;
+  uint8_t inputGainLeft;
+  uint8_t inputGainRight;
+  uint8_t outputGainLeft;
+  uint8_t outputGainRight;
 public:
   void init();
   void reset();

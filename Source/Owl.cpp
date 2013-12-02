@@ -22,9 +22,9 @@ CodecController codec;
 MidiController midi;
 ApplicationSettings settings;
 PatchRegistry patches;
+bool bypass = false;
 Patch* activePatch = NULL;
 Patch* nextPatch = NULL;
-bool bypass = false;
 int activePatchIndex = 0;
 
 void updateLed(){
@@ -102,6 +102,7 @@ void setActiveSlot(uint8_t index){
   }else if(index == RED){
     setActivePatch(settings.patch_red);
   }
+  updateLed();
 }
 
 uint8_t getActivePatch(){
@@ -161,7 +162,8 @@ void setup(){
   if(isPushButtonPressed())
     jump_to_bootloader();
 
-  activePatch = createPatch(settings.patch_green);
+  activePatchIndex = settings.patch_green;
+  activePatch = createPatch(activePatchIndex);
 
   codec.setup();
   codec.init(settings);

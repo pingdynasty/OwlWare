@@ -18,6 +18,11 @@
 #define AUDIO_SAMPLINGRATE           48000
 #define AUDIO_BLOCK_SIZE             128   /* size in samples of a single channel audio block */
 
+#define AUDIO_INPUT_GAIN_LEFT        0x01b
+#define AUDIO_INPUT_GAIN_RIGHT       0x01b
+#define AUDIO_OUTPUT_GAIN_LEFT       0x073
+#define AUDIO_OUTPUT_GAIN_RIGHT      0x073
+
 #define MIDI_CHANNEL                 0
 
 /* I2C clock speed configuration (in Hz)  */

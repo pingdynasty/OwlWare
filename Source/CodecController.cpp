@@ -87,6 +87,11 @@ void CodecController::init(ApplicationSettings& settings){
 			       settings.audio_codec_protocol, settings.audio_codec_format) != 0)
     assert_param(false);
 
+  setInputGainLeft(settings.inputGainLeft);
+  setInputGainRight(settings.inputGainRight);
+  setOutputGainLeft(settings.outputGainLeft);
+  setOutputGainRight(settings.outputGainRight);
+
   I2S_Block_Init();
 
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG

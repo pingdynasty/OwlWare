@@ -20,6 +20,10 @@ void ApplicationSettings::reset(){
   patch_green = GREEN_PATCH;
   patch_red = RED_PATCH;
   midi_channel = MIDI_CHANNEL;
+  inputGainLeft = AUDIO_INPUT_GAIN_LEFT;
+  inputGainRight = AUDIO_INPUT_GAIN_RIGHT;
+  outputGainLeft = AUDIO_OUTPUT_GAIN_LEFT;
+  outputGainRight = AUDIO_OUTPUT_GAIN_RIGHT;
 }
 
 bool ApplicationSettings::settingsInFlash(){

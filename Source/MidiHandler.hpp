@@ -108,23 +108,29 @@ public:
       break;
     case PATCH_SLOT_GREEN:
       settings.patch_green = value;
+      setActiveSlot(GREEN);
       break;
     case PATCH_SLOT_RED:
       settings.patch_red = value;
+      setActiveSlot(RED);
       break;
     case ACTIVE_SLOT:
       setActiveSlot(value == 127 ? RED : GREEN);
       break;
     case LEFT_INPUT_GAIN:
-      codec.setInputGainLeft(value>>2);
+      settings.inputGainLeft = value>>2;
+      codec.setInputGainLeft(settings.inputGainLeft);
       break;
     case RIGHT_INPUT_GAIN:
-      codec.setInputGainRight(value>>2);
+      settings.inputGainRight = value>>2;
+      codec.setInputGainRight(settings.inputGainRight);
       break;
     case LEFT_OUTPUT_GAIN:
+      settings.outputGainLeft = value;
       codec.setOutputGainLeft(value);
       break;
     case RIGHT_OUTPUT_GAIN:
+      settings.outputGainRight = value;
       codec.setOutputGainRight(value);
       break;
     case LEFT_OUTPUT_MUTE:
@@ -231,6 +237,7 @@ public:
     case SAVE_SETTINGS:
       if(value == 127){
 	toggleLed();
+	// settings.clearFlash(); // clears the whole 128kB sector
 	settings.saveToFlash();
 	toggleLed();
       }
@@ -243,7 +250,7 @@ public:
       if(value == 127){
 	toggleLed();
 	settings.reset();
-	// settings.clearFlash();
+	settings.clearFlash();
 	toggleLed();
       }
       break;
