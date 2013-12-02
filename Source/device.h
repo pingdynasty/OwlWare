@@ -1,7 +1,7 @@
 #include <inttypes.h>
 
-#define GREEN_PATCH                  20
-#define RED_PATCH                    25
+#define GREEN_PATCH                  23
+#define RED_PATCH                    18
 
 #define EXPRESSION_PEDAL
 #define SERIAL_PORT                  1
