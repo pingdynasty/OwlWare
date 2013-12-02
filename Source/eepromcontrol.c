@@ -25,6 +25,7 @@
      return FLASH_GetStatus();
    }
 
+__attribute__ ((section (".coderam")))
    int eeprom_write_block(uint32_t address, uint8_t* data, uint32_t size){
      address = (uint32_t)eeprom_get_address(address);
      FLASH_Unlock();
@@ -35,8 +36,9 @@
      return status;
    }
 
+__attribute__ ((section (".coderam")))
    int eeprom_erase(){
      FLASH_Unlock();
-     FLASH_Status status = FLASH_EraseSector(ADDR_FLASH_SECTOR_11, VoltageRange_3);
+     FLASH_Status status = FLASH_EraseSector(FLASH_Sector_11, VoltageRange_3);
      FLASH_Lock();
    }
