@@ -2,7 +2,7 @@
 #include "eepromcontrol.h"
 #include "device.h"
 
-#define APPLICATION_SETTINGS_OFFSET 512
+#define APPLICATION_SETTINGS_OFFSET 0
 
 void ApplicationSettings::init(){
   if(settingsInFlash())

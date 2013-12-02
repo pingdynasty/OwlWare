@@ -43,8 +43,6 @@ public:
     midi.sendCc(CODEC_PROTOCOL, codec.getProtocol() == I2S_PROTOCOL_PHILIPS ? 0 : 127);
     midi.sendCc(SAMPLING_SIZE, settings.audio_blocksize>>4);
     midi.sendCc(LEFT_RIGHT_SWAP, codec.getSwapLeftRight());
-    sendPatchNames();
-    sendDeviceInfo();
   }
 
   void sendPatchNames(){
@@ -223,6 +221,12 @@ public:
       break;
     case REQUEST_SETTINGS:
       switch(value){
+      case 0:
+	sendDeviceInfo();
+	break;
+      case 1:
+	sendPatchNames();
+	break;
       case PATCH_BUTTON:
 	midi.sendCc(PATCH_BUTTON, getPushButton() ? 127 : 0);
 	break;
@@ -248,10 +252,10 @@ public:
       break;
     case FACTORY_RESET:
       if(value == 127){
-	toggleLed();
 	settings.reset();
-	settings.clearFlash();
-	toggleLed();
+	// settings.clearFlash();
+	codec.init(settings);
+	setActiveSlot(GREEN);
       }
       break;
     }
