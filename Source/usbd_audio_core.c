@@ -256,7 +256,7 @@ static uint8_t usbd_audio_CfgDesc[AUDIO_CONFIG_DESC_SIZE] =
   0x02,                                 /* bmAttributes */
   0x40,					/* wMaxPacketSize */
   0x00,                                 /* wMaxPacketSize */
-  0x01,                                 /* bInterval */
+  0x00,                                 /* bInterval */
   0x00,                                 /* bRefresh */
   0x00,                                 /* bSynchAddress */
   /* 09 bytes */
@@ -276,7 +276,7 @@ static uint8_t usbd_audio_CfgDesc[AUDIO_CONFIG_DESC_SIZE] =
   0x02,                                 /* bmAttributes */
   0x40,					/* wMaxPacketSize */
   0x00,                                 /* wMaxPacketSize */
-  0x01,                                 /* bInterval */
+  0x00,                                 /* bInterval */
   0x00,                                 /* bRefresh */
   0x00,                                 /* bSynchAddress */
   /* 09 bytes */
