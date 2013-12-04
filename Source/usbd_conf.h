@@ -82,54 +82,12 @@
                                                     to get minimum error on audio frequency. This configuration is set in file
                                                     system_stm32f2xx.c or system_stm32f10x.c.*/
 
-#define DEFAULT_VOLUME                  65    /* Default volume in % (Mute=0%, Max = 100%) in Logarithmic values.
-                                                 To get accurate volume variations, it is possible to use a logarithmic
-                                                 coversion table to convert from percentage to logarithmic law.
-                                                 In order to keep this example code simple, this conversion is not used.*/
-
-
 #define AUDIO_TOTAL_IF_NUM              0x02
 
-/** @defgroup USB_AUDIO_Class_Layer_Parameter
-  * @{
-  */
 #define AUDIO_OUT_EP                    0x01
 #define AUDIO_IN_EP                     0x82
 
 #define APP_RX_DATA_SIZE               2048 /* Total size of IN buffer */
-
-/**
-  * @}
-  */
-
-/** @defgroup USB_CONF_Exported_Types
-  * @{
-  */
-/**
-  * @}
-  */
-
-
-/** @defgroup USB_CONF_Exported_Macros
-  * @{
-  */
-/**
-  * @}
-  */
-
-/** @defgroup USB_CONF_Exported_Variables
-  * @{
-  */
-/**
-  * @}
-  */
-
-/** @defgroup USB_CONF_Exported_FunctionsPrototype
-  * @{
-  */
-/**
-  * @}
-  */
 
 
 #endif //__USBD_CONF__H__

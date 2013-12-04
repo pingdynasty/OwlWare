@@ -32,39 +32,29 @@ USBD_DEVICE USR_desc =
   USBD_USR_InterfaceStrDescriptor
 };
 
-#ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-  #if defined ( __ICCARM__ ) /*!< IAR Compiler */
-    #pragma data_alignment=4
-  #endif
-#endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 /* USB Standard Device Descriptor */
 __ALIGN_BEGIN uint8_t USBD_DeviceDesc[USB_SIZ_DEVICE_DESC] __ALIGN_END =
   {
-    0x12,                       /*bLength */
-    USB_DEVICE_DESCRIPTOR_TYPE, /*bDescriptorType*/
-    0x00,                       /*bcdUSB */
-    0x02,
-    0x00,                       /*bDeviceClass*/
-    0x00,                       /*bDeviceSubClass*/
-    0x00,                       /*bDeviceProtocol*/
-    USB_OTG_MAX_EP0_SIZE,      /*bMaxPacketSize*/
-    LOBYTE(USBD_VID),           /*idVendor*/
-    HIBYTE(USBD_VID),           /*idVendor*/
-    LOBYTE(USBD_PID),           /*idVendor*/
-    HIBYTE(USBD_PID),           /*idVendor*/
-    0x00,                       /*bcdDevice rel. 2.00*/
-    0x02,
-    USBD_IDX_MFC_STR,           /*Index of manufacturer  string*/
-    USBD_IDX_PRODUCT_STR,       /*Index of product string*/
-    USBD_IDX_SERIAL_STR,        /*Index of serial number string*/
-    USBD_CFG_MAX_NUM            /*bNumConfigurations*/
+    0x12,                       /* bLength */
+    0x01,                       /* bDescriptorType */
+    0x00,                       /* bcdUSB */
+    0x02,                       /* bcdUSB */
+    0x00,                       /* bDeviceClass */
+    0x00,                       /* bDeviceSubClass */
+    0x00,                       /* bDeviceProtocol */
+    0x40,                       /* bMaxPacketSize (fails to enumerate if this is 0x08 */
+    LOBYTE(USBD_VID),           /* idVendor */
+    HIBYTE(USBD_VID),           /* idVendor */
+    LOBYTE(USBD_PID),           /* idProduct */
+    HIBYTE(USBD_PID),           /* idProduct */
+    0x00,                       /* bcdDevice */
+    0x02,                       /* bcdDevice */
+    USBD_IDX_MFC_STR,           /* Index of manufacturer string */
+    USBD_IDX_PRODUCT_STR,       /* Index of product string */
+    USBD_IDX_SERIAL_STR,        /* Index of serial number string */
+    0x01                        /* bNumConfigurations */
   } ; /* USB_DeviceDescriptor */
 
-#ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-  #if defined ( __ICCARM__ ) /*!< IAR Compiler */
-    #pragma data_alignment=4
-  #endif
-#endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 /* USB Standard Device Descriptor */
 __ALIGN_BEGIN uint8_t USBD_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALIGN_END =
 {
@@ -80,11 +70,6 @@ __ALIGN_BEGIN uint8_t USBD_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] __ALI
   0x00,
 };
 
-#ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-  #if defined ( __ICCARM__ ) /*!< IAR Compiler */
-    #pragma data_alignment=4
-  #endif
-#endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
 /* USB Standard Device Descriptor */
 __ALIGN_BEGIN uint8_t USBD_LangIDDesc[USB_SIZ_STRING_LANGID] __ALIGN_END =
 {
