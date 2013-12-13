@@ -15,8 +15,9 @@ _Min_Stack_Size = 0x800; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-  FLASH (rx)       : ORIGIN = 0x08000000, LENGTH = 1M-128K
-/*   EEPROM (rw)      : ORIGIN = 0x080E0000, LENGTH = 128K */
+  BOOTLOADER (rw)  : ORIGIN = 0x08000000, LENGTH = 16K
+  EEPROM (rw)      : ORIGIN = 0x08004000, LENGTH = 16K
+  FLASH (rx)       : ORIGIN = 0x08008000, LENGTH = 1M-32K
   CCMRAM (rwx)     : ORIGIN = 0x10000000, LENGTH = 64k
   RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 128K
   BANK1_SRAM1 (rx) : ORIGIN = 0x60000000, LENGTH = 0K

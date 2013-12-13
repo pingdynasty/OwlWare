@@ -76,7 +76,7 @@ Reset_Handler:
 	ldr  r2, [r0, #0]	/* copy value from address r0 to r2 */
 	str  r0, [r0, #0] /* Invalidate */
 	cmp  r2, r1	/* compare the two registers */
-	beq  Reboot_Loader /* branch to DFu copy */
+	beq  Reboot_Loader /* branch to DFU copy */
 
 	/*
 _cstartup:
