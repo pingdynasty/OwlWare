@@ -241,7 +241,6 @@ public:
     case SAVE_SETTINGS:
       if(value == 127){
 	toggleLed();
-	// settings.clearFlash(); // clears the whole 128kB sector
 	settings.saveToFlash();
 	toggleLed();
       }
@@ -253,7 +252,7 @@ public:
     case FACTORY_RESET:
       if(value == 127){
 	settings.reset();
-	// settings.clearFlash();
+	settings.clearFlash();
 	codec.init(settings);
 	setActiveSlot(GREEN);
       }
