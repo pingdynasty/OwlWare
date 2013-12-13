@@ -6,10 +6,6 @@
 #include "device.h"
 #include "gpio.h"
 
-bool getPushButton(){
-  return !getPin(SWITCH_B_PORT, SWITCH_B_PIN);
-}
-
 char* getFirmwareVersion(){ 
   return "OWL Revision 4"; 
 }
@@ -64,6 +60,9 @@ void jump_to_bootloader(void){
    * comes online it will get re-enumerated.
    */
   usb_deinit();
+
+  /* /\* Disable all interrupts *\/ */
+  /* RCC->CIR = 0x00000000; */
 
   /* Blink LEDs */
   for(i = 0; i < 3; i++) {

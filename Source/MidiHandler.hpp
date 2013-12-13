@@ -23,7 +23,7 @@ public:
     midi.sendCc(PATCH_PARAMETER_C, (getAnalogValue(2)>>5) & 0x7f);
     midi.sendCc(PATCH_PARAMETER_D, (getAnalogValue(3)>>5) & 0x7f);
     midi.sendCc(PATCH_PARAMETER_E, (getAnalogValue(4)>>5) & 0x7f);
-    midi.sendCc(PATCH_BUTTON, getPushButton() ? 127 : 0);
+    midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
     midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
     midi.sendCc(PATCH_SLOT_GREEN, settings.patch_green);
     midi.sendCc(PATCH_SLOT_RED, settings.patch_red);
@@ -228,7 +228,7 @@ public:
 	sendPatchNames();
 	break;
       case PATCH_BUTTON:
-	midi.sendCc(PATCH_BUTTON, getPushButton() ? 127 : 0);
+	midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
 	break;
       case LED:
 	midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);

@@ -18,7 +18,6 @@ extern uint8_t getActiveSlot();
  extern "C" {
 #endif
 
-   bool getPushButton();
    bool isClockExternal();
    uint8_t* getDeviceId();
    void jump_to_bootloader();
