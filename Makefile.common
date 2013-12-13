@@ -64,7 +64,7 @@ $(BUILD)/%.bin: $(BUILD)/%.elf
 	@echo Successfully built OWL firmware $@
 
 clean:
-	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) $(CLEANOTHER) $(BIN) gdbscript
+	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) $(CLEANOTHER) $(BIN) $(ELF:.elf=.s) $(OBJS:.o=.s) gdbscript
 
 debug: $(ELF)
 	echo "target extended localhost:4242" > gdbscript
