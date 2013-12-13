@@ -1,4 +1,5 @@
 #include "StompBox.h"
+#include <string.h>
 
 class MemoryBuffer : public AudioBuffer {
 private:
@@ -7,6 +8,7 @@ private:
   int size;
 public:
   MemoryBuffer(float* buf, int ch, int sz): buffer(buf), channels(ch), size(sz) {
+    memset(buffer, 0, size*channels*sizeof(float));
   }
   ~MemoryBuffer(){}
   float* getSamples(int channel){
