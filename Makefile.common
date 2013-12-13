@@ -96,7 +96,7 @@ dfu: $(BIN)
 	@echo Uploaded $(BIN) to OWL firmware
 
 bootloader: $(BOOTLOADER)
-	$(DFUUTIL) -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8000000:leave -D $(BOOTLOADER)
+	$(DFUUTIL) -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8000000 -D $(BOOTLOADER)
 	@echo Uploaded $(BOOTLOADER) to OWL bootsector
 
 # pull in dependencies
