@@ -3,7 +3,7 @@
 #include <string.h> /* for memcpy */
 #include "stm32f4xx.h"
 
-/* __attribute__((__section__(".eeprom"), used)) uint16_t eeprom_junk[8192]; // 0x8029e5c */
+/* __attribute__((__section__(".eeprom"), used)) uint16_t eeprom_junk[8192];  */
 
 /* Base address of the Flash sectors */
 #define ADDR_FLASH_SECTOR_0     ((uint32_t)0x08000000) /* Base @ of Sector 0, 16 Kbyte */
@@ -19,38 +19,49 @@
 #define ADDR_FLASH_SECTOR_10    ((uint32_t)0x080C0000) /* Base @ of Sector 10, 128 Kbyte */
 #define ADDR_FLASH_SECTOR_11    ((uint32_t)0x080E0000) /* Base @ of Sector 11, 128 Kbyte */
 
-   void* eeprom_get_address(uint32_t address){
-     return (void*)(ADDR_FLASH_SECTOR_11 + address);
-   }
+#define EEPROM_FLASH_ADDRESS    ADDR_FLASH_SECTOR_1
+#define EEPROM_FLASH_SECTOR     FLASH_Sector_1
 
-   uint8_t eeprom_read_byte(uint32_t address){
-     while(FLASH_GetStatus() == FLASH_BUSY);
-     return *(uint8_t*)eeprom_get_address(address);
-   }
+void eeprom_lock(){
+  FLASH_Lock();
+}
 
-   int eeprom_read_block(uint32_t address, uint8_t* data, uint32_t size){
-     address = (uint32_t)eeprom_get_address(address);
-     while(FLASH_GetStatus() == FLASH_BUSY);
-/*      for(int i=0; i<size; ++i) */
-/*        data[i] = *(uint8_t*)(address+i); */
-     memcpy(data, (uint8_t*)address, size);
-     return FLASH_GetStatus();
-   }
+void eeprom_unlock(){
+  FLASH_Unlock();
+  /* clear pending flags - important! */
+  FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | 
+                  FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR); 
+}
 
-__attribute__ ((section (".coderam")))
-   int eeprom_write_block(uint32_t address, uint8_t* data, uint32_t size){
-     address = (uint32_t)eeprom_get_address(address);
-     FLASH_Unlock();
-     FLASH_Status status = FLASH_COMPLETE;
-     for(uint32_t i=0; i<size && status == FLASH_COMPLETE; ++i)
-       status = FLASH_ProgramByte(address+i, data[i]);
-     FLASH_Lock();
-     return status;
-   }
+void* eeprom_get_address(uint32_t address){
+  return (void*)(EEPROM_FLASH_ADDRESS + address);
+}
 
-__attribute__ ((section (".coderam")))
-   int eeprom_erase(){
-     FLASH_Unlock();
-     FLASH_Status status = FLASH_EraseSector(FLASH_Sector_11, VoltageRange_3);
-     FLASH_Lock();
-   }
+uint8_t eeprom_read_byte(uint32_t address){
+  while(FLASH_GetStatus() == FLASH_BUSY);
+  return *(uint8_t*)eeprom_get_address(address);
+}
+
+int eeprom_read_block(uint32_t address, uint8_t* data, uint32_t size){
+  address += EEPROM_FLASH_ADDRESS;
+  /* address = (uint32_t)eeprom_get_address(address); */
+  while(FLASH_GetStatus() == FLASH_BUSY);
+  /*      for(int i=0; i<size; ++i) */
+  /*        data[i] = *(uint8_t*)(address+i); */
+  memcpy(data, (const void*)address, size);
+  return FLASH_GetStatus();
+}
+
+int eeprom_write_block(uint32_t address, uint8_t* data, uint32_t size){
+  /* address = (uint32_t)eeprom_get_address(address); */
+  address += EEPROM_FLASH_ADDRESS;
+  FLASH_Status status = FLASH_COMPLETE;
+  uint32_t* ptr = (uint32_t*)data;
+  for(uint16_t i=0; i<size && status == FLASH_COMPLETE; i+=4)
+    status = FLASH_ProgramWord(address+i, *ptr++);
+  return status;
+}
+
+int eeprom_erase(){
+  return FLASH_EraseSector(EEPROM_FLASH_SECTOR, VoltageRange_3);
+}
