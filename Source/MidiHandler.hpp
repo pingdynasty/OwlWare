@@ -51,11 +51,13 @@ public:
   }
 
   void sendPatchName(uint8_t index){
-    std::string name = patches.getName(index);
-    uint8_t buffer[name.size()+3];
+    const char* name = patches.getName(index);
+    uint8_t size = strlen(name);
+    // uint8_t size = strnlen(name, 16);
+    uint8_t buffer[size+3];
     buffer[0] = SYSEX_PRESET_NAME_COMMAND;
     buffer[1] = index;
-    memcpy(buffer+2, name.c_str(), name.size()+1);
+    memcpy(buffer+2, name, size+1);
     midi.sendSysEx(buffer, sizeof(buffer));
   }
 

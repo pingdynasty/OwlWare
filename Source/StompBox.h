@@ -25,7 +25,7 @@ class Patch {
 public:
   Patch();
   virtual ~Patch();
-  void registerParameter(PatchParameterId pid, const std::string& name, const std::string& description = "");
+  void registerParameter(PatchParameterId pid, const char* name, const char* description = "");
   float getParameterValue(PatchParameterId pid);
   int getBlockSize();
   double getSampleRate();

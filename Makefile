@@ -5,7 +5,7 @@ CFLAGS = -g -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1
 CFLAGS  += -DEXTERNAL_SRAM
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
 ASFLAGS  = -g
-LDLIBS   = -lm -lstdc++
+LDLIBS   = -lm
 LDSCRIPT = Source/flash.ld
 
 C_SRC  = codec.c i2s.c errorhandlers.c main.c basicmaths.c fsmc_sram.c

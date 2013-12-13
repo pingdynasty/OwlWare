@@ -11,7 +11,7 @@ PatchRegistry::PatchRegistry() : nofPatches(0) {
 #include "OwlPatches/patches.cpp"
 }
 
-std::string PatchRegistry::getName(unsigned int index){
+const char* PatchRegistry::getName(unsigned int index){
   if(index < getNumberOfPatches())
     return names[index];
   return "";  
@@ -27,7 +27,7 @@ Patch* PatchRegistry::create(unsigned int index) {
   return NULL;
 }
 
-void PatchRegistry::registerPatch(const std::string& name, PatchCreator creator){
+void PatchRegistry::registerPatch(const char* name, PatchCreator creator){
   if(nofPatches < MAX_NUMBER_OF_PATCHES){
     names[nofPatches] = name;
     creators[nofPatches] = creator;
