@@ -34,6 +34,8 @@ vpath %.c $(DISCOVERY_FILE)
 vpath %.c $(USB_DEVICE_FILE)/Core/src
 vpath %.c $(USB_OTG_FILE)/src/
 
+all: bin
+
 # Build executable 
 $(ELF) : $(OBJS) $(LDSCRIPT)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
@@ -82,8 +84,6 @@ etags:
 	find $(CORE) -type f -iname "*.[ch]" | xargs etags --append
 	find $(DISCOVERY_FILE) -type f -iname "*.[ch]" | xargs etags --append
 	find . -type f -iname "*.[ch]" | xargs etags --append
-
-all: $(ELF)
 
 bin: $(BIN)
 
