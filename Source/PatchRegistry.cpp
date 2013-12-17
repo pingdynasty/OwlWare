@@ -1,7 +1,5 @@
 #include "PatchRegistry.h"
 
-#define registerParameter(...)
-
 #include "basicmaths.h"
 #include "OwlPatches/includes.h"
 

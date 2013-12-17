@@ -162,12 +162,6 @@ void setup(){
   if(isPushButtonPressed())
     jump_to_bootloader();
 
-  activePatchIndex = settings.patch_green;
-  activePatch = createPatch(activePatchIndex);
-
-  codec.setup();
-  codec.init(settings);
-
   midi.init(MIDI_CHANNEL);
 
   adcSetup();
@@ -199,6 +193,12 @@ void setup(){
 #error invalid configuration
 #endif
 #endif
+
+  activePatchIndex = settings.patch_green;
+  activePatch = createPatch(activePatchIndex);
+
+  codec.setup();
+  codec.init(settings);
 
   printString("startup\n");
   updateBypassMode();
