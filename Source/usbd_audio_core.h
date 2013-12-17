@@ -43,7 +43,7 @@
 /* Total size of the audio transfer buffer */
 #define TOTAL_OUT_BUF_SIZE                           ((uint32_t)(AUDIO_OUT_PACKET * OUT_PACKET_NUM))
 
-#define MIDI_MAX_PACKET_SIZE						  64
+#define MIDI_MAX_PACKET_SIZE			      64
 #define USB_AUDIO_DESC_SIZ                            0x09
 #define AUDIO_CONFIG_DESC_SIZE                        101 /* was 109 */
 #define AUDIO_DESCRIPTOR_TYPE                         0x21
@@ -51,17 +51,6 @@
 #define AUDIO_REQ_GET_CUR                             0x81
 #define AUDIO_REQ_SET_CUR                             0x01
 #define AUDIO_OUT_STREAMING_CTRL                      0x02
-
-typedef struct _Audio_Fops
-{
-    uint8_t  (*Init)         (uint32_t  AudioFreq, uint32_t Volume, uint32_t options);
-    uint8_t  (*DeInit)       (uint32_t options);
-    uint8_t  (*AudioCmd)     (uint8_t* pbuf, uint32_t size, uint8_t cmd);
-    uint8_t  (*VolumeCtl)    (uint8_t vol);
-    uint8_t  (*MuteCtl)      (uint8_t cmd);
-    uint8_t  (*PeriodicTC)   (uint8_t cmd);
-    uint8_t  (*GetState)     (void);
-}AUDIO_FOPS_TypeDef;
 
 #define AUDIO_PACKET_SZE(frq)          (uint8_t)(((frq * 2 * 2)/1000) & 0xFF), \
                                        (uint8_t)((((frq * 2 * 2)/1000) >> 8) & 0xFF)

@@ -314,14 +314,6 @@ static uint8_t  usbd_audio_Init (void  *pdev,
 	              MIDI_MAX_PACKET_SIZE,
 	              USB_OTG_EP_BULK);
 
-#if 0
-  /* Open EP OUT */
-  DCD_EP_Open(pdev,
-              AUDIO_OUT_EP,
-              AUDIO_OUT_PACKET,
-              USB_OTG_EP_ISOC);    
-#endif
-
   /* Prepare Out endpoint to receive MIDI data */
   DCD_EP_PrepareRx(pdev,
                    AUDIO_OUT_EP,
@@ -613,61 +605,6 @@ static void Handle_USBAsynchXfer (void *pdev)
   }
 
 }
-
-#if 0
-/**
-  * @brief  usbd_audio_OUT_Incplt
-  *         Handles the iso out incomplete event.
-  * @param  pdev: instance
-  * @retval status
-  */
-static uint8_t  usbd_audio_OUT_Incplt (void  *pdev)
-{
-  return USBD_OK;
-}
-
-/******************************************************************************
-     AUDIO Class requests management
-******************************************************************************/
-/**
-  * @brief  AUDIO_Req_GetCurrent
-  *         Handles the GET_CUR Audio control request.
-  * @param  pdev: instance
-  * @param  req: setup class request
-  * @retval status
-  */
-static void AUDIO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req)
-{  
-  /* Send the current mute state */
-  USBD_CtlSendData (pdev, 
-                    AudioCtl,
-                    req->wLength);
-}
-
-/**
-  * @brief  AUDIO_Req_SetCurrent
-  *         Handles the SET_CUR Audio control request.
-  * @param  pdev: instance
-  * @param  req: setup class request
-  * @retval status
-  */
-static void AUDIO_Req_SetCurrent(void *pdev, USB_SETUP_REQ *req)
-{ 
-  if (req->wLength)
-  {
-    /* Prepare the reception of the buffer over EP0 */
-    USBD_CtlPrepareRx (pdev, 
-                       AudioCtl,
-                       req->wLength);
-    
-    /* Set the global variables indicating current request and its length 
-    to the function usbd_audio_EP0_RxReady() which will process the request */
-    AudioCtlCmd = AUDIO_REQ_SET_CUR;     /* Set the request value */
-    AudioCtlLen = req->wLength;          /* Set the request data length */
-    AudioCtlUnit = HIBYTE(req->wIndex);  /* Set the request target unit */
-  }
-}
-#endif
 
 /**
   * @brief  USBD_audio_GetCfgDesc 

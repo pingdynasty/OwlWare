@@ -29,15 +29,17 @@ int activePatchIndex = 0;
 
 void updateLed(){
   setLed(activePatchIndex == settings.patch_red ? RED : GREEN);
+  midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
 void updateBypassMode(){
   if(isStompSwitchPressed()){
-    setLed(NONE);
     bypass = true;
+    setLed(NONE);
+    midi.sendCc(LED, 0);
   }else{
-    updateLed();
     bypass = false;
+    updateLed();
   }
 }
 

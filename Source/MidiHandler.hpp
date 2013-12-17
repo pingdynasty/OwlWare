@@ -4,9 +4,11 @@
 #include <string.h>
 #include "owlcontrol.h"
 #include "fsmc_sram.h"
+#include "OpenWareMidiControl.h"
 #include "MidiReader.hpp"
 #include "PatchRegistry.h"
 #include "MidiController.h"
+#include "CodecController.h"
 #include "ApplicationSettings.h"
 #include "sysex.h"
 

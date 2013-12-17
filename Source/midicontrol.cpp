@@ -1,8 +1,6 @@
 #include "midicontrol.h"
 #include "armcontrol.h"
 #include "owlcontrol.h"
-#include "CodecController.h"
-#include "OpenWareMidiControl.h"
 #include "usbd_conf.h"
 #include "usbd_audio_core.h"
 #include "MidiHandler.hpp"
@@ -23,7 +21,13 @@ extern volatile uint32_t APP_Rx_ptr_out;   /* This pointer is used by the MIDI d
                                      of it to ensure we don't write over data that
                                      has yet to be sent. */
 
+/* status flag that is set when the USB device is connected */
+extern uint8_t usbd_usr_device_status;
 MidiHandler handler;
+
+bool midi_device_connected(){
+  return usbd_usr_device_status > 0x02;
+}
 
 void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){
   for(int i=1; i<length; ++i){ // skip first of 4 bytes
@@ -50,17 +54,13 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
    * byte-by-byte). One consequence of this is that the USB buffer size must be a multiple
    * of 4 (the packet size).
    */
-
   /* Wait for device to come online */
   while(USB_OTG_dev.dev.device_status != USB_OTG_CONFIGURED) {}
   /* If the buffer is completely full, wait until the USB peripheral clears
-   * it to continue.
-   */
+   * it to continue. */
   while((APP_RX_DATA_SIZE + APP_Rx_ptr_out - APP_Rx_ptr_in) % APP_RX_DATA_SIZE == length);
-
   memcpy(&APP_Rx_Buffer[APP_Rx_ptr_in], buffer, length);
   APP_Rx_ptr_in += length;
-
   if(APP_Rx_ptr_in >= APP_RX_DATA_SIZE)
     APP_Rx_ptr_in = 0;
 }

@@ -25,13 +25,10 @@
   ******************************************************************************
   */
 
-/* Note (Andrew McPherson 19 August 2012):
- * These functions allow the device to take actions when certain
- * status changes occur. In the ST demos, it displayed the current
- * status on an LCD screen. These functions are preserved for future use.
- */
 #include "usbd_usr.h"
 #include "usbd_ioreq.h"
+
+uint8_t usbd_usr_device_status = 0;
 
 USBD_Usr_cb_TypeDef USR_cb =
 {
@@ -40,8 +37,6 @@ USBD_Usr_cb_TypeDef USR_cb =
   USBD_USR_DeviceConfigured,
   USBD_USR_DeviceSuspended,
   USBD_USR_DeviceResumed,
-
-
   USBD_USR_DeviceConnected,
   USBD_USR_DeviceDisconnected,
 };
@@ -54,7 +49,7 @@ USBD_Usr_cb_TypeDef USR_cb =
 */
 void USBD_USR_Init(void)
 {
-
+  usbd_usr_device_status = 0x1;
 }
 
 /**
@@ -63,22 +58,9 @@ void USBD_USR_Init(void)
 * @param  speed : device speed
 * @retval None
 */
-void USBD_USR_DeviceReset(uint8_t speed )
+void USBD_USR_DeviceReset(uint8_t speed)
 {
- switch (speed)
- {
-   case USB_OTG_SPEED_HIGH:
-     //LCD_LOG_SetFooter ("     USB Device Library v1.1.0 [HS]" );
-     break;
-
-  case USB_OTG_SPEED_FULL:
-     //LCD_LOG_SetFooter ("     USB Device Library v1.1.0 [FS]" );
-     break;
- default:
-
-     //LCD_LOG_SetFooter ("     USB Device Library v1.1.0 [??]" );
-	 break;
- }
+  usbd_usr_device_status = 0x2;
 }
 
 
@@ -86,11 +68,11 @@ void USBD_USR_DeviceReset(uint8_t speed )
 * @brief  USBD_USR_DeviceConfigured
 *         Displays the message on LCD on device configuration Event
 * @param  None
-* @retval Staus
+* @retval None
 */
 void USBD_USR_DeviceConfigured (void)
 {
-  //LCD_UsrLog("> VCP Interface configured.\n");
+  usbd_usr_device_status = 0x3;
 }
 
 /**
@@ -101,8 +83,7 @@ void USBD_USR_DeviceConfigured (void)
 */
 void USBD_USR_DeviceSuspended(void)
 {
-  //LCD_UsrLog("> USB Device in Suspend Mode.\n");
-  /* Users can do their application actions here for the USB-Reset */
+  usbd_usr_device_status = 0;
 }
 
 
@@ -114,8 +95,7 @@ void USBD_USR_DeviceSuspended(void)
 */
 void USBD_USR_DeviceResumed(void)
 {
-    //LCD_UsrLog("> USB Device in Idle Mode.\n");
-  /* Users can do their application actions here for the USB-Reset */
+  usbd_usr_device_status = 0x7;
 }
 
 
@@ -123,11 +103,11 @@ void USBD_USR_DeviceResumed(void)
 * @brief  USBD_USR_DeviceConnected
 *         Displays the message on LCD on device connection Event
 * @param  None
-* @retval Staus
+* @retval None
 */
 void USBD_USR_DeviceConnected (void)
 {
-  //LCD_UsrLog("> USB Device Connected.\n");
+  usbd_usr_device_status = 0xf;
 }
 
 
@@ -135,18 +115,11 @@ void USBD_USR_DeviceConnected (void)
 * @brief  USBD_USR_DeviceDisonnected
 *         Displays the message on LCD on device disconnection Event
 * @param  None
-* @retval Staus
+* @retval None
 */
 void USBD_USR_DeviceDisconnected (void)
 {
-  //LCD_UsrLog("> USB Device Disconnected.\n");
+  usbd_usr_device_status = 0;
 }
-/**
-* @}
-*/
-
-/**
-* @}
-*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
