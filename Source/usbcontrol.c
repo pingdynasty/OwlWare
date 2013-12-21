@@ -33,7 +33,6 @@ void usb_deinit(void){
 void usb_init(void){
   GPIO_InitTypeDef GPIO_InitStructure;
   NVIC_InitTypeDef NVIC_InitStructure;
-  uint32_t ticks;
 
   /* Enable clocks */
   RCC_AHB1PeriphClockCmd(USB_DATA_GPIO_CLK, ENABLE);
