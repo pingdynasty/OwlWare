@@ -9,20 +9,27 @@ See http://hoxtonowl.com for more details.
 
 # Prerequisites
 
+First you need to get the OwlWare source code into a directory of your choice (let's call it "/OwlWare").
+
+Clone this github repository with `git clone git@github.com:pingdynasty/OwlWare.git`.
+Open a terminal or command window in the cloned repository OwlWare (the project directory). Do a `git submodule init` and `git submodule update` to get the required submodules.
+
+If you are not familiar with git, you can also download the source code as a zip file. 
+
 ## GNU Tools for ARM Embedded Processors
 
-Download the [GNU ARM toolchain][gcc-arm] for your operating system. Unzip in the Tools directory and (if necessary) edit `Makefile.common` to point to the right `TOOLROOT` directory.
+Download the [GNU ARM toolchain][gcc-arm] for your operating system. Unzip in the OwlWare/Tools directory.
+If you want to install it elsewhere, edit `Makefile.common` (located in /OwlWare) to point to the right `TOOLROOT` directory.
 
 ## STM32F4DISCOVERY Firmware Package
-Download [the STM32F4-Discovery Firmware Package][STM32068] and unzip the file `stsw-stm32068.zip` in the Libraries directory.
-
-If you have installed the software elsewhere, edit `Makefile.f4` to point to the right `LIBROOT` directory.
+Download [the STM32F4-Discovery Firmware Package][STM32068] and unzip the file `stsw-stm32068.zip` in the OwlWare/Libraries directory.
+If you have installed the software elsewhere, edit `Makefile.f4` (located in /OwlWare) to point to the right `LIBROOT` directory.
 
 ## DFU Util
-To upload firmware over USB using DFU you will also need dfu-util. Download and install from [here][dfu-util].
+To upload firmware over USB (recommended for most users), you will also need dfu-util. Download and install from [here][dfu-util].
 
 ## ST Util
-To upload firmware using an STLINKv1 or STLINKv2 programmer (such as those on the ST Discovery boards) download and install stlink from [here][stlink].
+For those who want to upload firmware using an STLINKv1 or STLINKv2 programmer (such as those on the ST Discovery boards), download and install stlink from [here][stlink].
 
 ## Make
 
@@ -30,10 +37,6 @@ To build and deploy the project using the provided Makefiles you will need some 
 
 
 # Instructions
-## Download
-Clone this github repository with `git clone git@github.com:pingdynasty/OwlWare.git`.
-
-Open a terminal or command window in the cloned repository OwlWare (the project directory). Do a `git submodule init` and `git submodule update` to get the required submodules.
 
 ## Build
 Open a terminal or command window in the project directory and type in:
