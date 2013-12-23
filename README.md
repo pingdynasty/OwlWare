@@ -9,21 +9,22 @@ See http://hoxtonowl.com for more details.
 
 # Prerequisites
 
-First you need to get the OwlWare source code into a directory of your choice (let's call it "/OwlWare").
+First you need to get the OwlWare source code into a directory of your choice (let's call it "OwlWare"). We will refer to this as the project directory.
 
+If you have or create a github.com account then you can always get the latest version of the software with git.
 Clone this github repository with `git clone git@github.com:pingdynasty/OwlWare.git`.
 Open a terminal or command window in the cloned repository OwlWare (the project directory). Do a `git submodule init` and `git submodule update` to get the required submodules.
 
-If you are not familiar with git, you can also download the source code as a zip file. 
+If you are not familiar with git, you can also download the source code as a [zip file][master-zip]. 
 
 ## GNU Tools for ARM Embedded Processors
 
 Download the [GNU ARM toolchain][gcc-arm] for your operating system. Unzip in the OwlWare/Tools directory.
-If you want to install it elsewhere, edit `Makefile.common` (located in /OwlWare) to point to the right `TOOLROOT` directory.
+If you want to install it elsewhere, edit `Makefile.common` (located in the project directory) to point to the right `TOOLROOT` directory.
 
 ## STM32F4DISCOVERY Firmware Package
 Download [the STM32F4-Discovery Firmware Package][STM32068] and unzip the file `stsw-stm32068.zip` in the OwlWare/Libraries directory.
-If you have installed the software elsewhere, edit `Makefile.f4` (located in /OwlWare) to point to the right `LIBROOT` directory.
+If you have installed the software elsewhere, edit `Makefile.f4` (located in the project directory) to point to the right `LIBROOT` directory.
 
 ## DFU Util
 To upload firmware over USB (recommended for most users), you will also need dfu-util. Download and install from [here][dfu-util].
@@ -55,3 +56,4 @@ In the project directory, type in:
 [dfu-util]: http://dfu-util.gnumonks.org
 [stlink]: https://github.com/texane/stlink
 [gnu-make]: http://www.gnu.org/software/make/
+[master-zip]: https://github.com/pingdynasty/OwlWare/archive/master.zip
