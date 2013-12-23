@@ -30,11 +30,11 @@ If you have installed the software elsewhere, edit `Makefile.f4` (located in the
 To upload firmware over USB (recommended for most users), you will also need dfu-util. Download and install from [here][dfu-util].
 
 ## ST Util
-For those who want to upload firmware using an STLINKv1 or STLINKv2 programmer (such as those on the ST Discovery boards), download and install stlink from [here][stlink].
+For those who want to upload firmware using an STLINKv1 or STLINKv2 programmer (such as those on the ST Discovery boards), download and install stlink from [here][stlink]. For most users, this will not be required.
 
 ## Make
 
-To build and deploy the project using the provided Makefiles you will need some version of the make utility, for example [GNU make][gnu-make].
+To build and deploy the project using the provided Makefiles you will need some version of the make utility, for example [GNU make][gnu-make]. For Windows users, we recommend installing [Cygwin][cygwin].
 
 
 # Instructions
@@ -57,3 +57,5 @@ In the project directory, type in:
 [stlink]: https://github.com/texane/stlink
 [gnu-make]: http://www.gnu.org/software/make/
 [master-zip]: https://github.com/pingdynasty/OwlWare/archive/master.zip
+[cygwin]: http://www.cygwin.com
+
