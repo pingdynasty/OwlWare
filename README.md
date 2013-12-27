@@ -15,7 +15,7 @@ If you have or create a github.com account then you can always get the latest ve
 Clone this github repository with `git clone git@github.com:pingdynasty/OwlWare.git`.
 Open a terminal or command window in the cloned repository OwlWare (the project directory). Do a `git submodule init` and `git submodule update` to get the required submodules.
 
-If you are not familiar with git, you can also download the source code as a [zip file][master-zip]. 
+If you are not familiar with git, you can also download the source code as a [zip file][owlware-zip]. You will then also have to manually download [OwlPatches][owlpatches-zip] and unzip in the Libraries subfolder.
 
 ## GNU Tools for ARM Embedded Processors
 
@@ -56,6 +56,7 @@ In the project directory, type in:
 [dfu-util]: http://dfu-util.gnumonks.org
 [stlink]: https://github.com/texane/stlink
 [gnu-make]: http://www.gnu.org/software/make/
-[master-zip]: https://github.com/pingdynasty/OwlWare/archive/master.zip
+[owlware-zip]: https://github.com/pingdynasty/OwlWare/archive/master.zip
+[owlpatches-zip]: https://github.com/pingdynasty/OwlPatches/archive/master.zip
 [cygwin]: http://www.cygwin.com
 
