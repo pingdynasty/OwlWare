@@ -40,12 +40,14 @@ AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
 
 float PatchProcessor::getParameterValue(PatchParameterId pid){
   return parameters[pid]/4096.0;
-  // return getAnalogValue(pid)/4096.0;
-//   return patch->getParameterValue(pid);
 }
 
 void PatchProcessor::setParameters(uint16_t *params){
-  memcpy(parameters, params, sizeof parameters);
+  // moving average
+  for(int i=0; i<NOF_ADC_VALUES; ++i)
+    // with alpha = 0.5, fs=48k, bs=128, then fc ~= 18hz
+    parameters[i] = (parameters[i] + params[i]) >> 1;
+  // memcpy(parameters, params, sizeof parameters);
 }
 
 void PatchProcessor::process(AudioBuffer& buffer){

@@ -22,12 +22,10 @@ void PatchController::process(AudioBuffer& buffer){
     green->setParameters(getAnalogValues());
     green->process(buffer);
   }
-
   if(green->index != settings.patch_green){
     delete green;
     green = new PatchProcessor(settings.patch_green);
   }
-
   if(red->index != settings.patch_red){
     delete red;
     red = new PatchProcessor(settings.patch_red);

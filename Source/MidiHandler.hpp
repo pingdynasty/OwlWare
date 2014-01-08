@@ -21,11 +21,11 @@ public:
   {}
 
   void sendSettings(){
-    midi.sendCc(PATCH_PARAMETER_A, (getAnalogValue(0)>>5) & 0x7f);
-    midi.sendCc(PATCH_PARAMETER_B, (getAnalogValue(1)>>5) & 0x7f);
-    midi.sendCc(PATCH_PARAMETER_C, (getAnalogValue(2)>>5) & 0x7f);
-    midi.sendCc(PATCH_PARAMETER_D, (getAnalogValue(3)>>5) & 0x7f);
-    midi.sendCc(PATCH_PARAMETER_E, (getAnalogValue(4)>>5) & 0x7f);
+    midi.sendCc(PATCH_PARAMETER_A, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_A)*127.0) & 0x7f);
+    midi.sendCc(PATCH_PARAMETER_B, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_B)*127.0) & 0x7f);
+    midi.sendCc(PATCH_PARAMETER_C, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_C)*127.0) & 0x7f);
+    midi.sendCc(PATCH_PARAMETER_D, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_D)*127.0) & 0x7f);
+    midi.sendCc(PATCH_PARAMETER_E, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
     midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
     midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
     midi.sendCc(PATCH_SLOT_GREEN, settings.patch_green);
