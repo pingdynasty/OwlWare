@@ -1,7 +1,9 @@
 #include "PatchProcessor.h"
+#include "PatchRegistry.h"
 #include "MemoryBuffer.hpp"
 #include "device.h"
 #include "basicmaths.h"
+#include <string.h>
 
 #ifdef EXTERNAL_SRAM
 #define BUFFER_LENGTH 262144
@@ -12,7 +14,9 @@ static float extbuffer[BUFFER_LENGTH];
 #endif
 static int extpos = 0;
 
-PatchProcessor::PatchProcessor(Patch* p) : patch(p), bufferCount(0) {
+PatchProcessor::PatchProcessor(uint8_t i) : patch(NULL), index(i), bufferCount(0) {
+  patch = registry.create(index);
+  memset(parameters, 0, sizeof(parameters));
 }
 
 PatchProcessor::~PatchProcessor(){
@@ -20,6 +24,7 @@ PatchProcessor::~PatchProcessor(){
     extpos -= buffers[i]->getSize() * buffers[i]->getChannels();
     delete buffers[i];
   }
+  delete patch;
 }
 
 AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
@@ -33,9 +38,19 @@ AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
   return buf;
 }
 
-// float PatchProcessor::getParameterValue(PatchParameterId pid){
+float PatchProcessor::getParameterValue(PatchParameterId pid){
+  return parameters[pid]/4096.0;
+  // return getAnalogValue(pid)/4096.0;
 //   return patch->getParameterValue(pid);
-// }
+}
+
+void PatchProcessor::setParameters(uint16_t *params){
+  memcpy(parameters, params, sizeof parameters);
+}
+
+void PatchProcessor::process(AudioBuffer& buffer){
+  patch->processAudio(buffer);
+}
 
 // int PatchProcessor::getBlockSize(){
 //   return patch->getBlockSize();
@@ -43,8 +58,4 @@ AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
 
 // double PatchProcessor::getSampleRate(){
 //   return patch->getSampleRate();
-// }
-
-// void PatchProcessor::processAudio(AudioBuffer& buffer){
-//   patch->processAudio(buffer);
 // }

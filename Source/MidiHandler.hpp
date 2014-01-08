@@ -9,6 +9,7 @@
 #include "PatchRegistry.h"
 #include "MidiController.h"
 #include "CodecController.h"
+#include "PatchController.h"
 #include "ApplicationSettings.h"
 #include "sysex.h"
 
@@ -29,7 +30,7 @@ public:
     midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
     midi.sendCc(PATCH_SLOT_GREEN, settings.patch_green);
     midi.sendCc(PATCH_SLOT_RED, settings.patch_red);
-    midi.sendCc(ACTIVE_SLOT, getActiveSlot() == GREEN ? 0 : 127);
+    midi.sendCc(ACTIVE_SLOT, patches.getActiveSlot() == GREEN ? 0 : 127);
     midi.sendCc(LEFT_INPUT_GAIN, codec.getInputGainLeft()<<2);
     midi.sendCc(RIGHT_INPUT_GAIN, codec.getInputGainRight()<<2);
     midi.sendCc(LEFT_OUTPUT_GAIN, codec.getOutputGainLeft());
@@ -48,12 +49,12 @@ public:
   }
 
   void sendPatchNames(){
-    for(int i=0; i<patches.getNumberOfPatches(); ++i)
+    for(int i=0; i<registry.getNumberOfPatches(); ++i)
       sendPatchName(i);
   }
 
   void sendPatchName(uint8_t index){
-    const char* name = patches.getName(index);
+    const char* name = registry.getName(index);
     uint8_t size = strlen(name);
     // uint8_t size = strnlen(name, 16);
     uint8_t buffer[size+3];

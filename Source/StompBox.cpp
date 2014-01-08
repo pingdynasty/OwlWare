@@ -5,6 +5,7 @@
 #include "MidiController.h"
 #include "OpenWareMidiControl.h"
 #include "PatchProcessor.h"
+#include "PatchController.h"
 #include "device.h"
 #include <cstddef>
 #include <string.h>
@@ -14,7 +15,7 @@ extern PatchProcessor* getPatchProcessor(); // defined in Owl.cpp; todo: mv
 AudioBuffer::~AudioBuffer(){}
 
 Patch::Patch(){
-  processor = getPatchProcessor();
+  processor = patches.getCurrentPatchProcessor();
 }
 
 Patch::~Patch(){}
@@ -38,7 +39,7 @@ int Patch::getBlockSize(){
 }
 
 float Patch::getParameterValue(PatchParameterId pid){
-  return getAnalogValue(pid)/4096.0;
+  return processor->getParameterValue(pid);
 }
 
 AudioBuffer* Patch::createMemoryBuffer(int channels, int samples){

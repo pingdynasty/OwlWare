@@ -17,7 +17,7 @@ C_SRC += clock.c operators.c serial.c gpio.c sysex.c
 
 # C_SRC += $(DSPLIB)/FastMathFunctions/arm_sin_f32.c $(DSPLIB)/FastMathFunctions/arm_cos_f32.c
 
-CPP_SRC  = StompBox.cpp Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp 
+CPP_SRC  = StompBox.cpp Owl.cpp CodecController.cpp MidiController.cpp PatchController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchProcessor.cpp PatchRegistry.cpp
 
 OBJS =  $(C_SRC:%.c=Build/%.o)  $(CPP_SRC:%.cpp=Build/%.o)

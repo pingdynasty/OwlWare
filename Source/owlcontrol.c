@@ -98,7 +98,7 @@ void ledSetup(){
   clearPin(LED_PORT, LED_RED|LED_GREEN);
 }
 
-uint16_t adc_values[8];
+uint16_t adc_values[NOF_ADC_VALUES];
 void adcSetup(){
   memset(adc_values, 0, sizeof adc_values);
   adcSetupDMA(&adc_values[0]);
@@ -107,6 +107,10 @@ void adcSetup(){
 uint16_t getAnalogValue(uint8_t index){
   assert_param(index < sizeof(adc_values));
   return adc_values[index];
+}
+
+uint16_t* getAnalogValues(){
+  return adc_values;
 }
 
 void (*externalInterruptCallbackA)();

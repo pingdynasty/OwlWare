@@ -8,6 +8,7 @@
 #include "PatchProcessor.h"
 #include "MidiController.h"
 #include "CodecController.h"
+#include "PatchController.h"
 #include "SampleBuffer.hpp"
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
@@ -21,14 +22,12 @@
 CodecController codec;
 MidiController midi;
 ApplicationSettings settings;
-PatchRegistry patches;
+PatchRegistry registry;
+PatchController patches;
 bool bypass = false;
-Patch* activePatch = NULL;
-Patch* nextPatch = NULL;
-int activePatchIndex = 0;
 
 void updateLed(){
-  setLed(activePatchIndex == settings.patch_red ? RED : GREEN);
+  setLed((LedPin)patches.getActiveSlot());
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
@@ -49,11 +48,7 @@ void footSwitchCallback(){
 }
 
 void toggleActiveSlot(){
-  if(settings.patch_green != activePatchIndex){
-    setActivePatch(settings.patch_green);
-  }else if(settings.patch_red != activePatchIndex){
-    setActivePatch(settings.patch_red);
-  }
+  patches.toggleActiveSlot();
   updateLed();
 }
 
@@ -77,42 +72,9 @@ bool doProcessAudio = false;
 uint16_t* source;
 uint16_t* dest;
 
-PatchProcessor* currentPatchProcessor = NULL;
-PatchProcessor* getPatchProcessor(){
-  return currentPatchProcessor;
-}
-
-Patch* createPatch(uint8_t index){
-  Patch* patch = patches.create(index);
-  if(currentPatchProcessor != NULL)
-    delete currentPatchProcessor;
-  currentPatchProcessor = new PatchProcessor(patch);
-  return patch;
-}
-
-void setActivePatch(uint8_t index){
-  if(index < patches.getNumberOfPatches() && index != activePatchIndex){
-    activePatchIndex = index;
-    nextPatch = createPatch(index);
-    codec.softMute(true);
-  }
-}
-
 void setActiveSlot(uint8_t index){
-  if(index == GREEN){
-    setActivePatch(settings.patch_green);
-  }else if(index == RED){
-    setActivePatch(settings.patch_red);
-  }
+  patches.setActiveSlot(index);
   updateLed();
-}
-
-uint8_t getActivePatch(){
-  return activePatchIndex;
-}
-
-uint8_t getActiveSlot(){
-  return activePatchIndex == settings.patch_red ? RED : GREEN;
 }
 
 __attribute__ ((section (".coderam")))
@@ -122,15 +84,8 @@ void run(){
       //     setPin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 
       buffer.split(source);
-      activePatch->processAudio(buffer);
+      patches.process(buffer);
       buffer.comb(dest);
-
-      if(nextPatch != NULL){
-	delete activePatch;
-	activePatch = nextPatch;
-	nextPatch = NULL;
-	codec.softMute(false);
-      }
 
       doProcessAudio = false;
       //     clearPin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
@@ -195,9 +150,6 @@ void setup(){
 #error invalid configuration
 #endif
 #endif
-
-  activePatchIndex = settings.patch_green;
-  activePatch = createPatch(activePatchIndex);
 
   codec.setup();
   codec.init(settings);

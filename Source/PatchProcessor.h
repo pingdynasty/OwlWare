@@ -1,14 +1,13 @@
 #ifndef __PatchProcessor_h__
 #define __PatchProcessor_h__
 
-#include <string>
+#include <stdint.h>
 #include "StompBox.h"
-
-#define MAX_BUFFERS_PER_PATCH 4
+#include "device.h"
 
 class PatchProcessor {
 public:  
-  PatchProcessor(Patch* patch);
+  PatchProcessor(uint8_t index);
   ~PatchProcessor();
   /* void setPatch(Patch* p){ */
   /*   patch = p; */
@@ -18,9 +17,13 @@ public:
   int getBlockSize();
   double getSampleRate();
   AudioBuffer* createMemoryBuffer(int channels, int samples);
-private:
+  void setParameters(uint16_t *parameters);
+  void process(AudioBuffer& buffer);
   Patch* patch;
+  uint8_t index;
+private:
   uint8_t bufferCount;
+  uint16_t parameters[NOF_ADC_VALUES];
   AudioBuffer* buffers[MAX_BUFFERS_PER_PATCH];
 };
 

@@ -8,7 +8,7 @@
 #include "basicmaths.h"
 
 class PatchRegistry;
-extern PatchRegistry patches;
+extern PatchRegistry registry;
 
 class PatchRegistry {
   typedef Patch* (*PatchCreator)(); // function pointer to create Patch

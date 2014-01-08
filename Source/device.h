@@ -24,6 +24,8 @@
 #define AUDIO_OUTPUT_GAIN_RIGHT      0x073
 
 #define MIDI_CHANNEL                 0
+#define NOF_ADC_VALUES               5
+#define MAX_BUFFERS_PER_PATCH        4
 
 /* I2C clock speed configuration (in Hz)  */
 #define I2C_SPEED                    100000
@@ -55,7 +57,6 @@
 #define EXPRESSION_PEDAL_RING_PORT   GPIOA
 #define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_2
 #define EXPRESSION_PEDAL_ADC_CHANNEL ADC_Channel_2
-
 
 /* Switch B: illuminated pushbutton */
 #define SWITCH_B_PORT                GPIOE
