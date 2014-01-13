@@ -1,17 +1,11 @@
 #ifndef _MidiHandler_H_
 #define _MidiHandler_H_
 
-#include <string.h>
-#include "owlcontrol.h"
-#include "fsmc_sram.h"
 #include "OpenWareMidiControl.h"
 #include "MidiReader.hpp"
-#include "PatchRegistry.h"
 #include "MidiController.h"
 #include "CodecController.h"
-#include "PatchController.h"
 #include "ApplicationSettings.h"
-#include "sysex.h"
 
 class MidiHandler : public MidiReader {
 private:
@@ -19,80 +13,6 @@ private:
 public:
   MidiHandler() : MidiReader(buffer, sizeof(buffer))
   {}
-
-  void sendSettings(){
-    midi.sendCc(PATCH_PARAMETER_A, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_A)*127.0) & 0x7f);
-    midi.sendCc(PATCH_PARAMETER_B, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_B)*127.0) & 0x7f);
-    midi.sendCc(PATCH_PARAMETER_C, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_C)*127.0) & 0x7f);
-    midi.sendCc(PATCH_PARAMETER_D, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_D)*127.0) & 0x7f);
-    midi.sendCc(PATCH_PARAMETER_E, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
-    midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
-    midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
-    midi.sendCc(PATCH_SLOT_GREEN, settings.patch_green);
-    midi.sendCc(PATCH_SLOT_RED, settings.patch_red);
-    midi.sendCc(ACTIVE_SLOT, patches.getActiveSlot() == GREEN ? 0 : 127);
-    midi.sendCc(LEFT_INPUT_GAIN, codec.getInputGainLeft()<<2);
-    midi.sendCc(RIGHT_INPUT_GAIN, codec.getInputGainRight()<<2);
-    midi.sendCc(LEFT_OUTPUT_GAIN, codec.getOutputGainLeft());
-    midi.sendCc(RIGHT_OUTPUT_GAIN, codec.getOutputGainRight());
-    midi.sendCc(LEFT_INPUT_MUTE, codec.getInputMuteLeft() ? 127 : 0);
-    midi.sendCc(RIGHT_INPUT_MUTE, codec.getInputMuteRight() ? 127 : 0);
-    midi.sendCc(LEFT_OUTPUT_MUTE, codec.getOutputMuteLeft() ? 127 : 0);
-    midi.sendCc(RIGHT_OUTPUT_MUTE, codec.getOutputMuteRight() ? 127 : 0);
-    midi.sendCc(BYPASS, codec.getBypass() ? 127 : 0);
-    midi.sendCc(SAMPLING_RATE, (codec.getSamplingRate() >> 10) + 20);
-    midi.sendCc(SAMPLING_BITS, (codec.getFormat() << 4) + 20);
-    midi.sendCc(CODEC_MASTER, codec.isMaster() ? 127 : 0);
-    midi.sendCc(CODEC_PROTOCOL, codec.getProtocol() == I2S_PROTOCOL_PHILIPS ? 0 : 127);
-    midi.sendCc(SAMPLING_SIZE, settings.audio_blocksize>>4);
-    midi.sendCc(LEFT_RIGHT_SWAP, codec.getSwapLeftRight());
-  }
-
-  void sendPatchNames(){
-    for(int i=0; i<registry.getNumberOfPatches(); ++i)
-      sendPatchName(i);
-  }
-
-  void sendPatchName(uint8_t index){
-    const char* name = registry.getName(index);
-    uint8_t size = strlen(name);
-    // uint8_t size = strnlen(name, 16);
-    uint8_t buffer[size+3];
-    buffer[0] = SYSEX_PRESET_NAME_COMMAND;
-    buffer[1] = index;
-    memcpy(buffer+2, name, size+1);
-    midi.sendSysEx(buffer, sizeof(buffer));
-  }
-
-  void sendDeviceInfo(){
-    sendFirmwareVersion();
-    sendDeviceId();
-    sendSelfTest();
-  }
-
-  void sendFirmwareVersion(){
-    char* version = getFirmwareVersion();
-    uint8_t len = strlen(version);
-    uint8_t buffer[len+1];
-    buffer[0] = SYSEX_FIRMWARE_VERSION;
-    memcpy(buffer+1, version, len);
-    midi.sendSysEx(buffer, sizeof(buffer));
-  }
-
-  void sendDeviceId(){
-    uint8_t buffer[15];
-    buffer[0] = SYSEX_DEVICE_ID;
-    uint8_t* deviceId = getDeviceId();
-    data_to_sysex(deviceId, buffer+1, 3*4);
-    midi.sendSysEx(buffer, sizeof(buffer));
-  }
-
-  void sendSelfTest(){
-    uint8_t buffer[2];
-    buffer[0] = SYSEX_SELFTEST;
-    buffer[1] = (isClockExternal() << 2) | ( SRAM_TestMemory() << 1) | settings.settingsInFlash();
-    midi.sendSysEx(buffer, sizeof(buffer));
-  }
 
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){
@@ -227,10 +147,13 @@ public:
     case REQUEST_SETTINGS:
       switch(value){
       case 0:
-	sendDeviceInfo();
+	midi.sendDeviceInfo();
 	break;
       case 1:
-	sendPatchNames();
+	midi.sendPatchNames();
+	break;
+      case 2:
+	midi.sendPatchParameterNames();
 	break;
       case PATCH_BUTTON:
 	midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
@@ -239,7 +162,7 @@ public:
 	midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
 	break;
       case 127:
-	sendSettings();
+	midi.sendSettings();
 	break;
       }
       break;

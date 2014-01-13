@@ -1,12 +1,10 @@
 #include <inttypes.h>
 
-#define GREEN_PATCH                  23
+#define GREEN_PATCH                  24
 #define RED_PATCH                    18
 
 #define EXPRESSION_PEDAL
 #define SERIAL_PORT                  1
-
-#define MAX_NUMBER_OF_PATCHES        32
 
 #define AUDIO_BIGEND
 /* #define AUDIO_SATURATE_SAMPLES */
@@ -25,7 +23,8 @@
 
 #define MIDI_CHANNEL                 0
 #define NOF_ADC_VALUES               5
-#define MAX_BUFFERS_PER_PATCH        4
+#define MAX_BUFFERS_PER_PATCH        8
+#define MAX_NUMBER_OF_PATCHES        32
 
 /* I2C clock speed configuration (in Hz)  */
 #define I2C_SPEED                    100000

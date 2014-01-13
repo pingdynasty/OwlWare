@@ -50,6 +50,7 @@ void footSwitchCallback(){
 void toggleActiveSlot(){
   patches.toggleActiveSlot();
   updateLed();
+  midi.sendPatchParameterNames();
 }
 
 void pushButtonCallback(){
@@ -72,8 +73,8 @@ bool doProcessAudio = false;
 uint16_t* source;
 uint16_t* dest;
 
-void setActiveSlot(uint8_t index){
-  patches.setActiveSlot(index);
+void setActiveSlot(LedPin slot){
+  patches.setActiveSlot(slot);
   updateLed();
 }
 

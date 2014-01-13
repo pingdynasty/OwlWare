@@ -7,13 +7,6 @@
 #include "device.h"
 #include "gpio.h"
 
-/* functions defined in Owl.cpp */
-extern void setActivePatch(uint8_t index);
-extern uint8_t getActivePatch();
-extern void toggleActiveSlot();
-extern void setActiveSlot(uint8_t index);
-extern uint8_t getActiveSlot();
-
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -28,6 +21,14 @@ extern uint8_t getActiveSlot();
      GREEN = LED_GREEN,
      RED   = LED_RED
    }  LedPin;
+
+
+/* functions defined in Owl.cpp */
+extern void setActivePatch(uint8_t index);
+extern uint8_t getActivePatch();
+extern void toggleActiveSlot();
+extern void setActiveSlot(LedPin slot);
+extern uint8_t getActiveSlot();
 
    LedPin getLed();
 

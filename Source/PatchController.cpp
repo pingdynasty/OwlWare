@@ -3,9 +3,10 @@
 #include "owlcontrol.h"
 
 PatchController::PatchController(){
-  green = new PatchProcessor(settings.patch_green);
+  setActiveSlot(RED);
   red = new PatchProcessor(settings.patch_red);
   setActiveSlot(GREEN);
+  green = new PatchProcessor(settings.patch_green);
 }
 
 PatchController::~PatchController(){
@@ -16,19 +17,19 @@ PatchController::~PatchController(){
 __attribute__ ((section (".coderam")))
 void PatchController::process(AudioBuffer& buffer){
   if(activeSlot == RED){
-    red->setParameters(getAnalogValues());
-    red->process(buffer);
+    red->setParameterValues(getAnalogValues());
+    red->patch->processAudio(buffer);
+    if(red->index != settings.patch_red){
+      delete red; // red must be active slot when constructor is called
+      red = new PatchProcessor(settings.patch_red);
+    }
   }else{
-    green->setParameters(getAnalogValues());
-    green->process(buffer);
-  }
-  if(green->index != settings.patch_green){
-    delete green;
-    green = new PatchProcessor(settings.patch_green);
-  }
-  if(red->index != settings.patch_red){
-    delete red;
-    red = new PatchProcessor(settings.patch_red);
+    green->setParameterValues(getAnalogValues());
+    green->patch->processAudio(buffer);
+    if(green->index != settings.patch_green){
+      delete green; // green must be active slot when constructor is called
+      green = new PatchProcessor(settings.patch_green);
+    }
   }
 }
 

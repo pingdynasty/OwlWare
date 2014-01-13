@@ -5,6 +5,9 @@
 #include "basicmaths.h"
 #include <string.h>
 
+#include "MidiController.h"
+#include "OpenWareMidiControl.h"
+
 #ifdef EXTERNAL_SRAM
 #define BUFFER_LENGTH 262144
 static float extbuffer[BUFFER_LENGTH] EXT;
@@ -14,9 +17,10 @@ static float extbuffer[BUFFER_LENGTH];
 #endif
 static int extpos = 0;
 
-PatchProcessor::PatchProcessor(uint8_t i) : patch(NULL), index(i), bufferCount(0) {
+PatchProcessor::PatchProcessor(uint8_t i) 
+  : patch(NULL), index(i), bufferCount(0),
+    parameterNames(), parameterValues(), buffers() {
   patch = registry.create(index);
-  memset(parameters, 0, sizeof(parameters));
 }
 
 PatchProcessor::~PatchProcessor(){
@@ -25,6 +29,17 @@ PatchProcessor::~PatchProcessor(){
     delete buffers[i];
   }
   delete patch;
+}
+
+void PatchProcessor::registerParameter(PatchParameterId pid, const char* name, const char* description){
+  if(pid < NOF_ADC_VALUES)
+    parameterNames[pid] = name;
+}
+
+const char* PatchProcessor::getParameterName(PatchParameterId pid){
+  if(pid < NOF_ADC_VALUES)
+    return parameterNames[pid];
+  return NULL;
 }
 
 AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
@@ -39,20 +54,23 @@ AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
 }
 
 float PatchProcessor::getParameterValue(PatchParameterId pid){
-  return parameters[pid]/4096.0;
+  return parameterValues[pid]/4096.0;
 }
 
-void PatchProcessor::setParameters(uint16_t *params){
-  // moving average
+__attribute__ ((section (".coderam")))
+void PatchProcessor::setParameterValues(uint16_t *params){
+  /* Implements an exponential moving average (leaky integrator) to smooth ADC values
+   * y(n) = (1-alpha)*y(n-1) + alpha*y(n)
+   * with alpha=0.5, fs=48k, bs=128, then w0 ~= 18hz
+   */
   for(int i=0; i<NOF_ADC_VALUES; ++i)
-    // with alpha = 0.5, fs=48k, bs=128, then fc ~= 18hz
-    parameters[i] = (parameters[i] + params[i]) >> 1;
-  // memcpy(parameters, params, sizeof parameters);
+    parameterValues[i] = (parameterValues[i] + params[i]) >> 1;
+  // memcpy(parameterValues, params, sizeof parameterValues);
 }
 
-void PatchProcessor::process(AudioBuffer& buffer){
-  patch->processAudio(buffer);
-}
+// void PatchProcessor::process(AudioBuffer& buffer){
+//   patch->processAudio(buffer);
+// }
 
 // int PatchProcessor::getBlockSize(){
 //   return patch->getBlockSize();

@@ -18,9 +18,7 @@ public:
 private:
   PatchProcessor* green = NULL;
   PatchProcessor* red = NULL;
-  Patch* activePatch = NULL;
-  Patch* nextPatch = NULL;
-  uint8_t activeSlot = 0;  
+  uint8_t activeSlot = 0;
 };
 
 #endif // __PatchController_h__
