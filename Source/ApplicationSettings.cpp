@@ -19,6 +19,7 @@ void ApplicationSettings::reset(){
   audio_bitdepth = AUDIO_BITDEPTH;
   patch_green = GREEN_PATCH;
   patch_red = RED_PATCH;
+  patch_mode = PATCHMODE_DUAL;
   midi_channel = MIDI_CHANNEL;
   inputGainLeft = AUDIO_INPUT_GAIN_LEFT;
   inputGainRight = AUDIO_INPUT_GAIN_RIGHT;

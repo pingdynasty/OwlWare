@@ -39,7 +39,16 @@
 // http://www.keil.com/forum/7934/
 // http://processors.wiki.ti.com/index.php/ARM_compiler_optimizations
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 float fastPow(float a, float b);
+float fastSqrt(float a);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* #define pow(x, y) fastPow(x, y) */
 /* #define powf(x, y) fastPow(x, y) */

@@ -50,6 +50,7 @@ AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
   size /= channels;
   MemoryBuffer* buf = new MemoryBuffer(buffer, channels, size);
   buffers[bufferCount++] = buf;
+  buf->clear();
   return buf;
 }
 

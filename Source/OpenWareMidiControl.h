@@ -26,13 +26,19 @@ enum OpenWareMidiControl {
   PATCH_PARAMETER_E      = 24, /*  Expression pedal */
   PATCH_BUTTON           = 25, /*  0=not pressed, 127=pressed */
 
+  PATCH_MODE             = 27, /* 0-31 = single,
+				* 32-63 = dual,
+				* 64-95 = series,
+				* 96-127 = parallel
+				*/
   PATCH_SLOT_GREEN       = 28, /* load patch into green slot */
   PATCH_SLOT_RED         = 29, /* load patch into red slot */
 
   LED                    = 30, /* set/get LED value: 
-				  0-41 = off
-				  42-83 = green
-				  84-127 = red */
+				* 0-41 = off
+				* 42-83 = green
+				* 84-127 = red 
+				*/
   ACTIVE_SLOT            = 31, /* currently active slot: 0 for green slot, 127 for red */
 
   LEFT_INPUT_GAIN        = 32, /* left channel input gain, -34.5dB to +12dB (92 = 0dB) */
@@ -46,24 +52,24 @@ enum OpenWareMidiControl {
   BYPASS                 = 40, /* codec bypass mode (127=bypass) */
 
   CODEC_MASTER           = 41, /* codec mode, slave or master:
-				  0-63 = slave
-				  64-127 = master
-			       */
+				* 0-63 = slave
+				* 64-127 = master
+				*/
   CODEC_PROTOCOL         = 42, /* codec protocol: 
-				  0-63 = I2S Philips
-				  64-127 = MSB
-			       */
+				* 0-63 = I2S Philips
+				* 64-127 = MSB
+				*/
   SAMPLING_RATE          = 60, /* sampling rate
-				  0-31 = 8kHz
-				  32-63 = 32kHz
-				  64-95 = 48kHz
-				  96-127 = 96kHz
-			       */
+				* 0-31 = 8kHz
+				* 32-63 = 32kHz
+				* 64-95 = 48kHz
+				* 96-127 = 96kHz
+				*/
   SAMPLING_BITS          = 61, /* sampling bits
-				  0-41 = 16bit
-				  42-83 = 24bit
-				  84-127 = 32bit
-			       */
+				* 0-41 = 16bit
+				* 42-83 = 24bit
+				* 84-127 = 32bit
+				*/
   SAMPLING_SIZE          = 62, /* block size in samples */
 
   LEFT_RIGHT_SWAP        = 63, /* swap left/right channels */

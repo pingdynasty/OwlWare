@@ -7,10 +7,11 @@ private:
   int channels;
   int size;
 public:
-  MemoryBuffer(float* buf, int ch, int sz): buffer(buf), channels(ch), size(sz) {
+  MemoryBuffer(float* buf, int ch, int sz): buffer(buf), channels(ch), size(sz) {}
+  ~MemoryBuffer(){}
+  void clear(){
     memset(buffer, 0, size*channels*sizeof(float));
   }
-  ~MemoryBuffer(){}
   float* getSamples(int channel){
     // assert_param(channel < channels);
     return buffer+channel*size;

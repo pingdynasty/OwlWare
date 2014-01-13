@@ -16,6 +16,13 @@ enum I2SFormat {
   I2S_FORMAT_32bit = I2S_DataFormat_32b
 };
 
+enum PatchMode {
+  PATCHMODE_SINGLE,
+  PATCHMODE_DUAL,
+  PATCHMODE_SERIES,
+  PATCHMODE_PARALLEL
+};
+
 class ApplicationSettings {
 public:
   uint8_t checksum;
@@ -27,6 +34,7 @@ public:
   uint32_t audio_blocksize;
   uint8_t patch_green;
   uint8_t patch_red;
+  uint8_t patch_mode;
   uint8_t midi_channel;
   uint8_t inputGainLeft;
   uint8_t inputGainRight;

@@ -7,7 +7,7 @@
 #include "gpio.h"
 
 char* getFirmwareVersion(){ 
-  return "OWL Revision 4"; 
+  return FIRMWARE_VERSION ;
 }
 
 bool isClockExternal(){

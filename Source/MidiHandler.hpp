@@ -5,6 +5,7 @@
 #include "MidiReader.hpp"
 #include "MidiController.h"
 #include "CodecController.h"
+#include "PatchController.h"
 #include "ApplicationSettings.h"
 
 class MidiHandler : public MidiReader {
@@ -28,6 +29,10 @@ public:
       }else{
 	setLed(GREEN);
       }
+      break;
+    case PATCH_MODE:
+      settings.patch_green = value >> 5;
+      patches.setActiveSlot(patches.getActiveSlot());
       break;
     case PATCH_SLOT_GREEN:
       settings.patch_green = value;
