@@ -13,22 +13,20 @@
 
 PatchController::PatchController(){
   setActiveSlot(RED);
-  red = new PatchProcessor(settings.patch_red);
+  red.setPatch(settings.patch_red);
   setActiveSlot(GREEN);
-  green = new PatchProcessor(settings.patch_green);
+  green.setPatch(settings.patch_green);
 }
 
 PatchController::~PatchController(){
-  delete green;
-  delete red;
 }
 
 __attribute__ ((section (".coderam")))
 void PatchController::processParallel(AudioBuffer& buffer){
   MemoryBuffer left(buffer.getSamples(0), 1, buffer.getSize());
   MemoryBuffer right(buffer.getSamples(1), 1, buffer.getSize());
-  green->patch->processAudio(buffer);
-  red->patch->processAudio(buffer);
+  green.patch->processAudio(buffer);
+  red.patch->processAudio(buffer);
 }
 
 __attribute__ ((section (".coderam")))
@@ -36,38 +34,38 @@ void PatchController::process(AudioBuffer& buffer){
   switch(mode){
   case SINGLE_MODE:
   case DUAL_GREEN_MODE:
-    green->setParameterValues(getAnalogValues());
-    green->patch->processAudio(buffer);
+   green.setParameterValues(getAnalogValues());
+   green.patch->processAudio(buffer);
     break;
   case DUAL_RED_MODE:
-    red->setParameterValues(getAnalogValues());
-    red->patch->processAudio(buffer);
+    red.setParameterValues(getAnalogValues());
+    red.patch->processAudio(buffer);
     break;
   case SERIES_GREEN_MODE:
-    green->setParameterValues(getAnalogValues());
-    green->patch->processAudio(buffer);
-    red->patch->processAudio(buffer);
+   green.setParameterValues(getAnalogValues());
+   green.patch->processAudio(buffer);
+    red.patch->processAudio(buffer);
     break;
   case SERIES_RED_MODE:
-    red->setParameterValues(getAnalogValues());
-    green->patch->processAudio(buffer);
-    red->patch->processAudio(buffer);
+    red.setParameterValues(getAnalogValues());
+   green.patch->processAudio(buffer);
+    red.patch->processAudio(buffer);
     break;
   case PARALLEL_GREEN_MODE:
-    green->setParameterValues(getAnalogValues());
+   green.setParameterValues(getAnalogValues());
     processParallel(buffer);
     break;
   case PARALLEL_RED_MODE:
-    red->setParameterValues(getAnalogValues());
+    red.setParameterValues(getAnalogValues());
     processParallel(buffer);
     break;
   }
-  if(activeSlot == GREEN && green->index != settings.patch_green){
-    delete green; // green must be active slot when constructor is called
-    green = new PatchProcessor(settings.patch_green);
-  }else if(activeSlot == RED && red->index != settings.patch_red){
-      delete red; // red must be active slot when constructor is called
-      red = new PatchProcessor(settings.patch_red);
+  if(activeSlot == GREEN &&green.index != settings.patch_green){
+    // green must be active slot when patch constructor is called
+    green.setPatch(settings.patch_green);
+  }else if(activeSlot == RED && red.index != settings.patch_red){
+    // red must be active slot when constructor is called
+    red.setPatch(settings.patch_red);
   }
 }
 
@@ -103,6 +101,6 @@ void PatchController::toggleActiveSlot(){
 
 PatchProcessor* PatchController::getCurrentPatchProcessor(){
   if(activeSlot == RED)
-    return red;
-  return green;
+    return &red;
+  return &green;
 }

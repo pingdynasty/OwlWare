@@ -31,7 +31,7 @@ public:
       }
       break;
     case PATCH_MODE:
-      settings.patch_green = value >> 5;
+      settings.patch_mode = value >> 5;
       patches.setActiveSlot(patches.getActiveSlot());
       break;
     case PATCH_SLOT_GREEN:

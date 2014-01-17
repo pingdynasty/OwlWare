@@ -17,8 +17,8 @@ public:
   PatchProcessor* getCurrentPatchProcessor();
 private:
   void processParallel(AudioBuffer& buffer);
-  PatchProcessor* green = NULL;
-  PatchProcessor* red = NULL;
+  PatchProcessor green;
+  PatchProcessor red;
   uint8_t activeSlot = 0;
   uint8_t mode;
 };

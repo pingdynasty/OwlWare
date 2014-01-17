@@ -17,18 +17,28 @@ static float extbuffer[BUFFER_LENGTH];
 #endif
 static int extpos = 0;
 
-PatchProcessor::PatchProcessor(uint8_t i) 
-  : patch(NULL), index(i), bufferCount(0),
-    parameterNames(), parameterValues(), buffers() {
-  patch = registry.create(index);
-}
+PatchProcessor::PatchProcessor() 
+  : patch(NULL), bufferCount(0) {}
 
 PatchProcessor::~PatchProcessor(){
+  clear();
+}
+
+void PatchProcessor::clear(){
   for(int i=0; i<bufferCount; ++i){
     extpos -= buffers[i]->getSize() * buffers[i]->getChannels();
     delete buffers[i];
   }
   delete patch;
+  patch = NULL;
+}
+
+void PatchProcessor::setPatch(uint8_t patchIndex){
+  clear();
+  memset(parameterNames, 0, sizeof(parameterNames));
+  bufferCount = 0;
+  index = patchIndex;
+  patch = registry.create(index);
 }
 
 void PatchProcessor::registerParameter(PatchParameterId pid, const char* name, const char* description){
