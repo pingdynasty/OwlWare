@@ -1,11 +1,6 @@
-#include <math.h>
-#if _WIN32
-#include <malloc.h>
-#else
-#include <mm_malloc.h>
-#endif
 #include "DspOscillator.h"
 #include "TannBase.h"
+#include "sramalloc.h"
 
 static int hzToStep(float f, double r) {
 	return (int) (4294967296.0f * f / r);
@@ -21,7 +16,7 @@ void dOsc_init(DspOsc *o, float f, double r) {
 
 	if (retainCount++ == 0) {
 		// allocate the wavetable
-		wave = (float *) _mm_malloc(65536 * sizeof(float), 16);
+		wave = (float *) myalloc(65536 * sizeof(float));
 
 		// fill the wavetable with one period of a cosine
 		for (int i = 0; i < 65536; i++) {
@@ -35,7 +30,7 @@ void dOsc_free(DspOsc *o) {
 
 	// free the global wavetable if there are no more references to it
 	if (--retainCount == 0) {
-		_mm_free(wave);
+		myfree(wave);
 		wave = NULL;
 	}
 }

@@ -14,6 +14,7 @@ C_SRC += usbd_desc.c usb_bsp.c usbd_usr.c
 C_SRC += usbd_audio_core.c 
 C_SRC += armcontrol.c usbcontrol.c owlcontrol.c midicontrol.c eepromcontrol.c
 C_SRC += clock.c operators.c serial.c gpio.c sysex.c
+C_SRC += sramalloc.c
 
 CPP_SRC  = StompBox.cpp Owl.cpp CodecController.cpp MidiController.cpp PatchController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchProcessor.cpp PatchRegistry.cpp

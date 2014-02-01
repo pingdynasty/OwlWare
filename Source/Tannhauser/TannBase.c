@@ -2,9 +2,9 @@
 #include "TannBase.h"
 
 void ctx_setBasePath(TannBase *const _c, const char *basePath) {
-	free(_c->basePath);
+	myfree(_c->basePath);
 	size_t len = strlen(basePath);
-	_c->basePath = (char *) malloc((len+1)*sizeof(char));
+	_c->basePath = (char *) myalloc((len+1)*sizeof(char));
 	strcpy(_c->basePath, basePath);
 }
 

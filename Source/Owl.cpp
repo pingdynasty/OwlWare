@@ -17,6 +17,9 @@
 #include "clock.h"
 #include "device.h"
 
+#include "fsmc_sram.h"
+#include "sramalloc.h"
+
 #define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
 
 CodecController codec;
@@ -114,6 +117,8 @@ void setup(){
   settings.init();
   ledSetup();
   setLed(RED);
+
+  InitMem((char*)SRAM_GetMemoryAddress(), SRAM_GetMemorySize());
 
   /* check if we need to DFU boot */
   configureDigitalInput(SWITCH_B_PORT, SWITCH_B_PIN, GPIO_PuPd_UP);
