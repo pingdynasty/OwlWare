@@ -3,7 +3,8 @@ ELF=$(BUILD)/$(notdir $(CURDIR)).elf
 BIN=$(BUILD)/$(notdir $(CURDIR)).bin
 
 # Tool path
-TOOLROOT=$(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_7-2013q3/bin
+# TOOLROOT=$(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_7-2013q3/bin
+TOOLROOT=$(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_8-2013q4/bin
 STLINK=$(TEMPLATEROOT)/Tools/stlink/
 
 # Tools

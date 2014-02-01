@@ -20,6 +20,18 @@ CPP_SRC += PatchProcessor.cpp PatchRegistry.cpp
 
 OBJS =  $(C_SRC:%.c=Build/%.o)  $(CPP_SRC:%.cpp=Build/%.o)
 
+TANN_DIR = $(TEMPLATEROOT)/Source/Tannhauser
+OBJS += $(TANN_DIR)/DspAdd.o
+OBJS += $(TANN_DIR)/DspMultiply.o
+OBJS += $(TANN_DIR)/DspOscillator.o
+OBJS += $(TANN_DIR)/MessageAdd.o
+OBJS += $(TANN_DIR)/MessageMultiply.o
+OBJS += $(TANN_DIR)/MessageQueue.o
+OBJS += $(TANN_DIR)/MessageTable.o
+OBJS += $(TANN_DIR)/PdMessage.o
+OBJS += $(TANN_DIR)/TannBase.o
+OBJS += $(TANN_DIR)/Tannhauser_tann.o
+
 # object files
 OBJS += $(PERIPH) 
 OBJS += $(BUILD)/startup.o
