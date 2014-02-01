@@ -1,7 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "PdMessage.h"
-#include "sramalloc.h"
 
 void msg_init(PdMessage *m, int numElements, double timestamp) {
     m->numElements = numElements;
@@ -153,10 +152,7 @@ char *msg_toString(PdMessage *m) {
     }
     
     // now we do the piecewise concatenation into our final string
-    /* finalString = (char *) _mm_malloc(size <= 0 ? 1 : size, sizeof(char)); // ensure that size is at least 1 */
-    int len = (size <= 0 ? 1 : size) * sizeof(char);
-    finalString = (char *) malloc(len); // ensure that size is at least 1
-    memset(finalString, 0, len);
+    finalString = (char *) calloc(size <= 0 ? 1 : size, sizeof(char)); // ensure that size is at least 1
     for (int i = 0; i < msg_getNumElements(m); i++) {
         // first element doesn't have a space before it
         if (i > 0) {

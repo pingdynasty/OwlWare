@@ -1,6 +1,5 @@
 #include "MessageQueue.h"
 #include "PdMessage.h"
-#include "sramalloc.h"
 
 void mq_init(MessageQueue *q) {
 	q->head = NULL;
@@ -20,9 +19,8 @@ void mq_free(MessageQueue *q) {
 static MessageNode *mq_getOrCreateNodeFromPool(MessageQueue *q) {
 	if (q->pool == NULL) {
 		// if necessary, create a new empty node
-		/* q->pool = (MessageNode *) calloc(1, sizeof(MessageNode)); */
-		q->pool = (MessageNode *) malloc(sizeof(MessageNode));
-		memset(q->pool, 0, sizeof(MessageNode));	}
+		q->pool = (MessageNode *) calloc(1, sizeof(MessageNode));
+	}
 	MessageNode *node = q->pool;
 	q->pool = q->pool->next;
 	return node;

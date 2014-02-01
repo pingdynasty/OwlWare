@@ -44,9 +44,6 @@ static void dOsc_processK(DspOsc *const o, float *const bOut, const int n) {
 	for (int i = 0; i < n; ++i, o->t += o->s) {
 		bOut[i] = wave[(unsigned short) (o->t >> 16)];
 	}
-  /* for (int i = 0; i < n; i++, o->t += o->s) { */
-  /*   bOut[i] = sinf(2 * M_PI * ((o->t >> 16) / 65536.0f)); */
-  /* } */
 }
 
 void dOsc_processM(TannBase *_c, DspOsc *o, float *bOut, const double r, const int n) {
