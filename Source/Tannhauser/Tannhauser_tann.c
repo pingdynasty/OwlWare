@@ -65,7 +65,7 @@ static struct MessageTable *ctx_intern_getTableForName(TannBase *const _c, const
  */
 
 Tann_tann *ctx_tann_new(int numInputChannels, int numOutputChannels, int blockSize, double sampleRate) {
-	Tann_tann *const _c = (Tann_tann *) myalloc(sizeof(Tann_tann));
+	Tann_tann *const _c = (Tann_tann *) malloc(sizeof(Tann_tann));
 
 	Base(_c)->numInputChannels = numInputChannels;
 	Base(_c)->numOutputChannels = numOutputChannels;
@@ -94,10 +94,10 @@ void ctx_tann_free(Tann_tann *_c) {
 	dOsc_free(&_c->dOsc_yd3Kz);
 	dOsc_free(&_c->dOsc_lFWZE);
 
-	myfree(Base(_c)->basePath);
+	free(Base(_c)->basePath);
 	mq_free(&Base(_c)->mq); // free queue after all objects have been freed, messages may be cancelled
 
-	myfree(_c);
+	free(_c);
 }
 
 

@@ -13,7 +13,7 @@ void mq_free(MessageQueue *q) {
 	while (q->pool != NULL) {
 		MessageNode *n = q->pool;
 		q->pool = q->pool->next;
-		myfree(n);
+		free(n);
 	}
 }
 
@@ -21,7 +21,7 @@ static MessageNode *mq_getOrCreateNodeFromPool(MessageQueue *q) {
 	if (q->pool == NULL) {
 		// if necessary, create a new empty node
 		/* q->pool = (MessageNode *) calloc(1, sizeof(MessageNode)); */
-		q->pool = (MessageNode *) myalloc(sizeof(MessageNode));
+		q->pool = (MessageNode *) malloc(sizeof(MessageNode));
 		memset(q->pool, 0, sizeof(MessageNode));	}
 	MessageNode *node = q->pool;
 	q->pool = q->pool->next;

@@ -69,7 +69,7 @@ PdMessage *msg_copy(PdMessage *m) {
 			slen[i] = 0;
 		}
 	}
-	PdMessage *r = (PdMessage *) myalloc(rsizeof + rsizeofsym);
+	PdMessage *r = (PdMessage *) malloc(rsizeof + rsizeofsym);
 	
 	// copy to the original message to the first part of the buffer
 	memcpy(r, m, rsizeof);
@@ -89,7 +89,7 @@ PdMessage *msg_copy(PdMessage *m) {
 }
 
 void msg_free(PdMessage *m) {
-    myfree(m); // because heap messages are serialised, a simple call to free releases the message
+    free(m); // because heap messages are serialised, a simple call to free releases the message
 }
 
 int msg_hasFormat(PdMessage *m, const char *fmt) {
@@ -155,7 +155,7 @@ char *msg_toString(PdMessage *m) {
     // now we do the piecewise concatenation into our final string
     /* finalString = (char *) _mm_malloc(size <= 0 ? 1 : size, sizeof(char)); // ensure that size is at least 1 */
     int len = (size <= 0 ? 1 : size) * sizeof(char);
-    finalString = (char *) myalloc(len); // ensure that size is at least 1
+    finalString = (char *) malloc(len); // ensure that size is at least 1
     memset(finalString, 0, len);
     for (int i = 0; i < msg_getNumElements(m); i++) {
         // first element doesn't have a space before it

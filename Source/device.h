@@ -3,7 +3,7 @@
 #define FIRMWARE_VERSION             "OWL Rev04.002"
 
 #define GREEN_PATCH                  0
-#define RED_PATCH                    0
+#define RED_PATCH                    1
 
 #define EXPRESSION_PEDAL
 #define SERIAL_PORT                  1

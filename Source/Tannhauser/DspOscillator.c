@@ -1,6 +1,11 @@
 #include "DspOscillator.h"
 #include "TannBase.h"
 #include "sramalloc.h"
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 static int hzToStep(float f, double r) {
 	return (int) (4294967296.0f * f / r);
@@ -37,9 +42,11 @@ void dOsc_free(DspOsc *o) {
 
 static void dOsc_processK(DspOsc *const o, float *const bOut, const int n) {
 	for (int i = 0; i < n; ++i, o->t += o->s) {
-		/* bOut[i] = wave[(unsigned short) (o->t >> 16)]; */
-	  bOut[i] = cosf( o->t );
+		bOut[i] = wave[(unsigned short) (o->t >> 16)];
 	}
+  /* for (int i = 0; i < n; i++, o->t += o->s) { */
+  /*   bOut[i] = sinf(2 * M_PI * ((o->t >> 16) / 65536.0f)); */
+  /* } */
 }
 
 void dOsc_processM(TannBase *_c, DspOsc *o, float *bOut, const double r, const int n) {
