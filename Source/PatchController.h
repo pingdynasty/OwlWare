@@ -10,6 +10,7 @@ class PatchController {
 public:  
   PatchController();
   ~PatchController();
+  void init();
   void toggleActiveSlot();
   void process(AudioBuffer& buffer);
   uint8_t getActiveSlot();

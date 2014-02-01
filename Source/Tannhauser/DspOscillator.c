@@ -37,7 +37,8 @@ void dOsc_free(DspOsc *o) {
 
 static void dOsc_processK(DspOsc *const o, float *const bOut, const int n) {
 	for (int i = 0; i < n; ++i, o->t += o->s) {
-		bOut[i] = wave[(unsigned short) (o->t >> 16)];
+		/* bOut[i] = wave[(unsigned short) (o->t >> 16)]; */
+	  bOut[i] = cosf( o->t );
 	}
 }
 

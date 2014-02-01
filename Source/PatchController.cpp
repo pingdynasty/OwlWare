@@ -11,7 +11,9 @@
 #define PARALLEL_GREEN_MODE  6
 #define PARALLEL_RED_MODE    7
 
-PatchController::PatchController(){
+PatchController::PatchController(){}
+
+void PatchController::init(){
   setActiveSlot(RED);
   red.setPatch(settings.patch_red);
   setActiveSlot(GREEN);

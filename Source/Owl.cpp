@@ -118,12 +118,12 @@ void setup(){
   ledSetup();
   setLed(RED);
 
-  InitMem((char*)SRAM_GetMemoryAddress(), SRAM_GetMemorySize());
-
   /* check if we need to DFU boot */
   configureDigitalInput(SWITCH_B_PORT, SWITCH_B_PIN, GPIO_PuPd_UP);
   if(isPushButtonPressed())
     jump_to_bootloader();
+
+  InitMem((char*)SRAM_GetMemoryAddress(), SRAM_GetMemorySize());
 
   midi.init(MIDI_CHANNEL);
 
@@ -157,10 +157,10 @@ void setup(){
 #endif
 #endif
 
+  patches.init();
   codec.setup();
   codec.init(settings);
-
-  printString("startup\n");
+  // printString("startup\n");
   updateBypassMode();
 
   codec.start();
