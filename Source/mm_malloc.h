@@ -7,9 +7,8 @@
 #define _MM_MALLOC_H_
 
 #include <stdlib.h>
-#include "sramalloc.h"
 
-#define _mm_malloc(_numBytes, _alignment) myalloc(_numBytes)
-#define _mm_free(_ptr) myfree(_ptr)
+#define _mm_malloc(_numBytes, _alignment) malloc(_numBytes)
+#define _mm_free(_ptr) free(_ptr)
 
 #endif // _MM_MALLOC_H_

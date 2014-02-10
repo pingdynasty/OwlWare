@@ -1,7 +1,8 @@
 #ifndef _PD_MESSAGE_H_
 #define _PD_MESSAGE_H_
 
-#include <stdlib.h>
+/* #include <stdlib.h> */
+#include <alloca.h>
 #include <string.h>
 
 typedef enum ElementType {
