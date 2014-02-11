@@ -16,14 +16,18 @@
  * Function Declarations
  */
 
-static void mRecv_nXF4e_onMessage(TannBase *, int, PdMessage *);
-static void mRecv_4jxjT_onMessage(TannBase *, int, PdMessage *);
-static void mRecv_iIF6Z_onMessage(TannBase *, int, PdMessage *);
-static void mAdd_DUfyp_sendMessage(TannBase *, int, PdMessage *);
-static void mMultiply_2cB96_sendMessage(TannBase *, int, PdMessage *);
-static void mAdd_n5QY1_sendMessage(TannBase *, int, PdMessage *);
-static void mMultiply_vyKkT_sendMessage(TannBase *, int, PdMessage *);
-static void mRecv_9a4RK_onMessage(TannBase *, int, PdMessage *);
+static void mMsg_kcCqS_onMessage(TannBase *, PdMessage *);
+static void mFloat_yd3Kz_sendMessage(TannBase *, int, PdMessage *);
+static void mMsg_nXF4e_onMessage(TannBase *, PdMessage *);
+static void mFloat_4jxjT_sendMessage(TannBase *, int, PdMessage *);
+static void mMsg_2cB96_onMessage(TannBase *, PdMessage *);
+static void mFloat_n5QY1_sendMessage(TannBase *, int, PdMessage *);
+static void mMsg_lzghT_onMessage(TannBase *, PdMessage *);
+static void mFloat_bfXtM_sendMessage(TannBase *, int, PdMessage *);
+static void mRecv_6sIrH_onMessage(TannBase *, int, PdMessage *);
+static void mRecv_aWQ6l_onMessage(TannBase *, int, PdMessage *);
+static void mRecv_oCE96_onMessage(TannBase *, int, PdMessage *);
+static void mRecv_AWNAP_onMessage(TannBase *, int, PdMessage *);
 
 
 
@@ -36,19 +40,19 @@ static void ctx_intern_scheduleMessageForReceiver(TannBase *const _c, const char
 	msg_setTimestamp(m, fmax(msg_getTimestamp(m), _c->blockStartTimestampMs));
 	
 	if (!strncmp(name, "Channel-C", 9)) {
-		ctx_scheduleMessage(Base(_c), m, &mRecv_4jxjT_onMessage, 0);
+		ctx_scheduleMessage(Base(_c), m, &mRecv_oCE96_onMessage, 0);
 		return;
 	}
 	if (!strncmp(name, "Channel-B", 9)) {
-		ctx_scheduleMessage(Base(_c), m, &mRecv_nXF4e_onMessage, 0);
+		ctx_scheduleMessage(Base(_c), m, &mRecv_aWQ6l_onMessage, 0);
 		return;
 	}
 	if (!strncmp(name, "Channel-A", 9)) {
-		ctx_scheduleMessage(Base(_c), m, &mRecv_9a4RK_onMessage, 0);
+		ctx_scheduleMessage(Base(_c), m, &mRecv_6sIrH_onMessage, 0);
 		return;
 	}
 	if (!strncmp(name, "Channel-D", 9)) {
-		ctx_scheduleMessage(Base(_c), m, &mRecv_iIF6Z_onMessage, 0);
+		ctx_scheduleMessage(Base(_c), m, &mRecv_AWNAP_onMessage, 0);
 		return;
 	}
 }
@@ -80,19 +84,23 @@ Tann_tann *ctx_tann_new(int numInputChannels, int numOutputChannels, int blockSi
 	Base(_c)->sendHook = NULL;
 	Base(_c)->userData = NULL;
 
-	dOsc_init(&_c->dOsc_yd3Kz, 880.0f, ctx_getSampleRate(Base(_c)));
-	dOsc_init(&_c->dOsc_lFWZE, 2.0f, ctx_getSampleRate(Base(_c)));
-	mAdd_init(&_c->mAdd_DUfyp, 0.1f);
-	mMultiply_init(&_c->mMultiply_2cB96, 1000.0f);
-	mAdd_init(&_c->mAdd_n5QY1, 100.0f);
-	mMultiply_init(&_c->mMultiply_vyKkT, 20.0f);
+	mFloat_init(&_c->mFloat_yd3Kz, 0.0f);
+	dLine_init(&_c->dLine_lFWZE);
+	mFloat_init(&_c->mFloat_4jxjT, 0.0f);
+	dLine_init(&_c->dLine_iIF6Z);
+	mFloat_init(&_c->mFloat_n5QY1, 0.0f);
+	dLine_init(&_c->dLine_9a4RK);
+	mFloat_init(&_c->mFloat_bfXtM, 0.0f);
+	dLine_init(&_c->dLine_sqWoz);
 
 	return _c;
 }
 
 void ctx_tann_free(Tann_tann *_c) {
-	dOsc_free(&_c->dOsc_yd3Kz);
-	dOsc_free(&_c->dOsc_lFWZE);
+	dLine_free(&_c->dLine_lFWZE);
+	dLine_free(&_c->dLine_iIF6Z);
+	dLine_free(&_c->dLine_9a4RK);
+	dLine_free(&_c->dLine_sqWoz);
 
 	free(Base(_c)->basePath);
 	mq_free(&Base(_c)->mq); // free queue after all objects have been freed, messages may be cancelled
@@ -106,36 +114,80 @@ void ctx_tann_free(Tann_tann *_c) {
  * Static Function Implementation
  */
 
-static void mRecv_nXF4e_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
-	mMultiply_onMessage(_c, &Context(_c)->mMultiply_vyKkT, 0, m, &mMultiply_vyKkT_sendMessage);
+static void mMsg_kcCqS_onMessage(TannBase *_c, PdMessage *n) {
+	PdMessage *m = NULL;
+
+	// define messages and send them (all inlined)
+	m = PD_MESSAGE_ON_STACK(2);
+	msg_init(m, 2, msg_getTimestamp(n));
+	msg_setElementToFrom(m, 0, n, 0);
+	msg_setFloat(m, 1, 10.0f);
+	dLine_onMessage(&Context(_c)->dLine_lFWZE, 0, m);
 }
 
-static void mRecv_4jxjT_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
-	
+static void mFloat_yd3Kz_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	mMsg_kcCqS_onMessage(_c, m);
 }
 
-static void mRecv_iIF6Z_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
-	
+static void mMsg_nXF4e_onMessage(TannBase *_c, PdMessage *n) {
+	PdMessage *m = NULL;
+
+	// define messages and send them (all inlined)
+	m = PD_MESSAGE_ON_STACK(2);
+	msg_init(m, 2, msg_getTimestamp(n));
+	msg_setElementToFrom(m, 0, n, 0);
+	msg_setFloat(m, 1, 10.0f);
+	dLine_onMessage(&Context(_c)->dLine_iIF6Z, 0, m);
 }
 
-static void mAdd_DUfyp_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
-	dOsc_onMessage(&Context(_c)->dOsc_lFWZE, 0, m);
+static void mFloat_4jxjT_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	mMsg_nXF4e_onMessage(_c, m);
 }
 
-static void mMultiply_2cB96_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
-    mAdd_onMessage(_c, &Context(_c)->mAdd_n5QY1, 0, m, &mAdd_n5QY1_sendMessage);
+static void mMsg_2cB96_onMessage(TannBase *_c, PdMessage *n) {
+	PdMessage *m = NULL;
+
+	// define messages and send them (all inlined)
+	m = PD_MESSAGE_ON_STACK(2);
+	msg_init(m, 2, msg_getTimestamp(n));
+	msg_setElementToFrom(m, 0, n, 0);
+	msg_setFloat(m, 1, 10.0f);
+	dLine_onMessage(&Context(_c)->dLine_9a4RK, 0, m);
 }
 
-static void mAdd_n5QY1_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
-	dOsc_onMessage(&Context(_c)->dOsc_yd3Kz, 0, m);
+static void mFloat_n5QY1_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	mMsg_2cB96_onMessage(_c, m);
 }
 
-static void mMultiply_vyKkT_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
-    mAdd_onMessage(_c, &Context(_c)->mAdd_DUfyp, 0, m, &mAdd_DUfyp_sendMessage);
+static void mMsg_lzghT_onMessage(TannBase *_c, PdMessage *n) {
+	PdMessage *m = NULL;
+
+	// define messages and send them (all inlined)
+	m = PD_MESSAGE_ON_STACK(2);
+	msg_init(m, 2, msg_getTimestamp(n));
+	msg_setElementToFrom(m, 0, n, 0);
+	msg_setFloat(m, 1, 10.0f);
+	dLine_onMessage(&Context(_c)->dLine_sqWoz, 0, m);
 }
 
-static void mRecv_9a4RK_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
-	mMultiply_onMessage(_c, &Context(_c)->mMultiply_2cB96, 0, m, &mMultiply_2cB96_sendMessage);
+static void mFloat_bfXtM_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	mMsg_lzghT_onMessage(_c, m);
+}
+
+static void mRecv_6sIrH_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
+	mMsg_kcCqS_onMessage(_c, m);
+}
+
+static void mRecv_aWQ6l_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
+	mMsg_nXF4e_onMessage(_c, m);
+}
+
+static void mRecv_oCE96_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
+	mMsg_2cB96_onMessage(_c, m);
+}
+
+static void mRecv_AWNAP_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
+	mMsg_lzghT_onMessage(_c, m);
 }
 
 
@@ -159,7 +211,7 @@ void ctx_tann_process(Tann_tann *const _c, float *const inputBuffers, float *con
 
 	// define a macro to refer to output buffers
 	#define O(_x) (outputBuffers+((_x)*n))
-	utils_clearBuffer(outputBuffers, ctx_getNumOutputChannels(Base(_c))*n); // clear the output buffer
+    utils_clearBuffer(outputBuffers, ctx_getNumOutputChannels(Base(_c))*n); // clear the output buffer
 
 	// define the zero buffer
 	float ZERO_BUFFER[n];
@@ -167,15 +219,22 @@ void ctx_tann_process(Tann_tann *const _c, float *const inputBuffers, float *con
 
 	// initialise temporary signal buffers
 	#define B(_x) (buffer+((_x)*n))
-	float buffer[2 * n];
+	float buffer[3 * n];
 
+    float z=inputBuffers[2];
 	// process all signal functions
-	dOsc_processM(Base(_c), &_c->dOsc_yd3Kz, B(0), ctx_getSampleRate(Base(_c)), n); // osc~ 880
-	dOsc_processM(Base(_c), &_c->dOsc_lFWZE, B(1), ctx_getSampleRate(Base(_c)), n); // osc~ 2
-	dMult_processSS(B(0), B(1), B(1), n); // *~
-	dMult_processSK(B(1), 0.2f, B(1), n); // *~ 0.2
+	dLine_processM(Base(_c), &_c->dLine_lFWZE, B(0), n); // line~
+	dMult_processSS(B(0), I(0), B(0), n); // *~
+	dLine_processM(Base(_c), &_c->dLine_9a4RK, B(1), n); // line~
+	dMult_processSS(B(1), I(1), B(1), n); // *~
+	dAdd_processSS(B(0), B(1), B(1), n); // +~
+	dLine_processM(Base(_c), &_c->dLine_iIF6Z, B(0), n); // line~
+	dMult_processSS(B(0), I(0), B(0), n); // *~
+	dLine_processM(Base(_c), &_c->dLine_sqWoz, B(2), n); // line~
+	dMult_processSS(B(2), I(1), B(2), n); // *~
+	dAdd_processSS(B(0), B(2), B(2), n); // +~
 	dAdd_processSS(B(1), O(0), O(0), n); // dac~(0)
-	dAdd_processSS(B(1), O(1), O(1), n); // dac~(1)
+	dAdd_processSS(B(2), O(1), O(1), n); // dac~(1)
 
 	// now that the block has been processed, update the block timestamp
 	Base(_c)->blockStartTimestampMs = nextBlockStartTimestampMs;

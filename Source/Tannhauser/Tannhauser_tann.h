@@ -12,21 +12,22 @@
 
 // object includes
 #include "DspAdd.h"
+#include "DspLine.h"
 #include "DspMultiply.h"
-#include "DspOscillator.h"
-#include "MessageAdd.h"
-#include "MessageMultiply.h"
+#include "MessageFloat.h"
 
 typedef struct Tann_tann {
 	TannBase base;
 	
 	// objects
-	DspOsc dOsc_yd3Kz;
-	DspOsc dOsc_lFWZE;
-	MessageAdd mAdd_DUfyp;
-	MessageMultiply mMultiply_2cB96;
-	MessageAdd mAdd_n5QY1;
-	MessageMultiply mMultiply_vyKkT;
+	MessageFloat mFloat_yd3Kz;
+	DspLine dLine_lFWZE;
+	MessageFloat mFloat_4jxjT;
+	DspLine dLine_iIF6Z;
+	MessageFloat mFloat_n5QY1;
+	DspLine dLine_9a4RK;
+	MessageFloat mFloat_bfXtM;
+	DspLine dLine_sqWoz;
 } Tann_tann;
 
 Tann_tann *ctx_tann_new(int numInputChannels, int numOutputChannels, int nominalBlockSize, double sampleRate);
