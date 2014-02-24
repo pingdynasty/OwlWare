@@ -1,5 +1,4 @@
 #include "PatchRegistry.h"
-
 #include "basicmaths.h"
 #include "OwlPatches/includes.h"
 

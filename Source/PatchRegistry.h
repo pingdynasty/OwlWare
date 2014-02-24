@@ -1,11 +1,9 @@
 #ifndef __PatchRegistry_h__
 #define __PatchRegistry_h__
-// #include <map>
-#include <string>
 
+#include <string>
 #include "StompBox.h"
 #include "device.h"
-#include "basicmaths.h"
 
 class PatchRegistry;
 extern PatchRegistry registry;

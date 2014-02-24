@@ -1,6 +1,8 @@
 #ifndef __basicmaths_h__
 #define __basicmaths_h__
 
+#include <stdlib.h>
+
 #define _USE_MATH_DEFINES
 /* Definitions of useful mathematical constants
  * M_E        - e
