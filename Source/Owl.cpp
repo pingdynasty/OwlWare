@@ -193,7 +193,7 @@ void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
 __attribute__ ((section (".coderam")))
 void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
   if(doProcessAudio)
-    blink();
+    toggleLed();
   source = src;
   dest = dst;
   doProcessAudio = true;
