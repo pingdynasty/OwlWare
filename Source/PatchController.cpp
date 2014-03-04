@@ -1,4 +1,5 @@
 #include "PatchController.h"
+#include "CodecController.h"
 #include "ApplicationSettings.h"
 #include "MemoryBuffer.hpp"
 #include "owlcontrol.h"
@@ -12,13 +13,19 @@
 #define PARALLEL_RED_MODE    7
 
 PatchController::PatchController(){
-  setActiveSlot(RED);
-  red.setPatch(settings.patch_red);
-  setActiveSlot(GREEN);
-  green.setPatch(settings.patch_green);
+  // ApplicationSettings not yet initialised
+  // setActiveSlot(RED);
+  // red.setPatch(settings.patch_red);
+  // setActiveSlot(GREEN);
+  // green.setPatch(settings.patch_green);
 }
 
 PatchController::~PatchController(){
+}
+
+void PatchController::init(){
+  green.setPatch(settings.patch_green);
+  red.setPatch(settings.patch_red);
 }
 
 __attribute__ ((section (".coderam")))
@@ -31,41 +38,45 @@ void PatchController::processParallel(AudioBuffer& buffer){
 
 __attribute__ ((section (".coderam")))
 void PatchController::process(AudioBuffer& buffer){
+  if(activeSlot == GREEN && green.index != settings.patch_green){
+    // green must be active slot when patch constructor is called
+    green.setPatch(settings.patch_green);
+    codec.softMute(false);
+    return;
+  }else if(activeSlot == RED && red.index != settings.patch_red){
+    // red must be active slot when constructor is called
+    red.setPatch(settings.patch_red);
+    codec.softMute(false);
+    return;
+  }
   switch(mode){
   case SINGLE_MODE:
   case DUAL_GREEN_MODE:
-   green.setParameterValues(getAnalogValues());
-   green.patch->processAudio(buffer);
+    green.setParameterValues(getAnalogValues());
+    green.patch->processAudio(buffer);
     break;
   case DUAL_RED_MODE:
     red.setParameterValues(getAnalogValues());
     red.patch->processAudio(buffer);
     break;
   case SERIES_GREEN_MODE:
-   green.setParameterValues(getAnalogValues());
-   green.patch->processAudio(buffer);
+    green.setParameterValues(getAnalogValues());
+    green.patch->processAudio(buffer);
     red.patch->processAudio(buffer);
     break;
   case SERIES_RED_MODE:
     red.setParameterValues(getAnalogValues());
-   green.patch->processAudio(buffer);
+    green.patch->processAudio(buffer);
     red.patch->processAudio(buffer);
     break;
   case PARALLEL_GREEN_MODE:
-   green.setParameterValues(getAnalogValues());
+    green.setParameterValues(getAnalogValues());
     processParallel(buffer);
     break;
   case PARALLEL_RED_MODE:
     red.setParameterValues(getAnalogValues());
     processParallel(buffer);
     break;
-  }
-  if(activeSlot == GREEN &&green.index != settings.patch_green){
-    // green must be active slot when patch constructor is called
-    green.setPatch(settings.patch_green);
-  }else if(activeSlot == RED && red.index != settings.patch_red){
-    // red must be active slot when constructor is called
-    red.setPatch(settings.patch_red);
   }
 }
 
@@ -74,7 +85,6 @@ uint8_t PatchController::getActiveSlot(){
 }
 
 void PatchController::setActiveSlot(uint8_t slot){
-  // codec.softMute(true);
   activeSlot = slot;
   switch(settings.patch_mode){
   case(PATCHMODE_SINGLE):
