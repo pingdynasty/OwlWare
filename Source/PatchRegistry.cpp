@@ -1,9 +1,8 @@
 #include "PatchRegistry.h"
-
 #include "basicmaths.h"
 #include "OwlPatches/includes.h"
 
-#define REGISTER_PATCH(T, STR) registerPatch(STR, Register<T>::construct)
+#define REGISTER_PATCH(T, STR, UNUSED, UNUSED2) registerPatch(STR, Register<T>::construct)
 
 PatchRegistry::PatchRegistry() : nofPatches(0) {
 #include "OwlPatches/patches.cpp"

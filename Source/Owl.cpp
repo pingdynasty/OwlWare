@@ -72,7 +72,7 @@ SampleBuffer16 buffer CCM;
 #error invalid AUDIO_BITDEPTH
 #endif
 
-bool doProcessAudio = false;
+volatile bool doProcessAudio = false;
 uint16_t* source;
 uint16_t* dest;
 
@@ -198,7 +198,7 @@ void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
 __attribute__ ((section (".coderam")))
 void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
   if(doProcessAudio)
-    blink();
+    debugToggle();
   source = src;
   dest = dst;
   doProcessAudio = true;
