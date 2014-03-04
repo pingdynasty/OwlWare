@@ -35,6 +35,6 @@ public:
     }
   }
   ~ManagedMemoryBuffer(){
-    delete buffer;
+    free(buffer);
   }
 };

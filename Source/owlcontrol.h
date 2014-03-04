@@ -46,6 +46,14 @@ extern uint8_t getActiveSlot();
      togglePin(LED_PORT, LED_RED|LED_GREEN);
    }
 
+   inline void debugSet(){
+     setPin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
+   }
+
+   inline void debugClear(){
+     clearPin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
+   }
+
    inline void debugToggle(){
      togglePin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
    }

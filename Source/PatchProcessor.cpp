@@ -2,7 +2,6 @@
 #include "PatchRegistry.h"
 #include "MemoryBuffer.hpp"
 #include "device.h"
-#include "basicmaths.h"
 #include <string.h>
 
 #include "MidiController.h"

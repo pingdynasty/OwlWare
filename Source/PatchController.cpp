@@ -13,18 +13,15 @@
 #define PARALLEL_RED_MODE    7
 
 PatchController::PatchController(){
-  // ApplicationSettings not yet initialised
-  // setActiveSlot(RED);
-  // red.setPatch(settings.patch_red);
-  // setActiveSlot(GREEN);
-  // green.setPatch(settings.patch_green);
 }
 
 PatchController::~PatchController(){
 }
 
 void PatchController::init(){
+  setActiveSlot(GREEN);
   green.setPatch(settings.patch_green);
+  setActiveSlot(RED);
   red.setPatch(settings.patch_red);
 }
 
@@ -32,21 +29,25 @@ __attribute__ ((section (".coderam")))
 void PatchController::processParallel(AudioBuffer& buffer){
   MemoryBuffer left(buffer.getSamples(0), 1, buffer.getSize());
   MemoryBuffer right(buffer.getSamples(1), 1, buffer.getSize());
-  green.patch->processAudio(buffer);
-  red.patch->processAudio(buffer);
+  green.patch->processAudio(left);
+  red.patch->processAudio(right);
 }
 
 __attribute__ ((section (".coderam")))
 void PatchController::process(AudioBuffer& buffer){
   if(activeSlot == GREEN && green.index != settings.patch_green){
+    memset(buffer.getSamples(0), 0, buffer.getChannels()*buffer.getSize()*sizeof(float));
     // green must be active slot when patch constructor is called
     green.setPatch(settings.patch_green);
     codec.softMute(false);
+    debugClear();
     return;
   }else if(activeSlot == RED && red.index != settings.patch_red){
+    memset(buffer.getSamples(0), 0, buffer.getChannels()*buffer.getSize()*sizeof(float));
     // red must be active slot when constructor is called
     red.setPatch(settings.patch_red);
     codec.softMute(false);
+    debugClear();
     return;
   }
   switch(mode){
@@ -80,12 +81,21 @@ void PatchController::process(AudioBuffer& buffer){
   }
 }
 
+void PatchController::setPatch(uint8_t slot, uint8_t index){
+  codec.softMute(true);
+  if(slot == RED){
+    settings.patch_red = index;
+  }else{
+    settings.patch_green = index;
+  }
+  setActiveSlot(slot);
+}
+
 uint8_t PatchController::getActiveSlot(){
   return activeSlot;
 }
 
 void PatchController::setActiveSlot(uint8_t slot){
-  activeSlot = slot;
   switch(settings.patch_mode){
   case(PATCHMODE_SINGLE):
     mode = SINGLE_MODE;
@@ -100,6 +110,7 @@ void PatchController::setActiveSlot(uint8_t slot){
     mode = slot == RED ? PARALLEL_RED_MODE : PARALLEL_GREEN_MODE;
     break;
   }
+  activeSlot = slot;
 }
 
 void PatchController::toggleActiveSlot(){

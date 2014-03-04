@@ -11,9 +11,10 @@ public:
   PatchController();
   ~PatchController();
   void init();
-  void toggleActiveSlot();
   void process(AudioBuffer& buffer);
+  void setPatch(uint8_t slot, uint8_t index);
   uint8_t getActiveSlot();
+  void toggleActiveSlot();
   void setActiveSlot(uint8_t slot);
   PatchProcessor* getCurrentPatchProcessor();
 private:

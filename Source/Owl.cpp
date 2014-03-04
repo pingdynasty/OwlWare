@@ -93,7 +93,9 @@ void run(){
       buffer.comb(dest);
       if(collision){
 	collision = false;
+#ifdef DEBUG_AUDIO
 	debugToggle();
+#endif
       }else{
 	doProcessAudio = false;
       }
@@ -142,7 +144,9 @@ void setup(){
   setupExpressionPedal();
 #endif
 
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); // DEBUG
   configureDigitalOutput(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
+  debugClear();
 
 #ifdef DEBUG_AUDIO
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // DEBUG
