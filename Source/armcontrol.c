@@ -154,7 +154,6 @@ void setAnalogValue(uint8_t channel, uint16_t value){
 void (*tim3Callback)();
 void timerSetup(void (*f)(), uint16_t period){
   TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-  TIM_OCInitTypeDef TIM_OCInitStructure;
   NVIC_InitTypeDef NVIC_InitStructure;
   uint16_t prescaler;
 
@@ -183,16 +182,6 @@ void timerSetup(void (*f)(), uint16_t period){
   TIM_TimeBaseStructure.TIM_ClockDivision = 0;
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
-
-  // tim test tim 3 cc 1
-  /* Output Compare PWM Mode configuration */
-/*   TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; /\* low edge by default *\/ */
-/*   TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;            */
-/*   TIM_OCInitStructure.TIM_Pulse = 0x01; */
-/*   TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High; */
-/*   TIM_OC1Init(TIM3, &TIM_OCInitStructure);   */
-  /* Main Output Enable */
-/*   TIM_CtrlPWMOutputs(TIM3, ENABLE); // only accepts TIM1 and TIM8 */
 
   /* TIM Interrupts enable */
   TIM_ITConfig(TIM3, TIM_IT_CC1, ENABLE);

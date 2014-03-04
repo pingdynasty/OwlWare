@@ -8,15 +8,6 @@
 #include "MidiController.h"
 #include "OpenWareMidiControl.h"
 
-#ifdef EXTERNAL_SRAM
-#define BUFFER_LENGTH 262144
-static float extbuffer[BUFFER_LENGTH] EXT;
-#else /* no external SRAM */
-#define BUFFER_LENGTH 16384
-static float extbuffer[BUFFER_LENGTH];
-#endif
-static int extpos = 0;
-
 PatchProcessor::PatchProcessor() 
   : patch(NULL), bufferCount(0) {}
 
@@ -25,10 +16,8 @@ PatchProcessor::~PatchProcessor(){
 }
 
 void PatchProcessor::clear(){
-  for(int i=0; i<bufferCount; ++i){
-    extpos -= buffers[i]->getSize() * buffers[i]->getChannels();
+  for(int i=0; i<bufferCount; ++i)
     delete buffers[i];
-  }
   delete patch;
   patch = NULL;
 }
@@ -53,12 +42,7 @@ const char* PatchProcessor::getParameterName(PatchParameterId pid){
 }
 
 AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
-  // assert_param(bufferCount < MAX_BUFFERS_PER_PATCH];
-  float* buffer = extbuffer+extpos;
-  size = min(size, BUFFER_LENGTH-extpos);
-  extpos += size;
-  size /= channels;
-  MemoryBuffer* buf = new MemoryBuffer(buffer, channels, size);
+  MemoryBuffer* buf = new ManagedMemoryBuffer(channels, size);
   buffers[bufferCount++] = buf;
   buf->clear();
   return buf;

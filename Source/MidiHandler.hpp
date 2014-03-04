@@ -35,10 +35,12 @@ public:
       patches.setActiveSlot(patches.getActiveSlot());
       break;
     case PATCH_SLOT_GREEN:
+      codec.softMute(true);
       settings.patch_green = value;
       setActiveSlot(GREEN);
       break;
     case PATCH_SLOT_RED:
+      codec.softMute(true);
       settings.patch_red = value;
       setActiveSlot(RED);
       break;

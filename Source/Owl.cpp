@@ -17,6 +17,8 @@
 #include "clock.h"
 #include "device.h"
 
+#define DEBUG_AUDIO
+
 #define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
 
 CodecController codec;
@@ -24,7 +26,7 @@ MidiController midi;
 ApplicationSettings settings;
 PatchRegistry registry;
 PatchController patches;
-bool bypass = false;
+volatile bool bypass = false;
 
 void updateLed(){
   setLed((LedPin)patches.getActiveSlot());
@@ -70,6 +72,7 @@ SampleBuffer16 buffer CCM;
 #endif
 
 volatile bool doProcessAudio = false;
+volatile bool collision = false;
 uint16_t* source;
 uint16_t* dest;
 
@@ -82,14 +85,21 @@ __attribute__ ((section (".coderam")))
 void run(){
   for(;;){
     if(doProcessAudio){
-      //     setPin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
-
+#ifdef DEBUG_AUDIO
+      setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+#endif
       buffer.split(source);
       patches.process(buffer);
       buffer.comb(dest);
-
-      doProcessAudio = false;
-      //     clearPin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
+      if(collision){
+	collision = false;
+	debugToggle();
+      }else{
+	doProcessAudio = false;
+      }
+#ifdef DEBUG_AUDIO
+      clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+#endif
     }
   }
 }
@@ -111,7 +121,6 @@ void setup(){
   NVIC_SetPriority(SPI2_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 1, 0));
   NVIC_SetPriority(ADC_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 2, 0));
 
-  settings.init();
   ledSetup();
   setLed(RED);
 
@@ -120,12 +129,14 @@ void setup(){
   if(isPushButtonPressed())
     jump_to_bootloader();
 
-  midi.init(MIDI_CHANNEL);
-
   adcSetup();
   clockSetup();
   setupSwitchA(footSwitchCallback);
   setupSwitchB(pushButtonCallback);
+
+  settings.init();
+  midi.init(MIDI_CHANNEL);
+  patches.init();
 
 #ifdef EXPRESSION_PEDAL
   setupExpressionPedal();
@@ -133,12 +144,13 @@ void setup(){
 
   configureDigitalOutput(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
 
-//   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // DEBUG
-//   configureDigitalOutput(GPIOA, GPIO_Pin_6); // PA6, DEBUG
-//   configureDigitalOutput(GPIOA, GPIO_Pin_7); // PA7, DEBUG
-
-//   setPin(GPIOA, GPIO_Pin_6); // DEBUG
-//   setPin(GPIOA, GPIO_Pin_7); // DEBUG
+#ifdef DEBUG_AUDIO
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // DEBUG
+  configureDigitalOutput(GPIOA, GPIO_Pin_7); // PA7 DEBUG
+  configureDigitalOutput(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+  clearPin(GPIOC, GPIO_Pin_5); // DEBUG
+  clearPin(GPIOA, GPIO_Pin_7); // DEBUG
+#endif /* DEBUG_AUDIO */
 	
   usb_init();
 
@@ -161,44 +173,21 @@ void setup(){
   codec.start();
 }
 
-void debugToggle(){
-  togglePin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
-}
-
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-#if 0 // todo: remove
-int frequency;
-long lastcallback;
-long collisions;
-void audioCallback(int16_t *src, int16_t *dst, int16_t sz){
-  frequency = (AUDIO_BLOCK_SIZE * 1000)/(getSysTicks() - lastcallback);
-  lastcallback = getSysTicks();
-//   setPin(GPIOA, GPIO_Pin_6); // PA6 DEBUG
-  buffer.split(src);
-  dest = dst;
-  if(doProcessAudio)
-    collisions++;
-  doProcessAudio = true;
-//   clearPin(GPIOA, GPIO_Pin_6); // PA6 DEBUG
-}
-#elif 0
-void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
-  for(int i=0; i<sz; ++i)
-    dst[i] = src[i];
-}
-#else
 __attribute__ ((section (".coderam")))
 void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
+#ifdef DEBUG_AUDIO
+  togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
+#endif
   if(doProcessAudio)
-    debugToggle();
+    collision = true;
   source = src;
   dest = dst;
   doProcessAudio = true;
 }
-#endif
 
 #ifdef __cplusplus
 }
