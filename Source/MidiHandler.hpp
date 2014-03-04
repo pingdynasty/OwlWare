@@ -158,6 +158,15 @@ public:
       case 2:
 	midi.sendPatchParameterNames();
 	break;
+      case 3:
+	midi.sendFirmwareVersion();
+	break;
+      case 4:
+	midi.sendDeviceId();
+	break;
+      case 5:
+	midi.sendSelfTest();
+	break;
       case PATCH_BUTTON:
 	midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
 	break;
