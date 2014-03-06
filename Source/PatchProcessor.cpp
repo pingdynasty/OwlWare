@@ -25,7 +25,10 @@ void PatchProcessor::setPatch(uint8_t patchIndex){
   clear();
   memset(parameterNames, 0, sizeof(parameterNames));
   bufferCount = 0;
-  index = patchIndex;
+  if(patchIndex < registry.getNumberOfPatches())
+    index = patchIndex;
+  else
+    index = 0;
   patch = registry.create(index);
 }
 
