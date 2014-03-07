@@ -26,7 +26,7 @@ extern uint8_t usbd_usr_device_status;
 MidiHandler handler;
 
 bool midi_device_connected(){
-  return usbd_usr_device_status == 0x0f;
+  return usbd_usr_device_status > 0x02;
 }
 
 void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){
