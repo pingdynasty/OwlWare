@@ -76,11 +76,6 @@ volatile bool collision = false;
 uint16_t* source;
 uint16_t* dest;
 
-void setActiveSlot(LedPin slot){
-  patches.setActiveSlot(slot);
-  updateLed();
-}
-
 __attribute__ ((section (".coderam")))
 void run(){
   for(;;){

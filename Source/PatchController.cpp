@@ -19,10 +19,10 @@ PatchController::~PatchController(){
 }
 
 void PatchController::init(){
-  setActiveSlot(GREEN);
-  green.setPatch(settings.patch_green);
   setActiveSlot(RED);
   red.setPatch(settings.patch_red);
+  setActiveSlot(GREEN);
+  green.setPatch(settings.patch_green);
 }
 
 __attribute__ ((section (".coderam")))
@@ -81,7 +81,7 @@ void PatchController::process(AudioBuffer& buffer){
   }
 }
 
-void PatchController::setPatch(uint8_t slot, uint8_t index){
+void PatchController::setPatch(LedPin slot, uint8_t index){
   codec.softMute(true);
   if(slot == RED){
     settings.patch_red = index;
@@ -91,11 +91,11 @@ void PatchController::setPatch(uint8_t slot, uint8_t index){
   setActiveSlot(slot);
 }
 
-uint8_t PatchController::getActiveSlot(){
+LedPin PatchController::getActiveSlot(){
   return activeSlot;
 }
 
-void PatchController::setActiveSlot(uint8_t slot){
+void PatchController::setActiveSlot(LedPin slot){
   switch(settings.patch_mode){
   case(PATCHMODE_SINGLE):
     mode = SINGLE_MODE;
@@ -111,6 +111,7 @@ void PatchController::setActiveSlot(uint8_t slot){
     break;
   }
   activeSlot = slot;
+  setLed(slot);
 }
 
 void PatchController::toggleActiveSlot(){

@@ -19,7 +19,7 @@ public:
     switch(cc){
     case PATCH_BUTTON:
       if(value == 127)
-	toggleActiveSlot();
+	patches.toggleActiveSlot();
       break;
     case LED:
       if(value < 42){
@@ -41,7 +41,7 @@ public:
       patches.setPatch(RED, value);
       break;
     case ACTIVE_SLOT:
-      setActiveSlot(value == 127 ? RED : GREEN);
+      patches.setActiveSlot(value == 127 ? RED : GREEN);
       break;
     case LEFT_INPUT_GAIN:
       settings.inputGainLeft = value>>2;
@@ -194,7 +194,7 @@ public:
 	settings.reset();
 	settings.clearFlash();
 	codec.init(settings);
-	setActiveSlot(GREEN);
+	patches.setActiveSlot(GREEN);
       }
       break;
     }

@@ -22,14 +22,6 @@
      RED   = LED_RED
    }  LedPin;
 
-
-/* functions defined in Owl.cpp */
-extern void setActivePatch(uint8_t index);
-extern uint8_t getActivePatch();
-extern void toggleActiveSlot();
-extern void setActiveSlot(LedPin slot);
-extern uint8_t getActiveSlot();
-
    LedPin getLed();
 
    inline void setLed(LedPin led){

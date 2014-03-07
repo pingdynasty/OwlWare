@@ -107,7 +107,6 @@ void MidiController::sendDeviceId(){
 
 void MidiController::sendSelfTest(){
   // this code somehow leads to a HardFault once the interrupt has completed
-
   uint8_t buffer[2];
   buffer[0] = SYSEX_SELFTEST;
   buffer[1] = (isClockExternal() << 2) | ( SRAM_TestMemory() << 1) | settings.settingsInFlash();

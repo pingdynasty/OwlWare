@@ -2,6 +2,7 @@
 #define __PatchController_h__
 
 #include "PatchProcessor.h"
+#include "owlcontrol.h"
 
 class PatchController;
 extern PatchController patches;
@@ -12,16 +13,16 @@ public:
   ~PatchController();
   void init();
   void process(AudioBuffer& buffer);
-  void setPatch(uint8_t slot, uint8_t index);
-  uint8_t getActiveSlot();
+  void setPatch(LedPin slot, uint8_t index);
+  LedPin getActiveSlot();
   void toggleActiveSlot();
-  void setActiveSlot(uint8_t slot);
+  void setActiveSlot(LedPin slot);
   PatchProcessor* getCurrentPatchProcessor();
 private:
   void processParallel(AudioBuffer& buffer);
   PatchProcessor green;
   PatchProcessor red;
-  uint8_t activeSlot = 0;
+  LedPin activeSlot = NONE;
   uint8_t mode;
 };
 
