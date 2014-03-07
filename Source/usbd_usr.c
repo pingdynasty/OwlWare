@@ -49,7 +49,7 @@ USBD_Usr_cb_TypeDef USR_cb =
 */
 void USBD_USR_Init(void)
 {
-  usbd_usr_device_status = 0x1;
+  usbd_usr_device_status = 0x01;
 }
 
 /**
@@ -60,7 +60,7 @@ void USBD_USR_Init(void)
 */
 void USBD_USR_DeviceReset(uint8_t speed)
 {
-  usbd_usr_device_status = 0x2;
+  usbd_usr_device_status = 0x02;
 }
 
 
@@ -72,7 +72,7 @@ void USBD_USR_DeviceReset(uint8_t speed)
 */
 void USBD_USR_DeviceConfigured (void)
 {
-  usbd_usr_device_status = 0x3;
+  usbd_usr_device_status = 0x03;
 }
 
 /**
@@ -83,7 +83,7 @@ void USBD_USR_DeviceConfigured (void)
 */
 void USBD_USR_DeviceSuspended(void)
 {
-  usbd_usr_device_status = 0;
+  usbd_usr_device_status = 0x00;
 }
 
 
@@ -95,7 +95,7 @@ void USBD_USR_DeviceSuspended(void)
 */
 void USBD_USR_DeviceResumed(void)
 {
-  usbd_usr_device_status = 0x7;
+  usbd_usr_device_status = 0x07;
 }
 
 
@@ -107,7 +107,7 @@ void USBD_USR_DeviceResumed(void)
 */
 void USBD_USR_DeviceConnected (void)
 {
-  usbd_usr_device_status = 0xf;
+  usbd_usr_device_status = 0x0f;
 }
 
 
@@ -119,7 +119,7 @@ void USBD_USR_DeviceConnected (void)
 */
 void USBD_USR_DeviceDisconnected (void)
 {
-  usbd_usr_device_status = 0;
+  usbd_usr_device_status = 0x00;
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
