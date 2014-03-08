@@ -21,18 +21,9 @@ void ctx_scheduleMessageForReceiverV(TannBase *const _c, const char *name, const
 	msg_init(m, numElem, timestamp);
 	for (int i = 0; i < numElem; i++) {
 		switch (format[i]) {
-			case 'b': {
-				msg_setBang(m,i);
-				break;
-			}
-			case 'f': {
-				msg_setFloat(m, i, (float) va_arg(ap, double));
-				break;
-			}
-			case 's': {
-				msg_setSymbol(m, i, (char *) va_arg(ap, char *));
-				break;
-			}
+			case 'b': msg_setBang(m,i); break;
+			case 'f': msg_setFloat(m, i, (float) va_arg(ap, double)); break;
+			case 's': msg_setSymbol(m, i, (char *) va_arg(ap, char *)); break;
 			default: break;
 		}
 	}

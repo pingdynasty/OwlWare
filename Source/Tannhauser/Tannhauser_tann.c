@@ -6,6 +6,7 @@
  * System Includes
  */
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <string.h>
 #include <stdarg.h>
@@ -19,16 +20,24 @@
 
 static void mMsg_kcCqS_onMessage(TannBase *, PdMessage *);
 static void mFloat_yd3Kz_sendMessage(TannBase *, int, PdMessage *);
+static void mMsg_lFWZE_onMessage(TannBase *, PdMessage *);
+static void mFloat_hu1oi_sendMessage(TannBase *, int, PdMessage *);
 static void mMsg_nXF4e_onMessage(TannBase *, PdMessage *);
 static void mFloat_4jxjT_sendMessage(TannBase *, int, PdMessage *);
-static void mMsg_2cB96_onMessage(TannBase *, PdMessage *);
-static void mFloat_n5QY1_sendMessage(TannBase *, int, PdMessage *);
-static void mMsg_lzghT_onMessage(TannBase *, PdMessage *);
-static void mFloat_bfXtM_sendMessage(TannBase *, int, PdMessage *);
-static void mRecv_6sIrH_onMessage(TannBase *, int, PdMessage *);
-static void mRecv_aWQ6l_onMessage(TannBase *, int, PdMessage *);
-static void mRecv_oCE96_onMessage(TannBase *, int, PdMessage *);
-static void mRecv_AWNAP_onMessage(TannBase *, int, PdMessage *);
+static void mMsg_iIF6Z_onMessage(TannBase *, PdMessage *);
+static void mFloat_DUfyp_sendMessage(TannBase *, int, PdMessage *);
+static void mRecv_vyKkT_onMessage(TannBase *, int, PdMessage *);
+static void mRecv_9a4RK_onMessage(TannBase *, int, PdMessage *);
+static void mRecv_lzghT_onMessage(TannBase *, int, PdMessage *);
+static void mRecv_bfXtM_onMessage(TannBase *, int, PdMessage *);
+static void mLine_6sIrH_sendMessage(TannBase *, int, PdMessage *);
+static void mLine_aWQ6l_sendMessage(TannBase *, int, PdMessage *);
+static void mLine_oCE96_sendMessage(TannBase *, int, PdMessage *);
+static void mLine_AWNAP_sendMessage(TannBase *, int, PdMessage *);
+static void mMultiply_9FtZE_sendMessage(TannBase *, int, PdMessage *);
+static void mAdd_cwxsY_sendMessage(TannBase *, int, PdMessage *);
+static void mMultiply_DBp8o_sendMessage(TannBase *, int, PdMessage *);
+static void mAdd_WNQjE_sendMessage(TannBase *, int, PdMessage *);
 
 
 
@@ -41,19 +50,19 @@ static void ctx_intern_scheduleMessageForReceiver(TannBase *const _c, const char
 	msg_setTimestamp(m, fmax(msg_getTimestamp(m), _c->blockStartTimestampMs));
 
 	if (!strncmp(name, "Channel-C", 9)) {
-		ctx_scheduleMessage(Base(_c), m, &mRecv_oCE96_onMessage, 0);
+		ctx_scheduleMessage(Base(_c), m, &mRecv_lzghT_onMessage, 0);
 		return;
 	}
 	if (!strncmp(name, "Channel-B", 9)) {
-		ctx_scheduleMessage(Base(_c), m, &mRecv_aWQ6l_onMessage, 0);
+		ctx_scheduleMessage(Base(_c), m, &mRecv_9a4RK_onMessage, 0);
 		return;
 	}
 	if (!strncmp(name, "Channel-A", 9)) {
-		ctx_scheduleMessage(Base(_c), m, &mRecv_6sIrH_onMessage, 0);
+		ctx_scheduleMessage(Base(_c), m, &mRecv_vyKkT_onMessage, 0);
 		return;
 	}
 	if (!strncmp(name, "Channel-D", 9)) {
-		ctx_scheduleMessage(Base(_c), m, &mRecv_AWNAP_onMessage, 0);
+		ctx_scheduleMessage(Base(_c), m, &mRecv_bfXtM_onMessage, 0);
 		return;
 	}
 }
@@ -86,22 +95,30 @@ Tann_tann *ctx_tann_new(int numInputChannels, int numOutputChannels, int blockSi
 	Base(_c)->userData = NULL;
 
 	mFloat_init(&_c->mFloat_yd3Kz, 0.0f);
-	dLine_init(&_c->dLine_lFWZE);
+	mFloat_init(&_c->mFloat_hu1oi, 0.0f);
 	mFloat_init(&_c->mFloat_4jxjT, 0.0f);
-	dLine_init(&_c->dLine_iIF6Z);
-	mFloat_init(&_c->mFloat_n5QY1, 0.0f);
-	dLine_init(&_c->dLine_9a4RK);
-	mFloat_init(&_c->mFloat_bfXtM, 0.0f);
-	dLine_init(&_c->dLine_sqWoz);
+	mFloat_init(&_c->mFloat_DUfyp, 0.0f);
+	dLop_init(Base(_c), &_c->dLop_sqWoz, 10000.0f, ctx_getSampleRate(Base(_c)));
+	dHip_init(Base(_c), &_c->dHip_dFCVc, 20.0f, ctx_getSampleRate(Base(_c)));
+	dLop_init(Base(_c), &_c->dLop_TI3Tv, 10000.0f, ctx_getSampleRate(Base(_c)));
+	dHip_init(Base(_c), &_c->dHip_dQaBO, 20.0f, ctx_getSampleRate(Base(_c)));
+	mLine_init(&_c->mLine_6sIrH, 0.0f, 10.0);
+	mLine_init(&_c->mLine_aWQ6l, 0.0f, 10.0);
+	mLine_init(&_c->mLine_oCE96, 0.0f, 10.0);
+	mLine_init(&_c->mLine_AWNAP, 0.0f, 10.0);
+	mMultiply_init(&_c->mMultiply_9FtZE, 20000.0f);
+	mAdd_init(&_c->mAdd_cwxsY, 20.0f);
+	mMultiply_init(&_c->mMultiply_DBp8o, 20000.0f);
+	mAdd_init(&_c->mAdd_WNQjE, 20.0f);
 
 	return _c;
 }
 
 void ctx_tann_free(Tann_tann *_c) {
-	dLine_free(&_c->dLine_lFWZE);
-	dLine_free(&_c->dLine_iIF6Z);
-	dLine_free(&_c->dLine_9a4RK);
-	dLine_free(&_c->dLine_sqWoz);
+	dLop_free(&_c->dLop_sqWoz);
+	dHip_free(&_c->dHip_dFCVc);
+	dLop_free(&_c->dLop_TI3Tv);
+	dHip_free(&_c->dHip_dQaBO);
 
 	free(Base(_c)->basePath);
 	mq_free(&Base(_c)->mq); // free queue after all objects have been freed, messages may be cancelled
@@ -123,11 +140,26 @@ static void mMsg_kcCqS_onMessage(TannBase *_c, PdMessage *n) {
 	msg_init(m, 2, msg_getTimestamp(n));
 	msg_setElementToFrom(m, 0, n, 0);
 	msg_setFloat(m, 1, 10.0f);
-	dLine_onMessage(&Context(_c)->dLine_lFWZE, 0, m);
+	mLine_onMessage(_c, &Context(_c)->mLine_6sIrH, 0, m, &mLine_6sIrH_sendMessage);
 }
 
 static void mFloat_yd3Kz_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
-	mMsg_kcCqS_onMessage(_c, m);
+	mMultiply_onMessage(_c, &Context(_c)->mMultiply_9FtZE, 0, m, &mMultiply_9FtZE_sendMessage);
+}
+
+static void mMsg_lFWZE_onMessage(TannBase *_c, PdMessage *n) {
+	PdMessage *m = NULL;
+
+	// define messages and send them (all inlined)
+	m = PD_MESSAGE_ON_STACK(2);
+	msg_init(m, 2, msg_getTimestamp(n));
+	msg_setElementToFrom(m, 0, n, 0);
+	msg_setFloat(m, 1, 10.0f);
+	mLine_onMessage(_c, &Context(_c)->mLine_aWQ6l, 0, m, &mLine_aWQ6l_sendMessage);
+}
+
+static void mFloat_hu1oi_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	mMultiply_onMessage(_c, &Context(_c)->mMultiply_DBp8o, 0, m, &mMultiply_DBp8o_sendMessage);
 }
 
 static void mMsg_nXF4e_onMessage(TannBase *_c, PdMessage *n) {
@@ -138,14 +170,14 @@ static void mMsg_nXF4e_onMessage(TannBase *_c, PdMessage *n) {
 	msg_init(m, 2, msg_getTimestamp(n));
 	msg_setElementToFrom(m, 0, n, 0);
 	msg_setFloat(m, 1, 10.0f);
-	dLine_onMessage(&Context(_c)->dLine_iIF6Z, 0, m);
+	mLine_onMessage(_c, &Context(_c)->mLine_oCE96, 0, m, &mLine_oCE96_sendMessage);
 }
 
 static void mFloat_4jxjT_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
 	mMsg_nXF4e_onMessage(_c, m);
 }
 
-static void mMsg_2cB96_onMessage(TannBase *_c, PdMessage *n) {
+static void mMsg_iIF6Z_onMessage(TannBase *_c, PdMessage *n) {
 	PdMessage *m = NULL;
 
 	// define messages and send them (all inlined)
@@ -153,42 +185,145 @@ static void mMsg_2cB96_onMessage(TannBase *_c, PdMessage *n) {
 	msg_init(m, 2, msg_getTimestamp(n));
 	msg_setElementToFrom(m, 0, n, 0);
 	msg_setFloat(m, 1, 10.0f);
-	dLine_onMessage(&Context(_c)->dLine_9a4RK, 0, m);
+	mLine_onMessage(_c, &Context(_c)->mLine_AWNAP, 0, m, &mLine_AWNAP_sendMessage);
 }
 
-static void mFloat_n5QY1_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
-	mMsg_2cB96_onMessage(_c, m);
+static void mFloat_DUfyp_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	mMsg_iIF6Z_onMessage(_c, m);
 }
 
-static void mMsg_lzghT_onMessage(TannBase *_c, PdMessage *n) {
-	PdMessage *m = NULL;
-
-	// define messages and send them (all inlined)
-	m = PD_MESSAGE_ON_STACK(2);
-	msg_init(m, 2, msg_getTimestamp(n));
-	msg_setElementToFrom(m, 0, n, 0);
-	msg_setFloat(m, 1, 10.0f);
-	dLine_onMessage(&Context(_c)->dLine_sqWoz, 0, m);
+static void mRecv_vyKkT_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
+	mMultiply_onMessage(_c, &Context(_c)->mMultiply_9FtZE, 0, m, &mMultiply_9FtZE_sendMessage);
 }
 
-static void mFloat_bfXtM_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
-	mMsg_lzghT_onMessage(_c, m);
+static void mRecv_9a4RK_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
+	mMultiply_onMessage(_c, &Context(_c)->mMultiply_DBp8o, 0, m, &mMultiply_DBp8o_sendMessage);
 }
 
-static void mRecv_6sIrH_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
-	mMsg_kcCqS_onMessage(_c, m);
-}
-
-static void mRecv_aWQ6l_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
+static void mRecv_lzghT_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
 	mMsg_nXF4e_onMessage(_c, m);
 }
 
-static void mRecv_oCE96_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
-	mMsg_2cB96_onMessage(_c, m);
+static void mRecv_bfXtM_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
+	mMsg_iIF6Z_onMessage(_c, m);
 }
 
-static void mRecv_AWNAP_onMessage(TannBase *_c, int inletIndex, PdMessage *m) {
-	mMsg_lzghT_onMessage(_c, m);
+static void mLine_6sIrH_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	MessageLine *o = &Context(_c)->mLine_6sIrH;
+	
+	o->v = msg_getFloat(m,0); // update current value
+	o->u = msg_getTimestamp(m); // and the last-sent timestamp
+	
+	if (o->v != o->t) { // only schedule a new message if we haven't reached the target
+		double u = msg_getTimestamp(m) + o->r; // the next message timestamp
+		float v = o->v + (o->m * (float) o->r); // the next value
+		if ((o->m > 0.0f && v > o->t) || (o->m < 0.0f && v < o->t)) {
+			v = o->t; // if the next message would exceed the target, clamp to the target
+			u = ((double) ((o->t - o->v) / o->m)) + msg_getTimestamp(m); // correct the timestamp
+		}
+		
+		// prepare the next message
+		PdMessage *n = PD_MESSAGE_ON_STACK(1);
+		msg_initWithFloat(n, u, v);
+		o->n = ctx_scheduleMessage(_c, n, &mLine_6sIrH_sendMessage, 0);
+	} else {
+		o->m = 0.0f; // if we have arrived at the target, the slope is set to zero
+	}
+
+	dLop_onMessage(&Context(_c)->dLop_sqWoz, 1, m);
+	dLop_onMessage(&Context(_c)->dLop_TI3Tv, 1, m);
+}
+
+static void mLine_aWQ6l_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	MessageLine *o = &Context(_c)->mLine_aWQ6l;
+	
+	o->v = msg_getFloat(m,0); // update current value
+	o->u = msg_getTimestamp(m); // and the last-sent timestamp
+	
+	if (o->v != o->t) { // only schedule a new message if we haven't reached the target
+		double u = msg_getTimestamp(m) + o->r; // the next message timestamp
+		float v = o->v + (o->m * (float) o->r); // the next value
+		if ((o->m > 0.0f && v > o->t) || (o->m < 0.0f && v < o->t)) {
+			v = o->t; // if the next message would exceed the target, clamp to the target
+			u = ((double) ((o->t - o->v) / o->m)) + msg_getTimestamp(m); // correct the timestamp
+		}
+		
+		// prepare the next message
+		PdMessage *n = PD_MESSAGE_ON_STACK(1);
+		msg_initWithFloat(n, u, v);
+		o->n = ctx_scheduleMessage(_c, n, &mLine_aWQ6l_sendMessage, 0);
+	} else {
+		o->m = 0.0f; // if we have arrived at the target, the slope is set to zero
+	}
+
+	dHip_onMessage(&Context(_c)->dHip_dFCVc, 1, m);
+	dHip_onMessage(&Context(_c)->dHip_dQaBO, 1, m);
+}
+
+static void mLine_oCE96_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	MessageLine *o = &Context(_c)->mLine_oCE96;
+	
+	o->v = msg_getFloat(m,0); // update current value
+	o->u = msg_getTimestamp(m); // and the last-sent timestamp
+	
+	if (o->v != o->t) { // only schedule a new message if we haven't reached the target
+		double u = msg_getTimestamp(m) + o->r; // the next message timestamp
+		float v = o->v + (o->m * (float) o->r); // the next value
+		if ((o->m > 0.0f && v > o->t) || (o->m < 0.0f && v < o->t)) {
+			v = o->t; // if the next message would exceed the target, clamp to the target
+			u = ((double) ((o->t - o->v) / o->m)) + msg_getTimestamp(m); // correct the timestamp
+		}
+		
+		// prepare the next message
+		PdMessage *n = PD_MESSAGE_ON_STACK(1);
+		msg_initWithFloat(n, u, v);
+		o->n = ctx_scheduleMessage(_c, n, &mLine_oCE96_sendMessage, 0);
+	} else {
+		o->m = 0.0f; // if we have arrived at the target, the slope is set to zero
+	}
+
+	
+}
+
+static void mLine_AWNAP_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	MessageLine *o = &Context(_c)->mLine_AWNAP;
+	
+	o->v = msg_getFloat(m,0); // update current value
+	o->u = msg_getTimestamp(m); // and the last-sent timestamp
+	
+	if (o->v != o->t) { // only schedule a new message if we haven't reached the target
+		double u = msg_getTimestamp(m) + o->r; // the next message timestamp
+		float v = o->v + (o->m * (float) o->r); // the next value
+		if ((o->m > 0.0f && v > o->t) || (o->m < 0.0f && v < o->t)) {
+			v = o->t; // if the next message would exceed the target, clamp to the target
+			u = ((double) ((o->t - o->v) / o->m)) + msg_getTimestamp(m); // correct the timestamp
+		}
+		
+		// prepare the next message
+		PdMessage *n = PD_MESSAGE_ON_STACK(1);
+		msg_initWithFloat(n, u, v);
+		o->n = ctx_scheduleMessage(_c, n, &mLine_AWNAP_sendMessage, 0);
+	} else {
+		o->m = 0.0f; // if we have arrived at the target, the slope is set to zero
+	}
+
+	
+}
+
+static void mMultiply_9FtZE_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+    mAdd_onMessage(_c, &Context(_c)->mAdd_cwxsY, 0, m, &mAdd_cwxsY_sendMessage);
+}
+
+static void mAdd_cwxsY_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	mMsg_kcCqS_onMessage(_c, m);
+}
+
+static void mMultiply_DBp8o_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+    mAdd_onMessage(_c, &Context(_c)->mAdd_WNQjE, 0, m, &mAdd_WNQjE_sendMessage);
+}
+
+static void mAdd_WNQjE_sendMessage(TannBase *_c, int letIndex, PdMessage *m) {
+	mMsg_lFWZE_onMessage(_c, m);
 }
 
 
@@ -220,21 +355,15 @@ void ctx_tann_process(Tann_tann *const _c, float *const inputBuffers, float *con
 
 	// initialise temporary signal buffers
 	#define B(_x) (buffer+((_x)*n))
-	float buffer[3 * n];
+	float buffer[2 * n];
 
 	// process all signal functions
-	dLine_processM(Base(_c), &_c->dLine_lFWZE, B(0), n); // line~
-	dMult_processSS(B(0), I(0), B(0), n); // *~
-	dLine_processM(Base(_c), &_c->dLine_9a4RK, B(1), n); // line~
-	dMult_processSS(B(1), I(1), B(1), n); // *~
-	dAdd_processSS(B(0), B(1), B(1), n); // +~
-	dLine_processM(Base(_c), &_c->dLine_iIF6Z, B(0), n); // line~
-	dMult_processSS(B(0), I(0), B(0), n); // *~
-	dLine_processM(Base(_c), &_c->dLine_sqWoz, B(2), n); // line~
-	dMult_processSS(B(2), I(1), B(2), n); // *~
-	dAdd_processSS(B(0), B(2), B(2), n); // +~
-	dAdd_processSS(B(1), O(0), O(0), n); // dac~(0)
-	dAdd_processSS(B(2), O(1), O(1), n); // dac~(1)
+	dLop_processSM(Base(_c), &_c->dLop_sqWoz, I(0), B(0), n, ctx_getSampleRate(Base(_c))); // lop~ 10000
+	dHip_processSM(Base(_c), &_c->dHip_dFCVc, B(0), B(0), n, ctx_getSampleRate(Base(_c))); // hip~ 20
+	dLop_processSM(Base(_c), &_c->dLop_TI3Tv, I(1), B(1), n, ctx_getSampleRate(Base(_c))); // lop~ 10000
+	dHip_processSM(Base(_c), &_c->dHip_dQaBO, B(1), B(1), n, ctx_getSampleRate(Base(_c))); // hip~ 20
+	dAdd_processSS(B(0), O(0), O(0), n); // dac~(0)
+	dAdd_processSS(B(1), O(1), O(1), n); // dac~(1)
 
 	// now that the block has been processed, update the block timestamp
 	Base(_c)->blockStartTimestampMs = nextBlockStartTimestampMs;
