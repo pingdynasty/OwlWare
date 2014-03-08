@@ -6,6 +6,7 @@
  * System Includes
  */
 
+#include <math.h>
 #include <string.h>
 #include <stdarg.h>
 #include "Tannhauser_tann.h"
@@ -36,9 +37,9 @@ static void mRecv_AWNAP_onMessage(TannBase *, int, PdMessage *);
  */
 
 static void ctx_intern_scheduleMessageForReceiver(TannBase *const _c, const char *name, PdMessage *m) {
-    // the message must occur in the future, at least after the start of the current block
+	// the message must occur in the future, at least after the start of the current block
 	msg_setTimestamp(m, fmax(msg_getTimestamp(m), _c->blockStartTimestampMs));
-	
+
 	if (!strncmp(name, "Channel-C", 9)) {
 		ctx_scheduleMessage(Base(_c), m, &mRecv_oCE96_onMessage, 0);
 		return;
@@ -211,7 +212,7 @@ void ctx_tann_process(Tann_tann *const _c, float *const inputBuffers, float *con
 
 	// define a macro to refer to output buffers
 	#define O(_x) (outputBuffers+((_x)*n))
-    utils_clearBuffer(outputBuffers, ctx_getNumOutputChannels(Base(_c))*n); // clear the output buffer
+	utils_clearBuffer(outputBuffers, ctx_getNumOutputChannels(Base(_c))*n); // clear the output buffer
 
 	// define the zero buffer
 	float ZERO_BUFFER[n];
@@ -221,7 +222,6 @@ void ctx_tann_process(Tann_tann *const _c, float *const inputBuffers, float *con
 	#define B(_x) (buffer+((_x)*n))
 	float buffer[3 * n];
 
-    float z=inputBuffers[2];
 	// process all signal functions
 	dLine_processM(Base(_c), &_c->dLine_lFWZE, B(0), n); // line~
 	dMult_processSS(B(0), I(0), B(0), n); // *~

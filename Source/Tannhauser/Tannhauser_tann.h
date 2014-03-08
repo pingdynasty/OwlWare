@@ -20,14 +20,14 @@ typedef struct Tann_tann {
 	TannBase base;
 	
 	// objects
-	MessageFloat mFloat_yd3Kz;
 	DspLine dLine_lFWZE;
-	MessageFloat mFloat_4jxjT;
-	DspLine dLine_iIF6Z;
-	MessageFloat mFloat_n5QY1;
 	DspLine dLine_9a4RK;
-	MessageFloat mFloat_bfXtM;
+	DspLine dLine_iIF6Z;
 	DspLine dLine_sqWoz;
+	MessageFloat mFloat_4jxjT;
+	MessageFloat mFloat_bfXtM;
+	MessageFloat mFloat_yd3Kz;
+	MessageFloat mFloat_n5QY1;
 } Tann_tann;
 
 Tann_tann *ctx_tann_new(int numInputChannels, int numOutputChannels, int nominalBlockSize, double sampleRate);

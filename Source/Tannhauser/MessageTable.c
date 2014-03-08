@@ -3,7 +3,7 @@
 #else
     #include <mm_malloc.h>
 #endif
-/* #include <stdlib.h> */
+//#include <stdlib.h>
 #include <string.h>
 
 #include "MessageTable.h"
