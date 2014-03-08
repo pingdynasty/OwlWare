@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "OWL Rev04.003"
+#define FIRMWARE_VERSION             "OWL Rev04.004-pre"
 
 #define GREEN_PATCH                  0
 #define RED_PATCH                    1
