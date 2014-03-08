@@ -22,14 +22,6 @@
      RED   = LED_RED
    }  LedPin;
 
-
-/* functions defined in Owl.cpp */
-extern void setActivePatch(uint8_t index);
-extern uint8_t getActivePatch();
-extern void toggleActiveSlot();
-extern void setActiveSlot(LedPin slot);
-extern uint8_t getActiveSlot();
-
    LedPin getLed();
 
    inline void setLed(LedPin led){
@@ -44,6 +36,18 @@ extern uint8_t getActiveSlot();
    inline void blink(){
      togglePin(LED_PORT, LED_RED|LED_GREEN);
      togglePin(LED_PORT, LED_RED|LED_GREEN);
+   }
+
+   inline void debugSet(){
+     setPin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
+   }
+
+   inline void debugClear(){
+     clearPin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
+   }
+
+   inline void debugToggle(){
+     togglePin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
    }
 
    void ledSetup();

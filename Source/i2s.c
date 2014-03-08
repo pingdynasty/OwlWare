@@ -91,14 +91,7 @@ void I2S_Block_Init(void){
   SPI_I2S_DMACmd(CODEC_I2S_EXT, SPI_I2S_DMAReq_Rx, ENABLE);
 }
 
-/**
- * @brief  Starts playing & recording audio stream from/to the audio Media.
- * @param  None
- * @retval None
- */
-void I2S_Block_PlayRec(uint32_t txAddr, uint32_t rxAddr, uint32_t Size){
-  uint32_t i;
-	
+void I2S_Block_Run(uint32_t txAddr, uint32_t rxAddr, uint32_t Size){
   /* save for IRQ svc  */
   txbuf = txAddr;
   rxbuf = rxAddr;

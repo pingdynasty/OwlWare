@@ -9,7 +9,7 @@
 
    void I2S_Block_Init(void);
    void I2S_Enable();
-   void I2S_Block_PlayRec(uint32_t txAddr, uint32_t rxAddr, uint32_t Size);
+   void I2S_Block_Run(uint32_t txAddr, uint32_t rxAddr, uint32_t Size);
    void I2S_Pause();
    void I2S_Resume();
    void I2S_Disable();

@@ -110,8 +110,6 @@ uint8_t  AudioCtlCmd = 0;
 uint32_t AudioCtlLen = 0;
 uint8_t  AudioCtlUnit = 0;
 
-static uint32_t PlayFlag = 0;
-
 static __IO uint32_t  usbd_audio_AltSet = 0;
 static uint8_t usbd_audio_CfgDesc[AUDIO_CONFIG_DESC_SIZE];
 

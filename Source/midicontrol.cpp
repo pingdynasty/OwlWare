@@ -54,8 +54,9 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
    * byte-by-byte). One consequence of this is that the USB buffer size must be a multiple
    * of 4 (the packet size).
    */
-  /* Wait for device to come online */
-  while(USB_OTG_dev.dev.device_status != USB_OTG_CONFIGURED) {}
+  /* Check if device is online */
+  if(USB_OTG_dev.dev.device_status != USB_OTG_CONFIGURED)
+    return;
   /* If the buffer is completely full, wait until the USB peripheral clears
    * it to continue. */
   while((APP_RX_DATA_SIZE + APP_Rx_ptr_out - APP_Rx_ptr_in) % APP_RX_DATA_SIZE == length);

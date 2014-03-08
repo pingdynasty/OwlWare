@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <string.h>
 #include "MidiStatus.h"
 #include "MidiController.h"
@@ -66,7 +67,7 @@ void MidiController::sendPatchParameterName(PatchParameterId pid, const char* na
 }
 
 void MidiController::sendPatchNames(){
-  for(int i=0; i<registry.getNumberOfPatches(); ++i)
+  for(unsigned int i=0; i<registry.getNumberOfPatches(); ++i)
     sendPatchName(i);
 }
 
@@ -83,8 +84,6 @@ void MidiController::sendPatchName(uint8_t index){
 
 void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
-  sendDeviceId();
-  sendSelfTest();
 }
 
 void MidiController::sendFirmwareVersion(){
@@ -105,16 +104,26 @@ void MidiController::sendDeviceId(){
 }
 
 void MidiController::sendSelfTest(){
+  // this code somehow leads to a HardFault once the interrupt has completed
   uint8_t buffer[2];
   buffer[0] = SYSEX_SELFTEST;
   buffer[1] = (isClockExternal() << 2) | ( SRAM_TestMemory() << 1) | settings.settingsInFlash();
   sendSysEx(buffer, sizeof(buffer));
+
+  // int error = errno;
+  // if(error != 0){
+  //   buffer[2] = error;
+  //   buffer[3] = error >> 7;
+  //   sendSysEx(buffer, 4);
+  // }else{
+  //   sendSysEx(buffer, 2);
+  // }
 }
 
 void MidiController::sendCc(uint8_t cc, uint8_t value){
   if(midi_device_connected()){
     uint8_t packet[4] = { USB_COMMAND_CONTROL_CHANGE,
-			  CONTROL_CHANGE | channel,
+			  (uint8_t)(CONTROL_CHANGE | channel),
 			  cc, value };
     midi_send_usb_buffer(packet, sizeof(packet));
   }

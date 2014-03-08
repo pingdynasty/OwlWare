@@ -101,21 +101,23 @@ int _close_r (struct _reent *r, int file)
 /***************************************************************************/
 
 /* Register name faking - works in collusion with the linker.  */
-register char * stack_ptr asm ("sp");
+/* register char * stack_ptr asm ("sp"); */
+
+#define Bank1_SRAM3_ADDR  ((uint32_t)0x68000000)  
 
 caddr_t _sbrk_r (struct _reent *r, int incr)
 {
-  extern char   end asm ("end"); /* Defined by the linker.  */
+  /* extern char   end asm ("end"); /\* Defined by the linker.  *\/ */
   static char * heap_end;
   char *        prev_heap_end;
 
   if (heap_end == NULL)
-    heap_end = & end;
+    heap_end = (char*)Bank1_SRAM3_ADDR;
   
   prev_heap_end = heap_end;
   
-  if (heap_end + incr > stack_ptr)
-  {
+  if (heap_end + incr > (Bank1_SRAM3_ADDR+1024*1024))
+ {
       /* Some of the libstdc++-v3 tests rely upon detecting
         out of memory errors, so do not abort here.  */
 #if 0

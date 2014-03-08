@@ -117,6 +117,12 @@ caddr_t _sbrk(int incr)
   }
   prev_heap_end = heap_end;
 
+  if (heap_end+incr > (char*)Bank1_SRAM3_ADDR+1024*1024)
+  {
+    errno = ENOMEM;
+    return (caddr_t) -1;
+  }
+
   heap_end += incr;
   return (caddr_t) prev_heap_end;
 }

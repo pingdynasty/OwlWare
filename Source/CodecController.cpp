@@ -202,7 +202,7 @@ void CodecController::start(){
     }
   }
   I2S_Enable();
-  I2S_Block_PlayRec((uint32_t)&tx_buffer, (uint32_t)&rx_buffer, AUDIO_BUFFER_SIZE);
+  I2S_Block_Run((uint32_t)&tx_buffer, (uint32_t)&rx_buffer, AUDIO_BUFFER_SIZE);
 }
 
 void CodecController::stop(){

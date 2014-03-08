@@ -19,7 +19,7 @@ public:
     switch(cc){
     case PATCH_BUTTON:
       if(value == 127)
-	toggleActiveSlot();
+	patches.toggleActiveSlot();
       break;
     case LED:
       if(value < 42){
@@ -35,15 +35,13 @@ public:
       patches.setActiveSlot(patches.getActiveSlot());
       break;
     case PATCH_SLOT_GREEN:
-      settings.patch_green = value;
-      setActiveSlot(GREEN);
+      patches.setPatch(GREEN, value);
       break;
     case PATCH_SLOT_RED:
-      settings.patch_red = value;
-      setActiveSlot(RED);
+      patches.setPatch(RED, value);
       break;
     case ACTIVE_SLOT:
-      setActiveSlot(value == 127 ? RED : GREEN);
+      patches.setActiveSlot(value == 127 ? RED : GREEN);
       break;
     case LEFT_INPUT_GAIN:
       settings.inputGainLeft = value>>2;
@@ -160,6 +158,15 @@ public:
       case 2:
 	midi.sendPatchParameterNames();
 	break;
+      case 3:
+	midi.sendFirmwareVersion();
+	break;
+      case 4:
+	midi.sendDeviceId();
+	break;
+      case 5:
+	midi.sendSelfTest();
+	break;
       case PATCH_BUTTON:
 	midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
 	break;
@@ -187,7 +194,7 @@ public:
 	settings.reset();
 	settings.clearFlash();
 	codec.init(settings);
-	setActiveSlot(GREEN);
+	patches.setActiveSlot(GREEN);
       }
       break;
     }
