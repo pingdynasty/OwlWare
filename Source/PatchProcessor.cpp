@@ -51,7 +51,7 @@ AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
 }
 
 float PatchProcessor::getParameterValue(PatchParameterId pid){
-  return parameterValues[pid]/4096.0;
+  return parameterValues[pid]/4096.0f;
 }
 
 __attribute__ ((section (".coderam")))
@@ -62,11 +62,10 @@ void PatchProcessor::setParameterValues(uint16_t *params){
    */
   for(int i=0; i<NOF_ADC_VALUES; ++i)
 #ifdef EUROOWL
-    parameterValues[i] = (parameterValues[i] + 1 - params[i]) >> 1;
+    parameterValues[i] = (parameterValues[i] + 0x1000 - params[i]) >> 1;
 #else
     parameterValues[i] = (parameterValues[i] + params[i]) >> 1;
 #endif
-  // memcpy(parameterValues, params, sizeof parameterValues);
 }
 
 // void PatchProcessor::process(AudioBuffer& buffer){

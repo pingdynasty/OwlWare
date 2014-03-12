@@ -17,7 +17,7 @@
 #define AUDIO_CHANNELS               2
 #define AUDIO_BITDEPTH               24    /* bits per sample */
 #define AUDIO_SAMPLINGRATE           48000
-#define AUDIO_BLOCK_SIZE             128   /* size in samples of a single channel audio block */
+#define AUDIO_BLOCK_SIZE             256   /* size in samples of a single channel audio block */
 
 #define AUDIO_INPUT_GAIN_LEFT        0x01b
 #define AUDIO_INPUT_GAIN_RIGHT       0x01b
