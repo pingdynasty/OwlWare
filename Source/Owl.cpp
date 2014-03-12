@@ -34,6 +34,10 @@ void updateLed(){
 }
 
 void updateBypassMode(){
+#ifdef EUROOWL
+  bypass = false;
+  updateLed();
+#else
   if(isStompSwitchPressed()){
     bypass = true;
     setLed(NONE);
@@ -42,6 +46,7 @@ void updateBypassMode(){
     bypass = false;
     updateLed();
   }
+#endif
 }
 
 void footSwitchCallback(){
@@ -135,8 +140,12 @@ void setup(){
   midi.init(MIDI_CHANNEL);
   patches.init();
 
+#ifdef EUROOWL
+  setupControlVoltageInput();
+#else
 #ifdef EXPRESSION_PEDAL
   setupExpressionPedal();
+#endif
 #endif
 
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); // DEBUG

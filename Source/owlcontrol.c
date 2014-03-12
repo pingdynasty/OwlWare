@@ -203,6 +203,10 @@ void SWITCH_B_HANDLER(void) {
   }
 }
 
+void setupControlVoltageInput(){
+  // expression pedal ring, PA2, is set up in adcSetupDMA()
+}
+
 void setupExpressionPedal(){
   configureDigitalOutput(EXPRESSION_PEDAL_TIP_PORT, EXPRESSION_PEDAL_TIP_PIN); // PA3, expression pedal tip
   setPin(EXPRESSION_PEDAL_TIP_PORT, EXPRESSION_PEDAL_TIP_PIN);

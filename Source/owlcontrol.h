@@ -70,6 +70,8 @@
    void setupSwitchB(void (*f)());
 
    void setupExpressionPedal();
+   void setupControlVoltageInput();
+
    bool hasExpressionPedal();
 
 #ifdef __cplusplus

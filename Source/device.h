@@ -1,12 +1,13 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "OWL Rev04.004-pre"
+#define EUROOWL
+#define FIRMWARE_VERSION             "EuroOWL Rev01-pre"
 
 #define GREEN_PATCH                  0
 #define RED_PATCH                    1
 
-#define EXPRESSION_PEDAL
-#define SERIAL_PORT                  1
+/* #define EXPRESSION_PEDAL */
+/* #define SERIAL_PORT                  1 */
 
 #define AUDIO_BIGEND
 /* #define AUDIO_SATURATE_SAMPLES */
@@ -49,7 +50,7 @@
 #define SWITCH_A_PORT_SOURCE         EXTI_PortSourceGPIOE
 #define SWITCH_A_PIN                 GPIO_Pin_4
 #define SWITCH_A_PIN_SOURCE          EXTI_PinSource4
-#define SWITCH_A_PIN_LINE            EXTI_Line4 /* Line 4 connects to all Px4 pins, et c */
+#define SWITCH_A_PIN_LINE            EXTI_Line4           /* Line 4 connects to all Px4 pins, et c */
 #define SWITCH_A_IRQ                 EXTI4_IRQn
 #define SWITCH_A_HANDLER             EXTI4_IRQHandler
 
