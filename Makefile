@@ -20,11 +20,15 @@ C_SRC += sramalloc.c
 CPP_SRC  = StompBox.cpp Owl.cpp CodecController.cpp MidiController.cpp PatchController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchProcessor.cpp PatchRegistry.cpp
 
-OBJS =  $(C_SRC:%.c=Build/%.o)  $(CPP_SRC:%.cpp=Build/%.o)
+OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o)
 
 TANN_DIR = $(TEMPLATEROOT)/Source/Tannhauser
-TANN_SRC = $(wildcard $(TANN_DIR)/*.c)
-OBJS += $(TANN_SRC:%.c=%.o)
+TANN_SRC = $(TANN_DIR)/Tannhauser_tann.c
+# TANN_SRC = $(wildcard $(TANN_DIR)/*.c)
+# OBJS += $(TANN_SRC:%.c=%.o)
+
+# LDFLAGS = -L$(TANN_DIR) -lTannhauser
+LDLIBS = $(TANN_DIR)/libTannhauser.a -lm
 
 # object files
 OBJS += $(PERIPH) 
