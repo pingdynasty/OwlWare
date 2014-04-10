@@ -51,7 +51,10 @@ AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
 }
 
 float PatchProcessor::getParameterValue(PatchParameterId pid){
-  return parameterValues[pid]/4096.0f;
+  if(pid < NOF_ADC_VALUES)
+    return parameterValues[pid]/4096.0f;
+  else
+    return 0.0f;
 }
 
 __attribute__ ((section (".coderam")))

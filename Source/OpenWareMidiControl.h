@@ -19,12 +19,13 @@ enum OpenWareMidiSysexCommand {
  MIDI Control Change Mappings
 */
 enum OpenWareMidiControl {
-  PATCH_PARAMETER_A      = 20, /*  Left Knob */
-  PATCH_PARAMETER_B      = 21, /*  */
-  PATCH_PARAMETER_C      = 22, /*  */
-  PATCH_PARAMETER_D      = 23, /*  Right knob */
-  PATCH_PARAMETER_E      = 24, /*  Expression pedal */
-  PATCH_BUTTON           = 25, /*  0=not pressed, 127=pressed */
+  PATCH_PARAMETER_A      = 20, /*  Left Knob / CV 1 */
+  PATCH_PARAMETER_B      = 21, /*  Second Knob / CV 2 */
+  PATCH_PARAMETER_C      = 22, /*  Third Knob / CV 3 */
+  PATCH_PARAMETER_D      = 23, /*  Right knob / CV 4 */
+  PATCH_PARAMETER_E      = 24, /*  Expression pedal / CV 5 */
+  PATCH_PARAMETER_F      = 25, /*  CV 6 */
+  PATCH_BUTTON           = 26, /*  0=not pressed, 127=pressed */
 
   PATCH_MODE             = 27, /* 0-31 = single,
 				* 32-63 = dual,

@@ -2,12 +2,26 @@
 
 #define EUROOWL
 #define FIRMWARE_VERSION             "EuroOWL Rev01-pre"
+#define NOF_ADC_VALUES               6
+/* #define EXPRESSION_PEDAL */
+/* #define SERIAL_PORT                  1 */
+
+#define EXPRESSION_PEDAL_TIP_PORT    GPIOA
+#define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_2
+#define EXPRESSION_PEDAL_TIP_CHANNEL ADC_Channel_2
+#define EXPRESSION_PEDAL_RING_PORT   GPIOA
+#define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_3
+#define EXPRESSION_PEDAL_RING_CHANNEL ADC_Channel_3
+
+/* #define EXPRESSION_PEDAL_TIP_PORT    GPIOA */
+/* #define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_2 */
+/* #define EXPRESSION_PEDAL_TIP_CHANNEL ADC_Channel_2 */
+/* #define EXPRESSION_PEDAL_RING_PORT   GPIOA */
+/* #define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_3 */
+/* #define EXPRESSION_PEDAL_RING_CHANNEL ADC_Channel_3 */
 
 #define GREEN_PATCH                  0
 #define RED_PATCH                    1
-
-/* #define EXPRESSION_PEDAL */
-/* #define SERIAL_PORT                  1 */
 
 #define AUDIO_BIGEND
 /* #define AUDIO_SATURATE_SAMPLES */
@@ -25,7 +39,6 @@
 #define AUDIO_OUTPUT_GAIN_RIGHT      0x073
 
 #define MIDI_CHANNEL                 0
-#define NOF_ADC_VALUES               5
 #define MAX_BUFFERS_PER_PATCH        8
 #define MAX_NUMBER_OF_PATCHES        32
 
@@ -53,12 +66,6 @@
 #define SWITCH_A_PIN_LINE            EXTI_Line4           /* Line 4 connects to all Px4 pins, et c */
 #define SWITCH_A_IRQ                 EXTI4_IRQn
 #define SWITCH_A_HANDLER             EXTI4_IRQHandler
-
-#define EXPRESSION_PEDAL_TIP_PORT    GPIOA
-#define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_3
-#define EXPRESSION_PEDAL_RING_PORT   GPIOA
-#define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_2
-#define EXPRESSION_PEDAL_ADC_CHANNEL ADC_Channel_2
 
 /* Switch B: illuminated pushbutton */
 #define SWITCH_B_PORT                GPIOE
