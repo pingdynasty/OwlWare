@@ -39,7 +39,7 @@ vpath %.c $(USB_OTG_FILE)/src/
 all: bin
 
 # Build executable 
-$(ELF) : $(OBJS) $(LDSCRIPT)
+$(ELF) : $(OBJS) $(LDSCRIPT) $(TANN_LIB)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 # compile and generate dependency info

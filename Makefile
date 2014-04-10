@@ -22,13 +22,12 @@ CPP_SRC += PatchProcessor.cpp PatchRegistry.cpp
 
 OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o)
 
-TANN_DIR = $(TEMPLATEROOT)/Source/Tannhauser
-TANN_SRC = $(TANN_DIR)/Tannhauser_tann.c
-# TANN_SRC = $(wildcard $(TANN_DIR)/*.c)
-# OBJS += $(TANN_SRC:%.c=%.o)
-
-# LDFLAGS = -L$(TANN_DIR) -lTannhauser
-LDLIBS = $(TANN_DIR)/libTannhauser.a -lm
+TANN_DIR = $(TEMPLATEROOT)/Libraries/Tannhauser
+TANN_FILE ?= $(TANN_DIR)/t-owl-stereomixer.pd
+TANN_UPLOAD = python2.7 $(TEMPLATEROOT)/Tools/Tannhauser/uploader.py
+TANN_ARGS = --platform owl # --arch cortex-m4
+TANN_LIB = $(BUILD)/libTannhauser.a
+LDLIBS = $(TANN_LIB) -lm
 
 # object files
 OBJS += $(PERIPH) 
@@ -44,3 +43,8 @@ OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
 
 # include common make file
 include $(TEMPLATEROOT)/Makefile.f4
+
+tann : $(TANN_LIB) $(TANN_FILE)
+
+$(TANN_LIB) : $(TANN_FILE)
+	$(TANN_UPLOAD) $(TANN_ARGS) $(TANN_FILE) $(BUILD)
