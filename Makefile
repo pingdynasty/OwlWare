@@ -2,8 +2,8 @@ TEMPLATEROOT = .
 
 
 # Benchmark 1: short floats
-CFLAGS   = -O2 -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1 -fshort-double -mfloat-abi=hard
-LDFLAGS  = -mfloat-abi=hard
+# CFLAGS   = -O3 -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1 -mfloat-abi=hard -fshort-double
+# LDFLAGS  = -mfloat-abi=hard
 
 # Benchmark 2: O3
 # CFLAGS   = -O3 -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1 -fshort-double -mfloat-abi=hard 
@@ -12,6 +12,10 @@ LDFLAGS  = -mfloat-abi=hard
 # Benchmark 3: soft floats
 # CFLAGS   = -O2 -Wall -Wcpp -DUSE_FULL_ASSERT -mfloat-abi=softfp
 # LDFLAGS  = -mfloat-abi=softfp
+
+# Benchmark 4: short doubles, fast-math, O3
+CFLAGS   = -O3 -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1 -fshort-double -mfloat-abi=hard -ffast-math
+LDFLAGS  = -mfloat-abi=hard
 
 
 
