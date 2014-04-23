@@ -1,10 +1,22 @@
 TEMPLATEROOT = .
 
-# CFLAGS = -g -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1
-CFLAGS   = -O2 -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1
+
+# Benchmark 1: short floats
+CFLAGS   = -O2 -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1 -fshort-double -mfloat-abi=hard
+LDFLAGS  = -mfloat-abi=hard
+
+# Benchmark 2: O3
+# CFLAGS   = -O3 -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1 -fshort-double -mfloat-abi=hard 
+# LDFLAGS  = -mfloat-abi=hard
+
+# Benchmark 3: soft floats
+# CFLAGS   = -O2 -Wall -Wcpp -DUSE_FULL_ASSERT -mfloat-abi=softfp
+# LDFLAGS  = -mfloat-abi=softfp
+
+
+
 CFLAGS  += -DEXTERNAL_SRAM
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
-ASFLAGS  = -g
 LDLIBS   = -lm
 LDSCRIPT = Source/flash.ld
 
