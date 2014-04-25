@@ -1,0 +1,53 @@
+#N canvas 648 219 450 300 10;
+#X msg 27 128 \$1 10;
+#X obj 26 65 vsl 15 50 0 1 0 0 empty empty A 0 -9 0 10 -262130 -1 -1
+0 1;
+#X obj 60 232 *~;
+#X obj 27 153 line~ 0 10;
+#X obj 180 270 dac~;
+#X msg 99 129 \$1 10;
+#X obj 130 59 vsl 15 50 0 1 0 0 empty empty B 0 -9 0 10 -262130 -1
+-1 0 1;
+#X obj 99 154 line~ 0 10;
+#X obj 102 235 *~;
+#X msg 230 127 \$1 10;
+#X obj 229 64 vsl 15 50 0 1 0 0 empty empty C 0 -9 0 10 -262130 -1
+-1 0 1;
+#X obj 263 231 *~;
+#X obj 230 152 line~ 0 10;
+#X msg 302 126 \$1 10;
+#X obj 301 63 vsl 15 50 0 1 0 0 empty empty D 0 -9 0 10 -262130 -1
+-1 0 1;
+#X obj 302 151 line~ 0 10;
+#X obj 305 232 *~;
+#X text 18 16 Simple Stereo Mixer as a Tannhauser test for the OWL
+;
+#X obj 171 195 adc~;
+#X obj 47 73 r Channel-A;
+#X obj 146 37 r Channel-B;
+#X obj 247 33 r Channel-C;
+#X obj 333 43 r Channel-D;
+#X connect 0 0 3 0;
+#X connect 1 0 0 0;
+#X connect 2 0 4 0;
+#X connect 3 0 2 0;
+#X connect 5 0 7 0;
+#X connect 6 0 5 0;
+#X connect 7 0 8 0;
+#X connect 8 0 4 1;
+#X connect 9 0 12 0;
+#X connect 10 0 9 0;
+#X connect 11 0 4 0;
+#X connect 12 0 11 0;
+#X connect 13 0 15 0;
+#X connect 14 0 13 0;
+#X connect 15 0 16 0;
+#X connect 16 0 4 1;
+#X connect 18 0 2 1;
+#X connect 18 0 8 1;
+#X connect 18 1 11 1;
+#X connect 18 1 16 1;
+#X connect 19 0 0 0;
+#X connect 20 0 5 0;
+#X connect 21 0 9 0;
+#X connect 22 0 13 0;
