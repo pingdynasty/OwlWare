@@ -1,4 +1,4 @@
-#include "Owl.h"
+#include "PatchLoader.h"
 #include "arm_math.h"
 #include "armcontrol.h"
 #include "usbcontrol.h"
@@ -29,7 +29,7 @@ PatchController patches;
 volatile bool bypass = false;
 
 void updateLed(){
-  setLed((LedPin)patches.getActiveSlot());
+  // setLed((LedPin)patches.getActiveSlot());
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
@@ -84,7 +84,11 @@ void run(){
       setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
 #endif
       buffer.split(source);
-      patches.process(buffer);
+      {
+
+        // patches.process(buffer);
+
+      }
       buffer.comb(dest);
       if(collision){
 	collision = false;
@@ -133,7 +137,7 @@ void setup(){
 
   settings.init();
   midi.init(MIDI_CHANNEL);
-  patches.init();
+  // patches.init(); // init 
 
 #ifdef EXPRESSION_PEDAL
   setupExpressionPedal();
