@@ -60,9 +60,27 @@ void pushButtonCallback(){
   }
 }
 
+typedef void (*pFunction)(void);
+#define PATCHFLASH ((uint32_t)0x08040000)
+#define PATCHRAM   ((uint32_t)0x20010000)
+
 void run(){
+  /* copy patch from flash to ram */
+  memcpy((void*)PATCHRAM, (void*)PATCHFLASH, 64*1024); // copy 64kb
+
+  /* Jump to patch */
+  pFunction jumpToApplication;
+  uint32_t JumpAddress;
+  JumpAddress = *(__IO uint32_t*)(PATCHRAM + 4);
+  jumpToApplication = (pFunction) JumpAddress;
+  /* Initialize user application's Stack Pointer */
+  __set_MSP(*(__IO uint32_t*) PATCHRAM);
+  jumpToApplication();
+
+  // shouldn't get here
+  // where is our stack pointer now?
   for(;;);
-  // todo: load and run patch
+    // debugToggle();
 }
 
 void setup(){
@@ -142,9 +160,9 @@ void setup(){
 void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
+#endif
   if(smem.audio_status && AUDIO_STATUS_PROCESS)
     debugToggle();
-#endif
     
   smem.audio_input = src;
   smem.audio_output = dst;
