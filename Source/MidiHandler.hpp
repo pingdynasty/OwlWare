@@ -5,7 +5,6 @@
 #include "MidiReader.hpp"
 #include "MidiController.h"
 #include "CodecController.h"
-#include "PatchController.h"
 #include "ApplicationSettings.h"
 
 class MidiHandler : public MidiReader {
@@ -18,8 +17,8 @@ public:
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){
     case PATCH_BUTTON:
-      if(value == 127)
-	patches.toggleActiveSlot();
+      // if(value == 127)
+      // 	patches.toggleActiveSlot();
       break;
     case LED:
       if(value < 42){
@@ -32,16 +31,16 @@ public:
       break;
     case PATCH_MODE:
       settings.patch_mode = value >> 5;
-      patches.setActiveSlot(patches.getActiveSlot());
+      // patches.setActiveSlot(patches.getActiveSlot());
       break;
     case PATCH_SLOT_GREEN:
-      patches.setPatch(GREEN, value);
+      // patches.setPatch(GREEN, value);
       break;
     case PATCH_SLOT_RED:
-      patches.setPatch(RED, value);
+      // patches.setPatch(RED, value);
       break;
     case ACTIVE_SLOT:
-      patches.setActiveSlot(value == 127 ? RED : GREEN);
+      // patches.setActiveSlot(value == 127 ? RED : GREEN);
       break;
     case LEFT_INPUT_GAIN:
       settings.inputGainLeft = value>>2;
@@ -194,7 +193,7 @@ public:
 	settings.reset();
 	settings.clearFlash();
 	codec.init(settings);
-	patches.setActiveSlot(GREEN);
+	// patches.setActiveSlot(GREEN);
       }
       break;
     }

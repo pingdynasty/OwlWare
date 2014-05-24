@@ -15,8 +15,7 @@ C_SRC += usbd_audio_core.c
 C_SRC += armcontrol.c usbcontrol.c owlcontrol.c midicontrol.c eepromcontrol.c
 C_SRC += clock.c operators.c serial.c gpio.c sysex.c
 
-CPP_SRC  = StompBox.cpp Owl.cpp CodecController.cpp MidiController.cpp PatchController.cpp ApplicationSettings.cpp
-CPP_SRC += PatchProcessor.cpp PatchRegistry.cpp
+CPP_SRC  = Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp
 
 OBJS =  $(C_SRC:%.c=Build/%.o)  $(CPP_SRC:%.cpp=Build/%.o)
 

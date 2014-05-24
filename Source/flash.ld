@@ -70,7 +70,7 @@ SECTIONS
    *(.text.arm_cos_f32);
    *(.text.arm_sin_f32);
    _fastcode_end = .;
-  } >RAM AT>FLASH
+  } >FIRMWARERAM AT>FIRMWARE
 _fastcode_load = LOADADDR (.fastcode);
 _fastcode_size = _fastcode_end - _fastcode_start;
 

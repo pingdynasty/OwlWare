@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#define AUDIO_STATUS_PROCESS     (1<<0)
+#define AUDIO_STATUS_BYPASS      (1<<1)
+#define AUDIO_STATUS_BUTTON      (1<<2)
+
 #ifdef __cplusplus
  extern "C" {
 #endif
