@@ -95,17 +95,17 @@ void MidiController::sendFirmwareVersion(){
   char* version = getFirmwareVersion();
   // uint32_t cycles = dwt_count;
   // uint32_t cycles = dwt_count/settings.audio_blocksize;
-  uint32_t cycles = dwt_count/AUDIO_BLOCK_SIZE;
   struct mallinfo minfo = mallinfo();
   int used = minfo.uordblks;
-  int available = minfo.fordblks;
-  // bool hse = isClockExternal();
-  // bool mem = SRAM_TestMemory();
-  // bool epr = settings.settingsInFlash();
   uint8_t len = strlen(version);
   char buffer[len+32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
+#ifdef DEBUG_AUDIO
+  uint32_t cycles = dwt_count/AUDIO_BLOCK_SIZE;
   len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
+#else /* DEBUG_AUDIO */
+  len = sprintf(buffer+1, "%s (%d bytes)", version, used);
+#endif /* DEBUG_AUDIO */
   sendSysEx((uint8_t*)buffer, len+2);
 }
 

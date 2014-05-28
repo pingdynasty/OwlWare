@@ -2,6 +2,8 @@
 
 #define FIRMWARE_VERSION             "OWL Rev04.004-pre"
 
+#define DEBUG_AUDIO
+
 #define GREEN_PATCH                  0
 #define RED_PATCH                    1
 

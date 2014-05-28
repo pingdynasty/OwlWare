@@ -17,8 +17,6 @@
 #include "clock.h"
 #include "device.h"
 
-#define DEBUG_AUDIO
-
 #define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
 
 CodecController codec;
