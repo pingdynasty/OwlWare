@@ -105,7 +105,7 @@ void MidiController::sendFirmwareVersion(){
   uint8_t len = strlen(version);
   char buffer[len+32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
-  len = sprintf(buffer+1, "%s (%lu | %d | %d)", version, cycles, used, available);
+  len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
   sendSysEx((uint8_t*)buffer, len+2);
 }
 
