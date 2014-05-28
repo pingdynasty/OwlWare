@@ -25,11 +25,14 @@ void PatchProcessor::setPatch(uint8_t patchIndex){
   clear();
   memset(parameterNames, 0, sizeof(parameterNames));
   bufferCount = 0;
-  if(patchIndex < registry.getNumberOfPatches())
-    index = patchIndex;
+  if(patchIndex >= registry.getNumberOfPatches())
+    patchIndex = 0;
+  patch = registry.create(patchIndex);
+  if(patch == NULL)
+    // fall back on previous patch if allocating memory failed
+    setPatch(index);
   else
-    index = 0;
-  patch = registry.create(index);
+    index = patchIndex;
 }
 
 void PatchProcessor::registerParameter(PatchParameterId pid, const char* name, const char* description){
