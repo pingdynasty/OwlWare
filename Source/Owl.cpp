@@ -77,7 +77,7 @@ uint16_t* dest;
 extern uint32_t dwt_count = 0;
 __attribute__ ((section (".coderam")))
 void run(){
-#ifdef DEBUG_AUDIO
+#ifdef DEBUG_DWT
       volatile unsigned int *DWT_CYCCNT = (volatile unsigned int *)0xE0001004; //address of the register
       volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
       volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; //address of the register
@@ -88,6 +88,8 @@ void run(){
     if(doProcessAudio){
 #ifdef DEBUG_AUDIO
       setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+#endif
+#ifdef DEBUG_DWT
       *DWT_CYCCNT = 0; // reset the counter
 #endif
       buffer.split(source);
@@ -103,6 +105,8 @@ void run(){
       }
 #ifdef DEBUG_AUDIO
       clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+#endif
+#ifdef DEBUG_DWT
       dwt_count = *DWT_CYCCNT;
 #endif
     }

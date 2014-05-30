@@ -93,19 +93,17 @@ extern char *heap_end;
 
 void MidiController::sendFirmwareVersion(){
   char* version = getFirmwareVersion();
-  // uint32_t cycles = dwt_count;
-  // uint32_t cycles = dwt_count/settings.audio_blocksize;
   struct mallinfo minfo = mallinfo();
   int used = minfo.uordblks;
   uint8_t len = strlen(version);
   char buffer[len+32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
-#ifdef DEBUG_AUDIO
-  uint32_t cycles = dwt_count/AUDIO_BLOCK_SIZE;
+#ifdef DEBUG_DWT
+  uint32_t cycles = dwt_count/AUDIO_BLOCK_SIZE; /* should be: settings.audio_blocksize */
   len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
-#else /* DEBUG_AUDIO */
+#else /* DEBUG_DWT */
   len = sprintf(buffer+1, "%s (%d bytes)", version, used);
-#endif /* DEBUG_AUDIO */
+#endif /* DEBUG_DWT */
   sendSysEx((uint8_t*)buffer, len+2);
 }
 
