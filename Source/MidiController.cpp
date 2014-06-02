@@ -87,13 +87,25 @@ void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
 }
 
+#include <stdio.h>
+#include <malloc.h>
+extern uint32_t dwt_count;
+extern char *heap_end;
+
 void MidiController::sendFirmwareVersion(){
   char* version = getFirmwareVersion();
+  struct mallinfo minfo = mallinfo();
+  int used = minfo.uordblks;
   uint8_t len = strlen(version);
-  uint8_t buffer[len+1];
+  char buffer[len+32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
-  memcpy(buffer+1, version, len);
-  sendSysEx(buffer, sizeof(buffer));
+#ifdef DEBUG_DWT
+  uint32_t cycles = dwt_count/AUDIO_BLOCK_SIZE; /* should be: settings.audio_blocksize */
+  len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
+#else /* DEBUG_DWT */
+  len = sprintf(buffer+1, "%s (%d bytes)", version, used);
+#endif /* DEBUG_DWT */
+  sendSysEx((uint8_t*)buffer, len+2);
 }
 
 void MidiController::sendDeviceId(){
@@ -106,11 +118,16 @@ void MidiController::sendDeviceId(){
 
 void MidiController::sendSelfTest(){
   // this code somehow leads to a HardFault once the interrupt has completed
-  uint8_t buffer[2];
-  buffer[0] = SYSEX_SELFTEST;
-  buffer[1] = (isClockExternal() << 2) | ( SRAM_TestMemory() << 1) | settings.settingsInFlash();
-  sendSysEx(buffer, sizeof(buffer));
+  // uint8_t buffer[2];
+  // buffer[0] = SYSEX_SELFTEST;
+  // bool hse = isClockExternal();
+  // bool mem = SRAM_TestMemory();
+  // bool epr = settings.settingsInFlash();
+  // buffer[1] = (hse << 2) | ( mem << 1) | epr;
+  // // buffer[1] = (hse << 2) | ( SRAM_TestMemory() << 1) | settings.settingsInFlash();
+  // sendSysEx(buffer, sizeof(buffer));
 
+  // untested
   // int error = errno;
   // if(error != 0){
   //   buffer[2] = error;

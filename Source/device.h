@@ -20,6 +20,9 @@
 /* #define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_3 */
 /* #define EXPRESSION_PEDAL_RING_CHANNEL ADC_Channel_3 */
 
+#define DEBUG_AUDIO
+#define DEBUG_DWT
+
 #define GREEN_PATCH                  0
 #define RED_PATCH                    1
 
