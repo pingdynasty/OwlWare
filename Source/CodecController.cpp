@@ -24,7 +24,7 @@ const uint16_t wm8731_init_data[] = {
 	WM8731_HPVOL_M6DB,			                  // Reg 0x02: Left Headphone out
 	WM8731_HPVOL_M6DB,	                                  // Reg 0x03: Right Headphone out
 	WM8731_MUTEMIC|WM8731_DACSEL,                             // Reg 0x04: Analog Audio Path Control
-	WM8731_DEEMP_NONE,                                        // Reg 0x05: Digital Audio Path Control
+	WM8731_ADCHPD|WM8731_DEEMP_NONE,                          // Reg 0x05: Digital Audio Path Control
 	WM8731_MICPD|WM8731_OSCPD|WM8731_OUTPD|WM8731_CLKOUTPD,   // Reg 0x06: Power Down Control
 	WM8731_FORMAT_I2S|WM8731_IWL_16BIT,                       // Reg 0x07: Digital Audio Interface Format
 	WM8731_MODE_NORMAL|WM8731_SR_48_48,                       // Reg 0x08: Sampling Control
