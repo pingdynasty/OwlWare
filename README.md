@@ -33,13 +33,15 @@ If you have installed the software elsewhere, edit `Makefile.f4` in the __OwlWar
 
 
 ## DFU Util
-To upload firmware over USB (recommended for most users), you will also need dfu-util.
+To upload firmware over USB, you will also need `dfu-util` which you can download from [here][dfu-util].
+Unzip the binaries (or compile them) in the __OwlWare/Tools/dfu-util__ directory.
 
-Download and install from [here][dfu-util].
+Recommended for most users. [OwlNest][owl-nest] can also be used.
 
 
 ## ST Util
-For those who want to upload firmware using an STLINKv1 or STLINKv2 programmer (such as those on the ST Discovery boards), download and install stlink from [here][stlink].
+For those who want to upload firmware using an STLINKv1 or STLINKv2 programmer (such as those on the ST Discovery boards).
+Download `stlink` from [here][stlink] and install it in the __OwlWare/Tools/stlink__ directory..
 
 For most users, this will not be required.
 
@@ -73,3 +75,4 @@ In the __OwlWare__ directory, type in:
 [owlware-zip]: https://github.com/pingdynasty/OwlWare/archive/master.zip
 [owlpatches-zip]: https://github.com/pingdynasty/OwlPatches/archive/master.zip
 [cygwin]: http://www.cygwin.com
+[owl-nest]: http://hoxtonowl.com/software/owlnest

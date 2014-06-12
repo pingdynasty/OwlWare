@@ -5,6 +5,7 @@ BIN=$(BUILD)/$(notdir $(CURDIR)).bin
 # Tool path
 TOOLROOT=$(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_8-2013q4/bin
 STLINK=$(TEMPLATEROOT)/Tools/stlink/
+DFUUTIL=$(TEMPLATEROOT)/Tools/dfu-util/dfu-util
 
 # Tools
 CC=$(TOOLROOT)/arm-none-eabi-gcc
@@ -17,7 +18,6 @@ OBJCOPY=$(TOOLROOT)/arm-none-eabi-objcopy
 OBJDUMP=$(TOOLROOT)/arm-none-eabi-objdump
 STFLASH=$(STLINK)/st-flash
 STUTIL=$(STLINK)/st-util
-DFUUTIL=dfu-util
 BOOTLOADER ?= $(TEMPLATEROOT)/Libraries/OwlBoot/OwlBoot.bin
 
 # Set up search path
