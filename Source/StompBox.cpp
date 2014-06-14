@@ -36,3 +36,21 @@ float Patch::getParameterValue(PatchParameterId pid){
 AudioBuffer* Patch::createMemoryBuffer(int channels, int samples){
   return processor->createMemoryBuffer(channels, samples);
 }
+
+bool Patch::isButtonPressed(PatchButtonId bid){
+  switch(bid){
+  case BYPASS_BUTTON:
+    return isStompSwitchPressed();
+    break;
+  case PUSHBUTTON:
+    return isPushButtonPressed();
+    break;
+  case GREEN_BUTTON:
+    return getLed() == LED_GREEN;
+    break;
+  case RED_BUTTON:
+    return getLed() == LED_RED;
+    break;
+  }
+  return false;
+}
