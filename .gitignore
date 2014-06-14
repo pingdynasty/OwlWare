@@ -4,9 +4,3 @@
 *.d
 *.~
 gdbscript
-
-Build/*
-Libraries/STM32F4-Discovery_FW_V1.1.0
-Tools/gcc-arm-none-eabi*
-Tools/dfu-util/
-Tools/stlink/
