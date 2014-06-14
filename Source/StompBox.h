@@ -13,6 +13,13 @@ enum PatchParameterId {
   PARAMETER_F
 };
 
+enum PatchButtonId {
+  BYPASS_BUTTON,
+  PUSHBUTTON,
+  GREEN_BUTTON,
+  RED_BUTTON
+};
+
 class AudioBuffer {
 public:
   virtual ~AudioBuffer();
@@ -27,6 +34,7 @@ public:
   virtual ~Patch();
   void registerParameter(PatchParameterId pid, const char* name, const char* description = "");
   float getParameterValue(PatchParameterId pid);
+  bool isButtonPressed(PatchButtonId bid);
   int getBlockSize();
   double getSampleRate();
   AudioBuffer* createMemoryBuffer(int channels, int samples);
