@@ -29,7 +29,7 @@
 #define MIDI_CHANNEL                 0
 #define NOF_ADC_VALUES               5
 #define MAX_BUFFERS_PER_PATCH        8
-#define MAX_NUMBER_OF_PATCHES        32
+#define MAX_NUMBER_OF_PATCHES        48
 
 /* I2C clock speed configuration (in Hz)  */
 #define I2C_SPEED                    100000

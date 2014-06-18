@@ -37,6 +37,22 @@ AudioBuffer* Patch::createMemoryBuffer(int channels, int samples){
   return processor->createMemoryBuffer(channels, samples);
 }
 
+void pressButton(PatchButtonId bid){
+  switch(bid){
+  case BYPASS_BUTTON:
+    break;
+  case PUSHBUTTON:
+    toggleLed();
+    break;
+  case GREEN_BUTTON:
+    setLed(GREEN);
+    break;
+  case RED_BUTTON:
+    setLed(RED);
+    break;
+  }
+}
+
 bool Patch::isButtonPressed(PatchButtonId bid){
   switch(bid){
   case BYPASS_BUTTON:
@@ -46,10 +62,10 @@ bool Patch::isButtonPressed(PatchButtonId bid){
     return isPushButtonPressed();
     break;
   case GREEN_BUTTON:
-    return getLed() == LED_GREEN;
+    return getLed() == GREEN;
     break;
   case RED_BUTTON:
-    return getLed() == LED_RED;
+    return getLed() == RED;
     break;
   }
   return false;
