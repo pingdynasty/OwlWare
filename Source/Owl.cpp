@@ -17,7 +17,8 @@
 #include "clock.h"
 #include "device.h"
 
-#define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
+#define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; \
+if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
 
 CodecController codec;
 MidiController midi;
@@ -60,7 +61,7 @@ void toggleActiveSlot(){
 
 void pushButtonCallback(){
   DEBOUNCE(pushbutton, 200);
-  if(isPushButtonPressed())
+  if(isPushButtonPressed() && settings.patch_mode != PATCHMODE_SINGLE)
     toggleActiveSlot();
 }
 
@@ -79,15 +80,18 @@ volatile bool collision = false;
 uint16_t* source;
 uint16_t* dest;
 
-extern uint32_t dwt_count = 0;
+#ifdef DEBUG_DWT
+uint32_t dwt_count = 0;
+#endif
+
 __attribute__ ((section (".coderam")))
 void run(){
 #ifdef DEBUG_DWT
-      volatile unsigned int *DWT_CYCCNT = (volatile unsigned int *)0xE0001004; //address of the register
-      volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
-      volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; //address of the register
-      *SCB_DEMCR = *SCB_DEMCR | 0x01000000;
-      *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
+  volatile unsigned int *DWT_CYCCNT = (volatile unsigned int *)0xE0001004; //address of the register
+  volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
+  volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; //address of the register
+  *SCB_DEMCR = *SCB_DEMCR | 0x01000000;
+  *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
 #endif
   for(;;){
     if(doProcessAudio){

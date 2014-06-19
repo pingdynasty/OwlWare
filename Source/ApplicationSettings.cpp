@@ -20,6 +20,7 @@ void ApplicationSettings::reset(){
   patch_green = GREEN_PATCH;
   patch_red = RED_PATCH;
   patch_mode = PATCHMODE_DUAL;
+  // patch_midi_mode = false;
   midi_channel = MIDI_CHANNEL;
   inputGainLeft = AUDIO_INPUT_GAIN_LEFT;
   inputGainRight = AUDIO_INPUT_GAIN_RIGHT;

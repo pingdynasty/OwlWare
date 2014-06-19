@@ -1,6 +1,8 @@
 #ifndef _MidiHandler_H_
 #define _MidiHandler_H_
 
+#include <string.h>
+#include "device.h"
 #include "OpenWareMidiControl.h"
 #include "MidiReader.hpp"
 #include "MidiController.h"
@@ -8,15 +10,40 @@
 #include "PatchController.h"
 #include "ApplicationSettings.h"
 
+uint16_t midi_values[NOF_ADC_VALUES];
+
 class MidiHandler : public MidiReader {
 private:
   uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
 public:
-  MidiHandler() : MidiReader(buffer, sizeof(buffer))
-  {}
+  MidiHandler() : MidiReader(buffer, sizeof(buffer)) {
+    memset(midi_values, 0, sizeof(midi_values));
+  }
 
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){
+    case PATCH_PARAMETER_A:
+      midi_values[PARAMETER_A] = value<<9;
+      break;
+    case PATCH_PARAMETER_B:
+      midi_values[PARAMETER_B] = value<<9;
+      break;
+    case PATCH_PARAMETER_C:
+      midi_values[PARAMETER_C] = value<<9;
+      break;
+    case PATCH_PARAMETER_D:
+      midi_values[PARAMETER_D] = value<<9;
+      break;
+    case PATCH_PARAMETER_E:
+      midi_values[PARAMETER_E] = value<<9;
+      break;
+    case PATCH_CONTROL:
+      if(value == 127){
+	patches.setParameterValues(midi_values);
+      }else{
+	patches.setParameterValues(getAnalogValues());
+      }
+      break;
     case PATCH_BUTTON:
       if(value == 127)
 	patches.toggleActiveSlot();

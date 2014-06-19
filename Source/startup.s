@@ -72,7 +72,7 @@ defined in linker script */
 Reset_Handler:  
 	/* Check for magic number to jump to bootloader */
 	ldr  r0, =0x2000FFF0 /* put address into r0 */
-	ldr  r1, =0x5EA1AB50
+	ldr  r1, =0xF00B4400
 	ldr  r2, [r0, #0]	/* copy value from address r0 to r2 */
 	str  r0, [r0, #0] /* Invalidate */
 	cmp  r2, r1	/* compare the two registers */
