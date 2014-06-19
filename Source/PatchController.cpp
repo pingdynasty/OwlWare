@@ -18,7 +18,12 @@ PatchController::PatchController(){
 PatchController::~PatchController(){
 }
 
+void PatchController::setParameterValues(uint16_t* values){
+  parameterValues = values;
+}
+
 void PatchController::init(){
+  parameterValues = getAnalogValues();
   setActiveSlot(RED);
   red.setPatch(settings.patch_red);
   setActiveSlot(GREEN);
@@ -53,29 +58,29 @@ void PatchController::process(AudioBuffer& buffer){
   switch(mode){
   case SINGLE_MODE:
   case DUAL_GREEN_MODE:
-    green.setParameterValues(getAnalogValues());
+    green.setParameterValues(parameterValues);
     green.patch->processAudio(buffer);
     break;
   case DUAL_RED_MODE:
-    red.setParameterValues(getAnalogValues());
+    red.setParameterValues(parameterValues);
     red.patch->processAudio(buffer);
     break;
   case SERIES_GREEN_MODE:
-    green.setParameterValues(getAnalogValues());
+    green.setParameterValues(parameterValues);
     green.patch->processAudio(buffer);
     red.patch->processAudio(buffer);
     break;
   case SERIES_RED_MODE:
-    red.setParameterValues(getAnalogValues());
+    red.setParameterValues(parameterValues);
     green.patch->processAudio(buffer);
     red.patch->processAudio(buffer);
     break;
   case PARALLEL_GREEN_MODE:
-    green.setParameterValues(getAnalogValues());
+    green.setParameterValues(parameterValues);
     processParallel(buffer);
     break;
   case PARALLEL_RED_MODE:
-    red.setParameterValues(getAnalogValues());
+    red.setParameterValues(parameterValues);
     processParallel(buffer);
     break;
   }

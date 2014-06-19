@@ -88,8 +88,10 @@ void MidiController::sendDeviceInfo(){
 
 #include <stdio.h>
 #include <malloc.h>
-extern uint32_t dwt_count;
 extern char *heap_end;
+#ifdef DEBUG_DWT
+extern uint32_t dwt_count;
+#endif /* DEBUG_DWT */
 
 void MidiController::sendFirmwareVersion(){
   char* version = getFirmwareVersion();

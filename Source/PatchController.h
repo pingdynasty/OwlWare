@@ -18,12 +18,14 @@ public:
   void toggleActiveSlot();
   void setActiveSlot(LedPin slot);
   PatchProcessor* getCurrentPatchProcessor();
+  void setParameterValues(uint16_t* values);
 private:
   void processParallel(AudioBuffer& buffer);
   PatchProcessor green;
   PatchProcessor red;
   LedPin activeSlot = NONE;
   uint8_t mode;
+  uint16_t* parameterValues;
 };
 
 #endif // __PatchController_h__

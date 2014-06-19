@@ -35,6 +35,7 @@ public:
   uint8_t patch_green;
   uint8_t patch_red;
   uint8_t patch_mode;
+  /* bool patch_midi_mode; */
   uint8_t midi_channel;
   uint8_t inputGainLeft;
   uint8_t inputGainRight;
@@ -50,14 +51,5 @@ public:
 };
 
 extern ApplicationSettings settings;
-
-
-/* class ApplicationSettings { */
-/*  public: */
-/*   float getValue(OpenWareMidiControl pid); */
-/*   void saveToFlash(); */
-/*   void loadFromFlash(); */
-/*   void reset(); */
-/* }; */
 
 #endif // __ApplicationSettings_H__

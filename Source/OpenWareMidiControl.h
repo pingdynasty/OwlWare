@@ -25,7 +25,7 @@ enum OpenWareMidiControl {
   PATCH_PARAMETER_D      = 23, /*  Right knob */
   PATCH_PARAMETER_E      = 24, /*  Expression pedal */
   PATCH_BUTTON           = 25, /*  0=not pressed, 127=pressed */
-
+  PATCH_CONTROL          = 26, /*  0=local, 127=MIDI control */
   PATCH_MODE             = 27, /* 0-31 = single,
 				* 32-63 = dual,
 				* 64-95 = series,
