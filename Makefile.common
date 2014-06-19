@@ -1,6 +1,6 @@
 # name of executable
-ELF=$(BUILD)/$(notdir $(CURDIR)).elf                    
-BIN=$(BUILD)/$(notdir $(CURDIR)).bin
+ELF=$(BUILD)/OwlWare.elf                    
+BIN=$(BUILD)/OwlWare.bin
 
 # Tool path
 TOOLROOT=$(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_8-2014q2/bin
@@ -46,7 +46,7 @@ $(BUILD)/%.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 	$(CC) -MM -MT"$@" $(CFLAGS) $< > $(@:.o=.d)
 
-$(BUILD)/%.o: %.cpp
+$(BUILD)/%.o: %.cpp %.cc
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 	$(CXX) -MM -MT"$@" $(CXXFLAGS) $< > $(@:.o=.d)
 
