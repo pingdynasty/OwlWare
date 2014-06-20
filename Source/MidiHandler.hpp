@@ -39,6 +39,7 @@ public:
       break;
     case PATCH_CONTROL:
       if(value == 127){
+	memcpy(midi_values, getAnalogValues(), sizeof(midi_values));
 	patches.setParameterValues(midi_values);
       }else{
 	patches.setParameterValues(getAnalogValues());

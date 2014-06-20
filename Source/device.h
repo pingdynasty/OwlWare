@@ -1,8 +1,8 @@
 #include <inttypes.h>
 
 #define EUROOWL
-#define FIRMWARE_VERSION             "EuroOWL Rev01-pre"
-#define NOF_ADC_VALUES               6
+#define FIRMWARE_VERSION             "EuroOWL Rev02-pre"
+#define NOF_ADC_VALUES               5
 /* #define EXPRESSION_PEDAL */
 /* #define SERIAL_PORT                  1 */
 

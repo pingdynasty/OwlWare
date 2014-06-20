@@ -22,7 +22,6 @@ void MidiController::sendSettings(){
   sendCc(PATCH_PARAMETER_C, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_C)*127.0) & 0x7f);
   sendCc(PATCH_PARAMETER_D, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_D)*127.0) & 0x7f);
   sendCc(PATCH_PARAMETER_E, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_F, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
   sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
   sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
   sendCc(PATCH_MODE, settings.patch_mode << 5);
