@@ -50,10 +50,6 @@ void adcSetupDMA(uint16_t* dma){
   /* Configure expression pedal pin (PA2 or PA3) as analog input */
   configureAnalogInput(EXPRESSION_PEDAL_RING_PORT, EXPRESSION_PEDAL_RING_PIN);
 /*   configureAnalogInput(GPIOA, GPIO_Pin_3); */
-#elif defined EUROOWL
-  /* Configure both expression pedal pins (PA2 and PA3) as analog inputs */
-  configureAnalogInput(EXPRESSION_PEDAL_TIP_PORT, EXPRESSION_PEDAL_TIP_PIN);
-  configureAnalogInput(EXPRESSION_PEDAL_RING_PORT, EXPRESSION_PEDAL_RING_PIN);
 #endif
 
   ADC_DeInit();
@@ -92,9 +88,6 @@ void adcSetupDMA(uint16_t* dma){
   /* Expression Pedal Input PA2/3, ADC123_IN2-3 */
   ADC_RegularChannelConfig(ADC3, EXPRESSION_PEDAL_RING_CHANNEL, 5, sampletime);
 /*   ADC_RegularChannelConfig(ADC3, ADC_Channel_3, 5, sampletime); */
-#elif defined EUROOWL
-  ADC_RegularChannelConfig(ADC3, EXPRESSION_PEDAL_TIP_CHANNEL, 5, sampletime);
-  ADC_RegularChannelConfig(ADC3, EXPRESSION_PEDAL_RING_CHANNEL, 6, sampletime);
 #endif
 
   /* Enable DMA request after last transfer (Single-ADC mode) */

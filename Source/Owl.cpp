@@ -28,12 +28,15 @@ PatchController patches;
 volatile bool bypass = false;
 
 void updateLed(){
+#ifdef OWLMODULAR
+  setPin(GPIOB, GPIO_Pin_5); // PB5 OWL Modular digital output
+#endif
   setLed((LedPin)patches.getActiveSlot());
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
 void updateBypassMode(){
-#ifdef EUROOWL
+#ifdef OWLMODULAR
   bypass = false;
   updateLed();
 #else
@@ -156,10 +159,14 @@ void setup(){
   midi.init(MIDI_CHANNEL);
   patches.init();
 
-#ifdef EUROOWL
-  setupControlVoltageInput();
-#else
+#ifdef OWLMODULAR
+  configureDigitalInput(GPIOB, GPIO_Pin_6, GPIO_PuPd_NOPULL);  // PB6 OWL Modular digital input
+  configureDigitalOutput(GPIOB, GPIO_Pin_7);  // PB7 OWL Modular digital output
+  setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
+#endif
+
 #ifdef EXPRESSION_PEDAL
+#ifndef OWLMODULAR
   setupExpressionPedal();
 #endif
 #endif

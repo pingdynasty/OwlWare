@@ -1,17 +1,17 @@
 #include <inttypes.h>
 
-#define EUROOWL
-#define FIRMWARE_VERSION             "EuroOWL Rev02-pre"
+#define OWLMODULAR
+#define FIRMWARE_VERSION             "OWL Modular Rev02-pre"
 #define NOF_ADC_VALUES               5
-/* #define EXPRESSION_PEDAL */
+#define EXPRESSION_PEDAL
 /* #define SERIAL_PORT                  1 */
 
 #define EXPRESSION_PEDAL_TIP_PORT    GPIOA
-#define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_2
-#define EXPRESSION_PEDAL_TIP_CHANNEL ADC_Channel_2
+#define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_3
+#define EXPRESSION_PEDAL_TIP_CHANNEL ADC_Channel_3
 #define EXPRESSION_PEDAL_RING_PORT   GPIOA
-#define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_3
-#define EXPRESSION_PEDAL_RING_CHANNEL ADC_Channel_3
+#define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_2
+#define EXPRESSION_PEDAL_RING_CHANNEL ADC_Channel_2
 
 /* #define EXPRESSION_PEDAL_TIP_PORT    GPIOA */
 /* #define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_2 */
