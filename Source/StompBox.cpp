@@ -42,7 +42,6 @@ void Patch::pressButton(PatchButtonId bid){
   case BYPASS_BUTTON:
     break;
   case PUSHBUTTON:
-    toggleLed();
     break;
   case GREEN_BUTTON:
     setLed(GREEN);
@@ -51,12 +50,6 @@ void Patch::pressButton(PatchButtonId bid){
     setLed(RED);
     break;
   }
-#ifdef OWLMODULAR
-  if(getLed() == RED)
-    clearPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
-  else
-    setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
-#endif
 }
 
 bool Patch::isButtonPressed(PatchButtonId bid){
@@ -66,7 +59,7 @@ bool Patch::isButtonPressed(PatchButtonId bid){
     break;
   case PUSHBUTTON:
 #ifdef OWLMODULAR
-    return !getPin(GPIOB, GPIO_Pin_6) || isPushButtonPressed(); // PB6 OWL Modular digital input
+    return !getPin(GPIOB, GPIO_Pin_6) || isStompSwitchPressed();
 #else
     return isPushButtonPressed();
 #endif

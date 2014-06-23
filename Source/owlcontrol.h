@@ -27,15 +27,30 @@
    inline void setLed(LedPin led){
      clearPin(LED_PORT, led ^ (LED_RED|LED_GREEN));
      setPin(LED_PORT, led);
+#ifdef OWLMODULAR
+     if(led == LED_RED)
+       clearPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
+     else
+       setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
+#endif
    }
 
    inline void toggleLed(){
      togglePin(LED_PORT, LED_RED|LED_GREEN);
+#ifdef OWLMODULAR
+     togglePin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
+#endif
    }
 
    inline void blink(){
      togglePin(LED_PORT, LED_RED|LED_GREEN);
+#ifdef OWLMODULAR
+     togglePin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
+#endif
      togglePin(LED_PORT, LED_RED|LED_GREEN);
+#ifdef OWLMODULAR
+     togglePin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
+#endif
    }
 
    inline void debugSet(){
