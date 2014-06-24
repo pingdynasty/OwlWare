@@ -42,6 +42,7 @@ void Patch::pressButton(PatchButtonId bid){
   case BYPASS_BUTTON:
     break;
   case PUSHBUTTON:
+    toggleLed();
     break;
   case GREEN_BUTTON:
     setLed(GREEN);

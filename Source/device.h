@@ -1,24 +1,9 @@
 #include <inttypes.h>
 
-#define OWLMODULAR
-#define FIRMWARE_VERSION             "OWL Modular Rev02-pre"
-#define NOF_ADC_VALUES               5
-#define EXPRESSION_PEDAL
+/* #define OWLMODULAR */
+#define FIRMWARE_VERSION             "OWL Rev04-pre"
+
 /* #define SERIAL_PORT                  1 */
-
-#define EXPRESSION_PEDAL_TIP_PORT    GPIOA
-#define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_3
-#define EXPRESSION_PEDAL_TIP_CHANNEL ADC_Channel_3
-#define EXPRESSION_PEDAL_RING_PORT   GPIOA
-#define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_2
-#define EXPRESSION_PEDAL_RING_CHANNEL ADC_Channel_2
-
-/* #define EXPRESSION_PEDAL_TIP_PORT    GPIOA */
-/* #define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_2 */
-/* #define EXPRESSION_PEDAL_TIP_CHANNEL ADC_Channel_2 */
-/* #define EXPRESSION_PEDAL_RING_PORT   GPIOA */
-/* #define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_3 */
-/* #define EXPRESSION_PEDAL_RING_CHANNEL ADC_Channel_3 */
 
 #define DEBUG_AUDIO
 #define DEBUG_DWT
@@ -34,14 +19,24 @@
 #define AUDIO_CHANNELS               2
 #define AUDIO_BITDEPTH               24    /* bits per sample */
 #define AUDIO_SAMPLINGRATE           48000
-#define AUDIO_BLOCK_SIZE             256   /* size in samples of a single channel audio block */
+#define AUDIO_BLOCK_SIZE             128   /* size in samples of a single channel audio block */
 
+#ifdef OWLMODULAR
+/* +0db in and out */
+#define AUDIO_INPUT_GAIN_LEFT        0x017
+#define AUDIO_INPUT_GAIN_RIGHT       0x017
+#define AUDIO_OUTPUT_GAIN_LEFT       0x079
+#define AUDIO_OUTPUT_GAIN_RIGHT      0x079 
+#else /* OWLMODULAR */
+/* +6db in, -6dB out */
 #define AUDIO_INPUT_GAIN_LEFT        0x01b
 #define AUDIO_INPUT_GAIN_RIGHT       0x01b
 #define AUDIO_OUTPUT_GAIN_LEFT       0x073
 #define AUDIO_OUTPUT_GAIN_RIGHT      0x073
+#endif /* OWLMODULAR */
 
 #define MIDI_CHANNEL                 0
+#define NOF_ADC_VALUES               5
 #define MAX_BUFFERS_PER_PATCH        8
 #define MAX_NUMBER_OF_PATCHES        48
 
@@ -69,6 +64,24 @@
 #define SWITCH_A_PIN_LINE            EXTI_Line4           /* Line 4 connects to all Px4 pins, et c */
 #define SWITCH_A_IRQ                 EXTI4_IRQn
 #define SWITCH_A_HANDLER             EXTI4_IRQHandler
+
+/* Expression input */
+#define EXPRESSION_PEDAL
+#ifdef OWLMODULAR
+#define EXPRESSION_PEDAL_TIP_PORT    GPIOA
+#define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_3
+#define EXPRESSION_PEDAL_TIP_CHANNEL ADC_Channel_3
+#define EXPRESSION_PEDAL_RING_PORT   GPIOA
+#define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_2
+#define EXPRESSION_PEDAL_RING_CHANNEL ADC_Channel_2
+#else /* OWLMODULAR */
+#define EXPRESSION_PEDAL_TIP_PORT    GPIOA
+#define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_2
+#define EXPRESSION_PEDAL_TIP_CHANNEL ADC_Channel_2
+#define EXPRESSION_PEDAL_RING_PORT   GPIOA
+#define EXPRESSION_PEDAL_RING_PIN    GPIO_Pin_3
+#define EXPRESSION_PEDAL_RING_CHANNEL ADC_Channel_3
+#endif /* OWLMODULAR */
 
 /* Switch B: illuminated pushbutton */
 #define SWITCH_B_PORT                GPIOE

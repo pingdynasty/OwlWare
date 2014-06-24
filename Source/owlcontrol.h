@@ -29,9 +29,9 @@
      setPin(LED_PORT, led);
 #ifdef OWLMODULAR
      if(led == LED_RED)
-       clearPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
+       clearPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output high
      else
-       setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
+       setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output low
 #endif
    }
 
