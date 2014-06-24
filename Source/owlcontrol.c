@@ -7,7 +7,7 @@
 #include "gpio.h"
 
 char* getFirmwareVersion(){ 
-  return FIRMWARE_VERSION ;
+  return HARDWARE_VERSION "-" FIRMWARE_VERSION ;
 }
 
 bool isClockExternal(){

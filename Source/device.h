@@ -1,11 +1,12 @@
 #include <inttypes.h>
 
 /* #define OWLMODULAR */
-#define FIRMWARE_VERSION             "OWL Rev04-pre"
+#define FIRMWARE_VERSION             "004-pre"
+#define HARDWARE_VERSION             "OWL Rev04"
 
 /* #define SERIAL_PORT                  1 */
 
-#define DEBUG_AUDIO
+/* #define DEBUG_AUDIO */
 #define DEBUG_DWT
 
 #define GREEN_PATCH                  0
@@ -38,7 +39,7 @@
 #define MIDI_CHANNEL                 0
 #define NOF_ADC_VALUES               5
 #define MAX_BUFFERS_PER_PATCH        8
-#define MAX_NUMBER_OF_PATCHES        48
+#define MAX_NUMBER_OF_PATCHES        64
 
 /* I2C clock speed configuration (in Hz)  */
 #define I2C_SPEED                    100000
