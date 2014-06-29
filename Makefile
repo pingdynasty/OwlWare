@@ -24,7 +24,7 @@ OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o)
 
 TANN_DIR = $(TEMPLATEROOT)/Libraries/Tannhauser
 TANN_FILE ?= $(TANN_DIR)/t-owl-stereomixer.pd
-TANN_UPLOAD = python2.7 $(TEMPLATEROOT)/Tools/Tannhauser/uploader.py
+TANN_UPLOAD = /opt/local/bin/python2.7 $(TEMPLATEROOT)/Tools/Tannhauser/uploader.pyc
 TANN_ARGS = --platform owl -v
 TANN_LIB = $(BUILD)/libTannhauser.a
 LDLIBS = $(TANN_LIB) -lm
