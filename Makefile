@@ -8,7 +8,6 @@ CFLAGS  += -std=gnu99
 ASFLAGS  = -g
 LDLIBS   = -lm
 LDSCRIPT = Source/flash.ld
-LDLIBS = -lm
 
 C_SRC  = codec.c i2s.c errorhandlers.c main.c basicmaths.c fsmc_sram.c
 C_SRC += system_hse.c
