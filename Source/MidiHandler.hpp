@@ -23,19 +23,20 @@ public:
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){
     case PATCH_PARAMETER_A:
-      midi_values[PARAMETER_A] = value<<9;
+      // scale from 7bit to 12bit value
+      midi_values[PARAMETER_A] = value<<5;
       break;
     case PATCH_PARAMETER_B:
-      midi_values[PARAMETER_B] = value<<9;
+      midi_values[PARAMETER_B] = value<<5;
       break;
     case PATCH_PARAMETER_C:
-      midi_values[PARAMETER_C] = value<<9;
+      midi_values[PARAMETER_C] = value<<5;
       break;
     case PATCH_PARAMETER_D:
-      midi_values[PARAMETER_D] = value<<9;
+      midi_values[PARAMETER_D] = value<<5;
       break;
     case PATCH_PARAMETER_E:
-      midi_values[PARAMETER_E] = value<<9;
+      midi_values[PARAMETER_E] = value<<5;
       break;
     case PATCH_CONTROL:
       if(value == 127){
