@@ -24,13 +24,6 @@ uint8_t* getDeviceId(){
   deviceId[2] = addr[2];
   return (uint8_t*)deviceId;
 
-  /* return (uint8_t*)0x1fff7a10; */
-
-  /* const uint32_t* addr = (uint32_t*)0x1fff7a10; */
-  /* a = addr[0]; */
-  /* b = addr[1]; */
-  /* c = addr[2]; */
-
   // read location 0xE0042000
   // 16 bits revision id, 4 bits reserved, 12 bits device id
   /* 0x1000 = Revision A, 0x1001 = Revision Z */
@@ -41,13 +34,25 @@ uint8_t* getDeviceId(){
 
 }
 
-/* Magic number to store in memory before reset to tell the device to
- * enter system bootloader.
- */
-const uint32_t kBootloaderMagicNumber = 0xF00B4400;
+__attribute__((naked))
+void dfu_reboot(void){
+  /* asm volatile("ldr  r0, =0x1fff0000\n" */
+  /* 	       "ldr  sp, [r0, #0]\n" */
+  /* 	       "ldr  r0, [r0, #4]\n" */
+  /* 	       "bx   r0\n"); */
+
+  /* This address is within the first 64k of memory.
+   * The magic number must match what is in the bootloader */
+  *((unsigned long *)0x2000FFF0) = 0xaeaaefaf ^ 0x00f00b44ff;
+
+  NVIC_SystemReset();
+
+  /* Shouldn't get here */
+  while(1);
+}
 
 /* Jump to the internal STM32 bootloader. The way this works is that we
- * set a magic number in memory that our startup code looks for (see startup_stm32f4xx.s).
+ * set a magic number in memory that our startup code looks for (see startup.s).
  * RAM is preserved across system reset, so when it finds this magic number, it will go
  * to the bootloader code rather than the application code.
  */
@@ -61,26 +66,19 @@ void jump_to_bootloader(void){
    */
   usb_deinit();
 
-  /* /\* Disable all interrupts *\/ */
-  /* RCC->CIR = 0x00000000; */
+  /* Disable all interrupts */
+  RCC->CIR = 0x00000000;
 
   /* Blink LEDs */
+  setLed(RED);
   for(i = 0; i < 3; i++) {
-    for(delayCounter = 0; delayCounter < 2000000; delayCounter++)
-      toggleLed();
-    setLed(RED);
     for(delayCounter = 0; delayCounter < 2000000; delayCounter++);
+    setLed(NONE);
+    for(delayCounter = 0; delayCounter < 2000000; delayCounter++);
+    setLed(RED);
   }
 
-  /* This address within first 64k of memory: seemed to be problems with higher
-   * locations. Note that this must match what's in startup_stm32f4xx.S
-   */
-  *((unsigned long *)0x2000FFF0) = kBootloaderMagicNumber;
-
-  NVIC_SystemReset();
-
-  /* Shouldn't get here */
-  while(1);
+  dfu_reboot();
 }
 
 LedPin getLed(){

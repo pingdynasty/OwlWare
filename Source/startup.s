@@ -70,26 +70,6 @@ defined in linker script */
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:  
-	/* Check for magic number to jump to bootloader */
-	ldr  r0, =0x2000FFF0 /* put address into r0 */
-	ldr  r1, =0xF00B4400
-	ldr  r2, [r0, #0]	/* copy value from address r0 to r2 */
-	str  r0, [r0, #0] /* Invalidate */
-	cmp  r2, r1	/* compare the two registers */
-	beq  Reboot_Loader /* branch to DFU copy */
-
-	/*
-_cstartup:
-  ldr r0,=_fastcode_load
-  ldr r1,=_fastcode_start
-  ldr r2,=_fastcode_end
-1:	
-  cmp r1,r2
-  ldmltia r0!,{r3}
-  stmltia r1!,{r3}
-  blt 1b
-*/
-
  /* Relocate .fastcode section (copy from flash to RAM) */
   movs r1, #0
   b  LoopCopyFastcode
