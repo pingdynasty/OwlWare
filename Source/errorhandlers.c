@@ -1,4 +1,5 @@
 #include "device.h"
+#include "owlcontrol.h"
 #include <inttypes.h>
 
 /**
@@ -9,25 +10,31 @@
   * @retval None
   */
 void assert_failed(uint8_t* file, uint32_t line){ 
-  /* Infinite loop */
-  for(;;);
+  volatile uint32_t delayCounter;
+  /* Blink LEDs */
+  setLed(RED);
+  for(delayCounter = 0; delayCounter < 4000000; delayCounter++);
+  setLed(NONE);
+  for(delayCounter = 0; delayCounter < 4000000; delayCounter++);
+  setLed(RED);
+  NVIC_SystemReset();
 }
 
 /* exception handlers - so we know what's failing */
-void NMI_Handler(void){ 
-  for(;;);
+void NMI_Handler(void){
+  assert_failed(0, 0);
 }
 
 void HardFault_Handler(void){ 
-  for(;;);
+  assert_failed(0, 0);
 }
 
 void MemManage_Handler(void){ 
-  for(;;);
+  assert_failed(0, 0);
 }
 
 void BusFault_Handler(void){ 
-  for(;;);
+  assert_failed(0, 0);
 }
 
 void UsageFault_Handler(void){ 
