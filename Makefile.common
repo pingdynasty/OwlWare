@@ -46,7 +46,7 @@ $(BUILD)/%.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 	$(CC) -MM -MT"$@" $(CFLAGS) $< > $(@:.o=.d)
 
-$(BUILD)/%.o: %.cpp %.cc
+$(BUILD)/%.o: %.cpp
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 	$(CXX) -MM -MT"$@" $(CXXFLAGS) $< > $(@:.o=.d)
 
