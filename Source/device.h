@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-/* #define OWLMODULAR */
+#define OWLMODULAR
 #define FIRMWARE_VERSION             "004"
 #define HARDWARE_VERSION             "OWL Rev04"
 
