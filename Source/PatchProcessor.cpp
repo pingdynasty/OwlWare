@@ -64,11 +64,14 @@ void PatchProcessor::setParameterValues(uint16_t *params){
    * with alpha=0.5, fs=48k, bs=128, then w0 ~= 18hz
    */
   for(int i=0; i<NOF_ADC_VALUES; ++i)
+    if(abs(params[i]-parameterValues[i]) > 16){
+      // 16 = half a midi step (4096/128=32)  
 #ifdef OWLMODULAR
     parameterValues[i] = (parameterValues[i] + 0x1000 - params[i]) >> 1;
 #else
     parameterValues[i] = (parameterValues[i] + params[i]) >> 1;
 #endif
+    }
 }
 
 // void PatchProcessor::process(AudioBuffer& buffer){
