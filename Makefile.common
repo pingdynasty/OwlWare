@@ -88,6 +88,9 @@ etags:
 
 bin: $(BIN)
 
+map : $(OBJS) $(LDSCRIPT) $(TANN_LIB)
+	$(LD) $(LDFLAGS) -Wl,-Map=$(ELF:.elf=.map) $(OBJS) $(LDLIBS)
+
 as: $(ELF)
 	$(OBJDUMP) -S $(ELF) > $(ELF:.elf=.s)
 
