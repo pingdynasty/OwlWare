@@ -15,6 +15,10 @@ public:
   SampleBuffer(){}
   virtual void split(uint16_t* input) = 0;
   virtual void comb(uint16_t* input) = 0;
+  void clear(){
+    memset(left, 0, getSize()*sizeof(float));
+    memset(right, 0, getSize()*sizeof(float));
+  }
   float* getSamples(int channel){
     return channel == 0 ? left : right;
   }

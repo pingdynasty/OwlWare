@@ -17,11 +17,12 @@ void MidiController::init(uint8_t ch){
 }
 
 void MidiController::sendSettings(){
-  sendCc(PATCH_PARAMETER_A, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_A)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_B, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_B)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_C, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_C)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_D, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_D)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_E, (uint8_t)(patches.getCurrentPatchProcessor()->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
+  PatchProcessor* processor = patches.getActivePatchProcessor();
+  sendCc(PATCH_PARAMETER_A, (uint8_t)(processor->getParameterValue(PARAMETER_A)*127.0) & 0x7f);
+  sendCc(PATCH_PARAMETER_B, (uint8_t)(processor->getParameterValue(PARAMETER_B)*127.0) & 0x7f);
+  sendCc(PATCH_PARAMETER_C, (uint8_t)(processor->getParameterValue(PARAMETER_C)*127.0) & 0x7f);
+  sendCc(PATCH_PARAMETER_D, (uint8_t)(processor->getParameterValue(PARAMETER_D)*127.0) & 0x7f);
+  sendCc(PATCH_PARAMETER_E, (uint8_t)(processor->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
   sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
   sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
   sendCc(PATCH_MODE, settings.patch_mode << 5);
@@ -46,7 +47,7 @@ void MidiController::sendSettings(){
 }
 
 void MidiController::sendPatchParameterNames(){
-  PatchProcessor* processor = patches.getCurrentPatchProcessor();
+  PatchProcessor* processor = patches.getActivePatchProcessor();
   for(int i=0; i<NOF_ADC_VALUES; ++i){
     PatchParameterId pid = (PatchParameterId)i;
     const char* name = processor->getParameterName(pid);

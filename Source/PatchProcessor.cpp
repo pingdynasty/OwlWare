@@ -45,6 +45,8 @@ const char* PatchProcessor::getParameterName(PatchParameterId pid){
 
 AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
   MemoryBuffer* buf = new ManagedMemoryBuffer(channels, size);
+  if(buf == NULL)
+    return NULL;
   buffers[bufferCount++] = buf;
   buf->clear();
   return buf;

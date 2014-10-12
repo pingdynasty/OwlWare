@@ -38,17 +38,36 @@ void PatchController::processParallel(AudioBuffer& buffer){
   red.patch->processAudio(right);
 }
 
+static PatchProcessor* initialisingProcessor = 0;
+__attribute__ ((section (".coderam")))
+void PatchController::initialisePatch(LedPin slot){
+  // the initialisingProcessor must be set 
+  // so that it can be picked up by a call from the Patch constructor
+  if(slot == RED){
+    initialisingProcessor = &red;
+    red.setPatch(settings.patch_red);  
+  }else{
+    initialisingProcessor = &green;
+    green.setPatch(settings.patch_green);  
+  }
+}
+
+PatchProcessor* PatchController::getCurrentPatchProcessor(){
+// PatchProcessor* PatchController::getInitialisingPatchProcessor(){
+  return initialisingProcessor;
+}
+
 __attribute__ ((section (".coderam")))
 void PatchController::process(AudioBuffer& buffer){
   if(activeSlot == GREEN && green.index != settings.patch_green){
-    memset(buffer.getSamples(0), 0, buffer.getChannels()*buffer.getSize()*sizeof(float));
+    buffer.clear();
     // green must be active slot when patch constructor is called
     green.setPatch(settings.patch_green);
     codec.softMute(false);
     debugClear();
     return;
   }else if(activeSlot == RED && red.index != settings.patch_red){
-    memset(buffer.getSamples(0), 0, buffer.getChannels()*buffer.getSize()*sizeof(float));
+    buffer.clear();
     // red must be active slot when constructor is called
     red.setPatch(settings.patch_red);
     codec.softMute(false);
@@ -126,7 +145,7 @@ void PatchController::toggleActiveSlot(){
     setActiveSlot(GREEN);
 }
 
-PatchProcessor* PatchController::getCurrentPatchProcessor(){
+PatchProcessor* PatchController::getActivePatchProcessor(){
   if(activeSlot == RED)
     return &red;
   return &green;
