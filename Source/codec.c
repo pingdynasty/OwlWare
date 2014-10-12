@@ -170,17 +170,11 @@ uint32_t Codec_AudioInterface_Init(uint32_t rate, bool master, uint16_t standard
   /* Initialize the I2S main channel for TX */
   I2S_Init(CODEC_I2S, &I2S_InitStructure);
 
-  /* #ifdef I2S_MASTER_MODE */
-  /* 	I2S_InitStructure.I2S_Mode = I2S_Mode_MasterRx; */
-  /* #else */
-  /* 	I2S_InitStructure.I2S_Mode = I2S_Mode_SlaveRx; */
-  /* #endif /\* I2S_MASTER_MODE *\/ */
-
   /* Initialize the I2S extended channel for RX */
+  /* The structure pointed by I2S_InitStruct parameter should be the same */
+  /* used for the master I2S peripheral. In this case, if the master is  */
+  /* configured as transmitter, the slave will be receiver and vice versa. */
   I2S_FullDuplexConfig(CODEC_I2S_EXT, &I2S_InitStructure);
-
-  /* The I2S peripheral will be enabled only in the EVAL_AUDIO_Play() function 
-     or by user functions if DMA mode not enabled */  
 
   return 0;
 }
