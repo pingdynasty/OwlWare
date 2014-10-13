@@ -34,8 +34,8 @@ enum MidiStatus {
 };
 
 enum UsbMidi {
-  USB_COMMAND_MISC = 0x00,					/* reserved */
-  USB_COMMAND_CABLE_EVENT = 0x01,			/* reserved */
+  USB_COMMAND_MISC = 0x00,			/* reserved */
+  USB_COMMAND_CABLE_EVENT = 0x01,		/* reserved */
   USB_COMMAND_2BYTE_SYSTEM_COMMON = 0x02,	/* e.g. MTC, SongSelect */
   USB_COMMAND_3BYTE_SYSTEM_COMMON = 0x02,	/* e.g. SPP */
   USB_COMMAND_SYSEX               = 0x04,
