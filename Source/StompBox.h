@@ -26,6 +26,7 @@ public:
   virtual float* getSamples(int channel) = 0;
   virtual int getChannels() = 0;
   virtual int getSize() = 0;
+  virtual void clear() = 0;
 };
 
 class Patch {

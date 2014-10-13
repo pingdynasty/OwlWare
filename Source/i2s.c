@@ -5,10 +5,6 @@
 DMA_InitTypeDef DMA_InitStructure, DMA_InitStructure2;
 uint32_t txbuf, rxbuf, szbuf;
 
-#define I2S_ENABLE_MASK                 0x0400
-#define DMA_MAX_SZE                     0xFFFF
-#define DMA_MAX(x)                      (((x) <= DMA_MAX_SZE)? (x):DMA_MAX_SZE)
-
 void I2S_Pause(){
   /* Pause the I2S DMA Stream 
      Note. For the STM32F4xx devices, the DMA implements a pause feature, 

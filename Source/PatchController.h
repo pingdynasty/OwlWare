@@ -17,8 +17,11 @@ public:
   LedPin getActiveSlot();
   void toggleActiveSlot();
   void setActiveSlot(LedPin slot);
-  PatchProcessor* getCurrentPatchProcessor();
+  PatchProcessor* getActivePatchProcessor();
   void setParameterValues(uint16_t* values);
+  void initialisePatch(LedPin slot);
+/*   PatchProcessor* getInitialisingPatchProcessor(); */
+  PatchProcessor* getCurrentPatchProcessor();
 private:
   void processParallel(AudioBuffer& buffer);
   PatchProcessor green;
