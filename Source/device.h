@@ -1,7 +1,7 @@
 #include <inttypes.h>
 
 /* #define OWLMODULAR */
-#define FIRMWARE_VERSION             "004"
+#define FIRMWARE_VERSION             "005-pre"
 #define HARDWARE_VERSION             "OWL Rev04"
 
 /* #define SERIAL_PORT                  1 */
