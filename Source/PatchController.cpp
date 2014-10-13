@@ -61,15 +61,13 @@ __attribute__ ((section (".coderam")))
 void PatchController::process(AudioBuffer& buffer){
   if(activeSlot == GREEN && green.index != settings.patch_green){
     buffer.clear();
-    // green must be active slot when patch constructor is called
-    green.setPatch(settings.patch_green);
+    initialisePatch(GREEN);
     codec.softMute(false);
     debugClear();
     return;
   }else if(activeSlot == RED && red.index != settings.patch_red){
     buffer.clear();
-    // red must be active slot when constructor is called
-    red.setPatch(settings.patch_red);
+    initialisePatch(GREEN);
     codec.softMute(false);
     debugClear();
     return;
