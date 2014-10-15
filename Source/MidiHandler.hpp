@@ -118,6 +118,7 @@ public:
 	settings.audio_samplingrate = frequency;
 	codec.stop();
 	codec.init(settings);
+	patches.reset(); // changing sampling rate may require re-initialisation of patches
 	codec.start();
       }
       break;
@@ -164,11 +165,12 @@ public:
       break;
     }
     case SAMPLING_SIZE: {
-      uint32_t blocksize = value << 4;
-      if(settings.audio_blocksize != blocksize){
+      uint32_t blocksize = 1L << value;
+      if(settings.audio_blocksize != blocksize && blocksize <= AUDIO_MAX_BLOCK_SIZE){
 	settings.audio_blocksize = blocksize;
 	codec.stop();
 	codec.init(settings);
+	patches.reset(); // changing blocksize may require re-initialisation of patches
 	codec.start();
       }
       break;

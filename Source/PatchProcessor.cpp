@@ -17,10 +17,11 @@ PatchProcessor::~PatchProcessor(){
 void PatchProcessor::clear(){
   for(int i=0; i<bufferCount; ++i)
     delete buffers[i];
-  delete patch;
-  memset(parameterNames, 0, sizeof(parameterNames));
   bufferCount = 0;
+  delete patch;
   patch = NULL;
+  index = -1;
+  memset(parameterNames, 0, sizeof(parameterNames));
 }
 
 void PatchProcessor::setPatch(uint8_t patchIndex){

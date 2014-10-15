@@ -17,10 +17,10 @@ void ApplicationSettings::reset(){
   audio_codec_protocol = AUDIO_PROTOCOL;
   audio_samplingrate = AUDIO_SAMPLINGRATE;
   audio_bitdepth = AUDIO_BITDEPTH;
+  audio_blocksize = AUDIO_BLOCK_SIZE;
   patch_green = GREEN_PATCH;
   patch_red = RED_PATCH;
   patch_mode = PATCHMODE_DUAL;
-  // patch_midi_mode = false;
   midi_channel = MIDI_CHANNEL;
   inputGainLeft = AUDIO_INPUT_GAIN_LEFT;
   inputGainRight = AUDIO_INPUT_GAIN_RIGHT;
@@ -35,6 +35,9 @@ bool ApplicationSettings::settingsInFlash(){
 
 void ApplicationSettings::loadFromFlash(){
   eeprom_read_block(APPLICATION_SETTINGS_OFFSET, (uint8_t*)this, sizeof(*this));
+  // todo: remove workaround
+  if(audio_blocksize == 0 || audio_blocksize > AUDIO_MAX_BLOCK_SIZE)
+    audio_blocksize = AUDIO_MAX_BLOCK_SIZE;
 }
 
 void ApplicationSettings::saveToFlash(){

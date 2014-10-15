@@ -56,7 +56,7 @@ void footSwitchCallback(){
 void toggleActiveSlot(){
   patches.toggleActiveSlot();
   updateLed();
-  midi.sendPatchParameterNames();
+  midi.sendPatchParameterNames(); // todo: this should probably be requested from client
 }
 
 void pushButtonCallback(){
@@ -65,15 +65,11 @@ void pushButtonCallback(){
     toggleActiveSlot();
 }
 
-#if AUDIO_BITDEPTH == 32
-SampleBuffer32 buffer CCM;
-#elif AUDIO_BITDEPTH == 24
-SampleBuffer32 buffer CCM;
-#elif AUDIO_BITDEPTH == 16
-SampleBuffer16 buffer CCM;
-#else
-#error invalid AUDIO_BITDEPTH
-#endif
+SampleBuffer buffer CCM;
+
+void setBlocksize(uint16_t sz){
+  buffer.setSize(sz);
+}
 
 volatile bool doProcessAudio = false;
 volatile bool collision = false;

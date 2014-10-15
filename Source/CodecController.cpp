@@ -6,17 +6,18 @@
 #include "i2s.h"
 #include "gpio.h"
 #include "device.h"
+#include "Owl.h"
 
 #if AUDIO_BITDEPTH == 16
  /* size in half-words of the stereo audio buffers */
-#define AUDIO_BUFFER_SIZE    (2*AUDIO_BLOCK_SIZE*AUDIO_CHANNELS)
+#define AUDIO_BUFFER_SIZE    (2*AUDIO_MAX_BLOCK_SIZE*AUDIO_CHANNELS)
 #else
-#define AUDIO_BUFFER_SIZE    (2*AUDIO_BLOCK_SIZE*AUDIO_CHANNELS*2)
+#define AUDIO_BUFFER_SIZE    (2*AUDIO_MAX_BLOCK_SIZE*AUDIO_CHANNELS*2)
 #endif
 
 /* DMA buffers for I2S */
-int16_t tx_buffer[AUDIO_BUFFER_SIZE]; 
-int16_t rx_buffer[AUDIO_BUFFER_SIZE];
+uint16_t tx_buffer[AUDIO_BUFFER_SIZE]; 
+uint16_t rx_buffer[AUDIO_BUFFER_SIZE];
 
 const uint16_t wm8731_init_data[] = {
 	WM8731_INVOL_P6DB,                   			  // Reg 0x00: Left Line In
@@ -73,13 +74,7 @@ void CodecController::setup(){
 }
 
 void CodecController::init(ApplicationSettings& settings){
-// void CodecController::init(uint32_t frequency, I2SProtocol protocol, I2SFormat format, bool master){
 //   setPin(GPIOA, GPIO_Pin_6); // DEBUG
-
-  // settings.audio_samplingrate = frequency;
-  // settings.audio_protocol = protocol;
-  // settings.audio_format = format;
-  // settings.audio_codec_master = master;
 
   /* configure codec */
   setCodecMaster(settings.audio_codec_master);
@@ -96,7 +91,8 @@ void CodecController::init(ApplicationSettings& settings){
   setOutputGainLeft(settings.outputGainLeft);
   setOutputGainRight(settings.outputGainRight);
 
-  I2S_Block_Init();
+  I2S_Block_Init(tx_buffer, rx_buffer, settings.audio_blocksize);
+  setBlocksize(settings.audio_blocksize);
 
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
 }
@@ -206,7 +202,7 @@ void CodecController::start(){
     }
   }
   I2S_Enable();
-  I2S_Block_Run((uint32_t)&tx_buffer, (uint32_t)&rx_buffer, AUDIO_BUFFER_SIZE);
+  I2S_Run();
 }
 
 void CodecController::stop(){

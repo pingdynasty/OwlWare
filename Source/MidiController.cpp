@@ -12,6 +12,10 @@
 #include "midicontrol.h"
 #include "sysex.h"
 
+uint32_t log2(uint32_t x){ 
+  return x == 0 ? 0 : 31 - __builtin_clz (x); /* clz returns the number of leading 0's */
+}
+
 void MidiController::init(uint8_t ch){
   channel = ch;
 }
@@ -42,7 +46,7 @@ void MidiController::sendSettings(){
   sendCc(SAMPLING_BITS, (codec.getFormat() << 4) + 20);
   sendCc(CODEC_MASTER, codec.isMaster() ? 127 : 0);
   sendCc(CODEC_PROTOCOL, codec.getProtocol() == I2S_PROTOCOL_PHILIPS ? 0 : 127);
-  sendCc(SAMPLING_SIZE, settings.audio_blocksize>>4);
+  sendCc(SAMPLING_SIZE, log2(settings.audio_blocksize));
   sendCc(LEFT_RIGHT_SWAP, codec.getSwapLeftRight());
 }
 
@@ -102,7 +106,7 @@ void MidiController::sendFirmwareVersion(){
   char buffer[len+32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
 #ifdef DEBUG_DWT
-  uint32_t cycles = dwt_count/AUDIO_BLOCK_SIZE; /* should be: settings.audio_blocksize */
+  uint32_t cycles = dwt_count/settings.audio_blocksize;
   len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
 #else /* DEBUG_DWT */
   len = sprintf(buffer+1, "%s (%d bytes)", version, used);

@@ -71,8 +71,6 @@
    uint16_t getAnalogValue(uint8_t index);
    uint16_t* getAnalogValues();
 
-   void setPatch(uint8_t index);
-
    inline bool isStompSwitchPressed(){
      return getPin(SWITCH_A_PORT, SWITCH_A_PIN);
    }

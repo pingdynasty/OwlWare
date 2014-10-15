@@ -10,8 +10,7 @@
 
 AudioBuffer::~AudioBuffer(){}
 
-Patch::Patch(){
-  processor = patches.getCurrentPatchProcessor();
+Patch::Patch() : processor(patches.getInitialisingPatchProcessor()){
 }
 
 Patch::~Patch(){}
@@ -25,8 +24,7 @@ double Patch::getSampleRate(){
 }
 
 int Patch::getBlockSize(){
-  return AUDIO_BLOCK_SIZE;
- // return settings.audio_blocksize;
+  return settings.audio_blocksize;
 }
 
 float Patch::getParameterValue(PatchParameterId pid){

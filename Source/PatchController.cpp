@@ -24,10 +24,13 @@ void PatchController::setParameterValues(uint16_t* values){
 
 void PatchController::init(){
   parameterValues = getAnalogValues();
-  setActiveSlot(RED);
-  red.setPatch(settings.patch_red);
   setActiveSlot(GREEN);
-  green.setPatch(settings.patch_green);
+  initialisePatch(GREEN);
+  initialisePatch(RED);
+}
+
+void PatchController::reset(){
+  init();
 }
 
 __attribute__ ((section (".coderam")))
@@ -38,11 +41,10 @@ void PatchController::processParallel(AudioBuffer& buffer){
   red.patch->processAudio(right);
 }
 
-static PatchProcessor* initialisingProcessor = 0;
 __attribute__ ((section (".coderam")))
 void PatchController::initialisePatch(LedPin slot){
   // the initialisingProcessor must be set 
-  // so that it can be picked up by a call from the Patch constructor
+  // so that it can be picked up by a call to getInitialisingProcessor() from the Patch constructor
   if(slot == RED){
     initialisingProcessor = &red;
     red.setPatch(settings.patch_red);  
@@ -52,22 +54,19 @@ void PatchController::initialisePatch(LedPin slot){
   }
 }
 
-PatchProcessor* PatchController::getCurrentPatchProcessor(){
-// PatchProcessor* PatchController::getInitialisingPatchProcessor(){
+PatchProcessor* PatchController::getInitialisingPatchProcessor(){
   return initialisingProcessor;
 }
 
 __attribute__ ((section (".coderam")))
 void PatchController::process(AudioBuffer& buffer){
   if(activeSlot == GREEN && green.index != settings.patch_green){
-    buffer.clear();
     initialisePatch(GREEN);
     codec.softMute(false);
     debugClear();
     return;
   }else if(activeSlot == RED && red.index != settings.patch_red){
-    buffer.clear();
-    initialisePatch(GREEN);
+    initialisePatch(RED);
     codec.softMute(false);
     debugClear();
     return;
