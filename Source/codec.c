@@ -10,10 +10,6 @@
 /* The 7 bits Codec address (sent through I2C interface) */
 #define CODEC_ADDRESS           (WM8731_ADDR_0<<1)
 
-/* local vars */
-__IO uint32_t  CODECTimeout = CODEC_LONG_TIMEOUT;   
-__IO uint8_t OutputDev = 0;
-
 uint32_t Codec_TIMEOUT_UserCallback(void){
   for(;;);
 }
@@ -38,6 +34,7 @@ uint32_t Codec_Reset(void) {
   */
 uint32_t Codec_WriteRegister(uint8_t RegisterAddr, uint16_t RegisterValue){
   uint32_t result = 0;
+  volatile uint32_t CODECTimeout = CODEC_LONG_TIMEOUT;
 	
   /* Assemble 2-byte data in WM8731 format */
   uint8_t Byte1 = ((RegisterAddr<<1)&0xFE) | ((RegisterValue>>8)&0x01);
@@ -137,6 +134,8 @@ void Codec_CtrlInterface_Init(void){
 uint32_t Codec_AudioInterface_Init(uint32_t rate, bool master, uint16_t standard, uint16_t format){
   I2S_InitTypeDef I2S_InitStructure;
   I2S_StructInit(&I2S_InitStructure);
+
+  volatile uint32_t CODECTimeout = CODEC_LONG_TIMEOUT;
 
   /* Configures the I2S clock source (I2SCLK). */
   /* This function must be called before enabling the I2S APB clock. */
