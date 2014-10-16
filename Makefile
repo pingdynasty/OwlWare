@@ -1,11 +1,22 @@
 TEMPLATEROOT = .
 
-# CFLAGS = -g -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1
-CFLAGS   = -O2 -Wall -Wcpp -DUSE_FULL_ASSERT -D__FPU_PRESENT=1 -D__FPU_USED=1
+ifndef CONFIG
+  CONFIG=Debug
+endif
+
+ifeq ($(CONFIG),Debug)
+CFLAGS = -g -Wall -Wcpp
+ASFLAGS  = -g
+endif
+
+ifeq ($(CONFIG),Release)
+CFLAGS   = -O2
+endif
+
+CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1 -DUSE_FULL_ASSERT
 CFLAGS  += -DEXTERNAL_SRAM 
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
 CFLAGS  += -std=gnu99
-ASFLAGS  = -g
 LDLIBS   = -lm
 LDSCRIPT = Source/flash.ld
 
@@ -29,6 +40,8 @@ OBJS += $(USB_DEVICE) $(USB_OTG)
 OBJS += $(SYSCALLS)
 OBJS += $(DSPLIB)/FastMathFunctions/arm_sin_f32.o
 OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
+OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_f32.o
+OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_init_f32.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q31.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_q31_to_float.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q15.o
