@@ -38,6 +38,7 @@
 #endif /* OWLMODULAR */
 
 #define MIDI_CHANNEL                 0
+#define MIDI_MAX_MESSAGE_SIZE        128
 #define NOF_ADC_VALUES               5
 #define MAX_BUFFERS_PER_PATCH        8
 #define MAX_NUMBER_OF_PATCHES        64

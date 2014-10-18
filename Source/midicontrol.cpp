@@ -33,6 +33,7 @@ void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){
   for(int i=1; i<length; ++i){ // skip first of 4 bytes
     if(handler.read(buffer[i]) == ERROR_STATUS){
       handler.clear();
+      // todo: error message
       break;
     }
   }

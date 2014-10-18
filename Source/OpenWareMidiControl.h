@@ -4,12 +4,12 @@
 #define MIDI_SYSEX_MANUFACTURER        0x7d     /* Educational or development use only */
 #define MIDI_SYSEX_DEVICE              0x52     /* OWL Open Ware Laboratory */
 #define MIDI_SYSEX_VERSION             0x03     /* Revision */
-#define MIDI_MAX_MESSAGE_SIZE          0x0f
 
 enum OpenWareMidiSysexCommand {
   SYSEX_PRESET_NAME_COMMAND       = 0x01,
   SYSEX_PARAMETER_NAME_COMMAND    = 0x02,
   SYSEX_DFU_COMMAND               = 0x7e,
+  SYSEX_FIRMWARE_UPLOAD           = 0x10,
   SYSEX_FIRMWARE_VERSION          = 0x20,
   SYSEX_DEVICE_ID                 = 0x21,
   SYSEX_SELFTEST                  = 0x22
@@ -77,7 +77,8 @@ enum OpenWareMidiControl {
   REQUEST_SETTINGS       = 67, /* load settings from device (127=all settings) (30 for LED) (more to come) */
   SAVE_SETTINGS          = 68, /* save settings to device */
   DEVICE_FIRMWARE_UPDATE = 69, /* enter Device Firmware Upgrade mode */
-  FACTORY_RESET          = 70  /* reset all settings */
+  FACTORY_RESET          = 70, /* reset all settings */
+  DEVICE_STATUS          = 71
 };
 
 #endif  // OPENWAREMIDICONTROL_H_INCLUDED

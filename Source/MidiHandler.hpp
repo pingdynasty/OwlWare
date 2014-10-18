@@ -9,6 +9,7 @@
 #include "CodecController.h"
 #include "PatchController.h"
 #include "ApplicationSettings.h"
+#include "FirmwareLoader.hpp"
 
 uint16_t midi_values[NOF_ADC_VALUES];
 
@@ -234,6 +235,8 @@ public:
   void handleSystemCommon(uint8_t){
   }
 
+  FirmwareLoader loader;
+
   void handleSysEx(uint8_t* data, uint8_t size){
     if(size < 3 || 
        data[1] != MIDI_SYSEX_MANUFACTURER || 
@@ -242,6 +245,17 @@ public:
     switch(data[4]){
     case SYSEX_DFU_COMMAND:
       jump_to_bootloader();
+      break;
+    case SYSEX_FIRMWARE_UPLOAD:
+      int ret = loader.handleFirmwareUpload(data, size);
+      if(ret < 0){
+	// firmware upload error
+	midi.sendCc(DEVICE_STATUS, -ret);
+      }else if(ret > 0){
+	// firmware upload complete
+      }else{
+	midi.sendCc(DEVICE_STATUS, 0);
+      }
       break;
     }
   }
