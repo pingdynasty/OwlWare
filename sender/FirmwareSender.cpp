@@ -59,7 +59,7 @@ public:
 
   void send(unsigned char* data, int size){
     if(verbose)
-      std::cout << "sending " << size << " bytes" << std::endl;
+      std::cout << "sending " << std::dec << size << " bytes" << std::endl;
     if(out != NULL){
       out->writeByte(SYSEX);
       out->write(data, size);
@@ -126,21 +126,21 @@ public:
       if(fileout != NULL)
 	std::cout << "\tto SysEx file " << fileout->getFullPathName() << std::endl;       
     }
-    char header[] =  { 0x00, MIDI_SYSEX_MANUFACTURER, MIDI_SYSEX_DEVICE, SYSEX_FIRMWARE_UPLOAD };
+    char header[] =  { MIDI_SYSEX_MANUFACTURER, MIDI_SYSEX_DEVICE, SYSEX_FIRMWARE_UPLOAD };
     int blocksize = 64;
 
     InputStream* in = input->createInputStream();
     if(fileout != NULL)
       out = fileout->createOutputStream();
       
-    // MemoryBlock block;
-    // block.append(header, sizeof(header));
-    MemoryOutputStream stream;
-    stream.write(header, sizeof(header));
+    MemoryBlock block;
+    block.append(header, sizeof(header));
+    // MemoryOutputStream stream;
+    // stream.write(header, sizeof(header));
 
     unsigned char buffer[blocksize];
     unsigned char sysex[(int)ceil(blocksize*8/7)];
-    int size = input->getSize() + 4; // include space for checksum
+    int size = input->getSize() + 4; // amount of data, including checksum
     buffer[3] = (uint8_t)size & 0xff;
     buffer[2] = (uint8_t)(size >> 8) & 0xff;
     buffer[1] = (uint8_t)(size >> 16) & 0xff;
@@ -148,8 +148,8 @@ public:
     int len = data_to_sysex(buffer, sysex, 4);
     if(len != 5)
       throw CommandLineException("Error in sysex conversion"); 
-    stream.write(sysex, len);
-    // block.append(sysex, len);
+    block.append(sysex, len);
+    // stream.write(sysex, len);
 
     CRCC crc;
     uint32_t checksum = 0;
@@ -159,12 +159,12 @@ public:
       checksum = crc.calc(len, buffer, checksum);
       i += len;
       if(verbose)
-	std::cout << "preparing " << len;
+	std::cout << "preparing " << std::dec << len;
       len = data_to_sysex(buffer, sysex, len);
       if(verbose)
 	std::cout << "/" << len << " bytes binary/sysex" << std::endl;
-      stream.write(sysex, len);
-      // block.append(sysex, len);
+      block.append(sysex, len);
+      // stream.write(sysex, len);
       if(i == size){
 	// last block
 	if(verbose)
@@ -176,17 +176,18 @@ public:
 	len = data_to_sysex(buffer, sysex, 4);
 	if(len != 5)
 	  throw CommandLineException("Error in sysex conversion"); 
-	// block.append(sysex, len);
-	stream.write(sysex, len);
-	send((unsigned char*)stream.getData(), stream.getDataSize());
+	block.append(sysex, len);
+	send(block);
+	// stream.write(sysex, len);
+	// send((unsigned char*)stream.getData(), stream.getDataSize());
       }else{
-	send((unsigned char*)stream.getData(), stream.getDataSize());
-	stream.reset();
-	stream.write(header, sizeof(header));
+	send(block);
+	block = MemoryBlock();
+	block.append(header, sizeof(header));
+	// send((unsigned char*)stream.getData(), stream.getDataSize());
+	// stream.reset();
+	// stream.write(header, sizeof(header));
       }
-      // send(block);
-      // block = MemoryBlock();
-      // block.append(header, sizeof(header));
     }
     stop();
   }
@@ -200,6 +201,10 @@ public:
 
   void shutdown(){
     running = false;
+  }
+
+  juce::String getApplicationName(){
+    return "FirmwareSender";
   }
 };
 
