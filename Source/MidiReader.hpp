@@ -34,7 +34,7 @@ public:
   virtual void handleNoteOff(uint8_t, uint8_t, uint8_t){}
   virtual void handleNoteOn(uint8_t, uint8_t, uint8_t){}
   virtual void handlePitchBend(uint8_t, uint8_t, uint8_t){}
-  virtual void handleSysEx(uint8_t* data, uint8_t size){}
+  virtual void handleSysEx(uint8_t* data, uint16_t size){}
 
   void clear(){
     runningStatus = message[0];
@@ -133,11 +133,11 @@ public:
 	handleSystemCommon(message[0]);
 	break;
       case SYSEX:
-	if(data == SYSEX_EOX && pos > 1){
+	if(data == SYSEX_EOX){
 	  status = READY_STATUS;
 	  handleSysEx(message+1, pos-2);
 	}else if(data >= STATUS_BYTE && pos > 1){
-	  // SysEx message terminated by a status byte different from 0xf7
+	  // SysEx message terminated by a status byte different from SYSEX_EOX
 	  message[pos-1] = SYSEX_EOX;
 	  status = READY_STATUS;
 	  handleSysEx(message+1, pos-2);

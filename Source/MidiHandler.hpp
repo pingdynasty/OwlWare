@@ -237,12 +237,12 @@ public:
 
   FirmwareLoader loader;
 
-  void handleSysEx(uint8_t* data, uint8_t size){
+  void handleSysEx(uint8_t* data, uint16_t size){
     if(size < 3 || 
-       data[1] != MIDI_SYSEX_MANUFACTURER || 
-       data[2] != MIDI_SYSEX_DEVICE)
+       data[0] != MIDI_SYSEX_MANUFACTURER || 
+       data[1] != MIDI_SYSEX_DEVICE)
       return;
-    switch(data[4]){
+    switch(data[2]){
     case SYSEX_DFU_COMMAND:
       jump_to_bootloader();
       break;
@@ -253,6 +253,7 @@ public:
 	midi.sendCc(DEVICE_STATUS, -ret);
       }else if(ret > 0){
 	// firmware upload complete
+	midi.sendCc(DEVICE_STATUS, 0x7f);
       }else{
 	midi.sendCc(DEVICE_STATUS, 0);
       }
