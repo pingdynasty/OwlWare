@@ -29,12 +29,16 @@ bool midi_device_connected(){
   return usbd_usr_device_status > 0x02;
 }
 
-void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){
-  for(int i=1; i<length; ++i){ // skip first of 4 bytes
-    if(handler.read(buffer[i]) == ERROR_STATUS){
-      handler.clear();
-      // todo: error message
-      break;
+void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){    
+  for(int i=1; i<length; ++i){
+    // skip every 4th byte
+    if(i & 0x3){
+      MidiReaderStatus status = handler.read(buffer[i]);
+      if(status == ERROR_STATUS){
+	handler.clear();
+	// todo: error message
+	return; // discard the rest of the message
+      }
     }
   }
 }
