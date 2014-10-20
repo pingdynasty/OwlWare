@@ -43,6 +43,14 @@ public:
     return buffer;
   }
 
+  uint32_t decodeInt(uint8_t *data){
+    // decode a 32-bit unsigned integer from sysex encoded data
+    uint8_t buf[4];
+    sysex_to_data(data, buf, 5);
+    uint32_t result = buf[3] | (buf[2] << 8L) | (buf[1] << 16L) | (buf[0] << 24L);
+    return result;
+  }
+
   int handleFirmwareUpload(uint8_t* data, uint16_t length){
     int offset = 3;
     if(packageIndex++ == 0){
@@ -54,10 +62,11 @@ public:
       codec.stop();
       patches.reset();
       // get firmware data size (decoded)
-      uint8_t buf[4];
-      int len = sysex_to_data(data+offset, buf, 5);
+      size = decodeInt(data+offset);
       offset += 5; // it takes five 7-bit values to encode four bytes
-      size = buf[3] | (buf[2] << 8L) | (buf[1] << 16L) | (buf[0] << 24L);
+      // uint8_t buf[4];
+      // int len = sysex_to_data(data+offset, buf, 5);
+      // size = buf[3] | (buf[2] << 8L) | (buf[1] << 16L) | (buf[0] << 24L);
       // // get checksum
       // sysex_to_data(data+offset, buf, 4);
       // offset += 5;
@@ -68,25 +77,29 @@ public:
       buffer = (uint8_t*)malloc(size);
     }
     int len = floor((length-offset)*7/8.0f);
-    if(index+len > size)
-      return error(-3);
-    len = sysex_to_data(data+offset, buffer+index, length-offset);
-    index += len;
-    if(index > size)
-      return error(-4);
-    if(index == size){
-      // last package
-      // get checksum: last 4 bytes of buffer
-      crc = buffer[length-1] | (buffer[length-2] << 8L) | 
-	(buffer[length-3] << 16L) | (buffer[length-4] << 24L);
-      // check crc
-      size -= 4;
-      uint32_t checksum = CRCC().calc(size, buffer);
-      if(crc != checksum)
-	return error(-5);
-      return index;
+    if(index+len < size){
+      // mid package
+      len = sysex_to_data(data+offset, buffer+index, length-offset);
+      index += len;
+      return 0;
     }
-    return 0;
+    // last package
+    len = floor((length-offset-5)*7/8.0f);
+    if(index+len != size)
+      return error(-3); // wrong size
+    len = sysex_to_data(data+offset, buffer+index, length-offset-5);
+    index += len;
+    if(index != size)
+      return error(-4); // size mismatch
+    // get checksum: last 4 bytes of buffer
+    crc = decodeInt(data+length-5);
+    // crc = buffer[size-1] | (buffer[size-2] << 8L) | (buffer[size-3] << 16L) | (buffer[size-4] << 24L);
+    // check crc
+      // size -= 4;
+    uint32_t checksum = CRCC().calc(size, buffer);
+    if(crc != checksum)
+      return error(-5);
+    return index;
   }
 };
 
