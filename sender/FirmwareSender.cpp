@@ -140,7 +140,7 @@ public:
 
     unsigned char buffer[blocksize];
     unsigned char sysex[(int)ceil(blocksize*8/7)];
-    int size = input->getSize() + 4; // amount of data, including checksum
+    int size = input->getSize(); // amount of data, excluding checksum
     buffer[3] = (uint8_t)size & 0xff;
     buffer[2] = (uint8_t)(size >> 8) & 0xff;
     buffer[1] = (uint8_t)(size >> 16) & 0xff;
@@ -153,7 +153,7 @@ public:
 
     CRCC crc;
     uint32_t checksum = 0;
-    size = input->getSize(); // amount of data, excluding checksum
+    // size = input->getSize(); // amount of data, excluding checksum
     for(int i=0; i < size && running;){
       len = in->read(buffer, blocksize);
       checksum = crc.calc(len, buffer, checksum);
@@ -188,6 +188,7 @@ public:
 	// stream.reset();
 	// stream.write(header, sizeof(header));
       }
+      juce::Time::waitForMillisecondCounter(juce::Time::getMillisecondCounter()+1000);
     }
     stop();
   }
