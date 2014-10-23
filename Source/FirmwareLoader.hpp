@@ -43,15 +43,15 @@ public:
     return buffer;
   }
 
+  /* decode a 32-bit unsigned integer from 5 bytes of sysex encoded data */
   uint32_t decodeInt(uint8_t *data){
-    // decode a 32-bit unsigned integer from sysex encoded data
     uint8_t buf[4];
     sysex_to_data(data, buf, 5);
     uint32_t result = buf[3] | (buf[2] << 8L) | (buf[1] << 16L) | (buf[0] << 24L);
     return result;
   }
 
-  int handleFirmwareUpload(uint8_t* data, uint16_t length){
+  int32_t handleFirmwareUpload(uint8_t* data, uint16_t length){
     int offset = 3;
     if(packageIndex++ == 0){
       // first package
@@ -64,13 +64,6 @@ public:
       // get firmware data size (decoded)
       size = decodeInt(data+offset);
       offset += 5; // it takes five 7-bit values to encode four bytes
-      // uint8_t buf[4];
-      // int len = sysex_to_data(data+offset, buf, 5);
-      // size = buf[3] | (buf[2] << 8L) | (buf[1] << 16L) | (buf[0] << 24L);
-      // // get checksum
-      // sysex_to_data(data+offset, buf, 4);
-      // offset += 5;
-      // crc = buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
       // allocate memory
       if(size > MAX_SYSEX_FIRMWARE_SIZE)
 	return error(-2);
@@ -91,12 +84,10 @@ public:
     index += len;
     if(index != size)
       return error(-4); // size mismatch
-    // get checksum: last 4 bytes of buffer
-    crc = decodeInt(data+length-5);
-    // crc = buffer[size-1] | (buffer[size-2] << 8L) | (buffer[size-3] << 16L) | (buffer[size-4] << 24L);
     // check crc
-      // size -= 4;
-    uint32_t checksum = CRCC().calc(size, buffer);
+    crc = CRCC().calc(size, buffer);
+    // get checksum: last 4 bytes of buffer
+    uint32_t checksum = decodeInt(data+length-5);
     if(crc != checksum)
       return error(-5);
     return index;

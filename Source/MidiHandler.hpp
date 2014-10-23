@@ -247,7 +247,7 @@ public:
       jump_to_bootloader();
       break;
     case SYSEX_FIRMWARE_UPLOAD:
-      int ret = loader.handleFirmwareUpload(data, size);
+      int32_t ret = loader.handleFirmwareUpload(data, size);
       if(ret < 0){
 	// firmware upload error
 	midi.sendCc(DEVICE_STATUS, -ret);
