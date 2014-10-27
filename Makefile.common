@@ -3,7 +3,7 @@ ELF=$(BUILD)/OwlWare.elf
 BIN=$(BUILD)/OwlWare.bin
 
 # Tool path
-TOOLROOT=$(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_8-2014q2/bin
+TOOLROOT=$(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_8-2014q3/bin
 STLINK=$(TEMPLATEROOT)/Tools/stlink/
 DFUUTIL=$(TEMPLATEROOT)/Tools/dfu-util/dfu-util
 

@@ -15,11 +15,14 @@ _Min_Stack_Size = 0x800; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-  BOOTLOADER (rw)  : ORIGIN = 0x08000000, LENGTH = 16K
-  EEPROM (rw)      : ORIGIN = 0x08004000, LENGTH = 16K
-  FLASH (rx)       : ORIGIN = 0x08008000, LENGTH = 1M-32K
-  CCMRAM (rwx)     : ORIGIN = 0x10000000, LENGTH = 64k
-  RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 128K
+  BOOTLOADER (rw)  : ORIGIN = 0x08000000, LENGTH = 16K    /* Sector 0 */
+  EEPROM (rw)      : ORIGIN = 0x08004000, LENGTH = 16K    /* Sector 1 */
+  FLASH    (rx)    : ORIGIN = 0x08008000, LENGTH = 224K   /* Sector 2 */
+  PATCHFLASH (rx)  : ORIGIN = 0x08040000, LENGTH = 128K   /* Sector 6 */ /* total Flash memory is 1Mb */
+  SHAREDRAM (rwx)  : ORIGIN = 0x10000000, LENGTH = 8K
+  CCMRAM (rwx)     : ORIGIN = 0x10002000, LENGTH = 56K    /* total CCM is 64kb */
+  RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 64K
+  PATCHRAM (rwx)   : ORIGIN = 0x20010000, LENGTH = 64K    /* total RAM is 128kb */
   BANK1_SRAM1 (rx) : ORIGIN = 0x60000000, LENGTH = 0K
   BANK1_SRAM2 (rx) : ORIGIN = 0x64000000, LENGTH = 0K
   BANK1_SRAM3 (rx) : ORIGIN = 0x68000000, LENGTH = 1M
@@ -145,14 +148,23 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     . = ALIGN(4);
   } >RAM
 
-  /* CCM section, vars must be located here explicitly */
-  /* Example: int foo __attribute__ ((section (".ccmdata"))); */
-.ccmdata (NOLOAD) :
+/* Shared RAM section, vars must be located here explicitly */
+/* Example: int foo __attribute__ ((section (".sharedram"))); */
+.sharedram (NOLOAD) :
 {
   . = ALIGN(4);
-  *(.ccmdata)
+  *(.sharedram)
   . = ALIGN(4);
-} >CCMRAM
+} >SHAREDRAM
+
+  /* CCM section, vars must be located here explicitly */
+  /* Example: int foo __attribute__ ((section (".ccmdata"))); */
+/* .ccmdata (NOLOAD) : */
+/* { */
+/*   . = ALIGN(4); */
+/*   *(.ccmdata) */
+/*   . = ALIGN(4); */
+/* } >CCMRAM */
 
   /* External SRAM, vars must be located here explicitly */
   /* Example: int foo __attribute__ ((section (".extdata"))); */

@@ -103,7 +103,7 @@ void adcSetup(){
 }
 
 uint16_t getAnalogValue(uint8_t index){
-  assert_param(index < sizeof(adc_values));
+  /* assert_param(index < sizeof(adc_values)); */
   return adc_values[index];
 }
 

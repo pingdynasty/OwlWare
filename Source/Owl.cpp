@@ -9,9 +9,10 @@
 #include "MidiController.h"
 #include "CodecController.h"
 #include "PatchController.h"
-#include "SampleBuffer.hpp"
+// #include "SampleBuffer.hpp"
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
+#include "SharedMemory.h"
 
 #include "serial.h"
 #include "clock.h"
@@ -65,58 +66,102 @@ void pushButtonCallback(){
     toggleActiveSlot();
 }
 
-SampleBuffer buffer CCM;
+// SampleBuffer buffer CCM;
 
 void setBlocksize(uint16_t sz){
-  buffer.setSize(sz);
+  // smem.audio_blocksize = sz; // different blocksize!
+//   buffer.setSize(sz);
 }
 
-volatile bool doProcessAudio = false;
-volatile bool collision = false;
-uint16_t* source;
-uint16_t* dest;
+typedef void (*ProgramFunction)(void);
+#define PATCHFLASH ((uint32_t)0x08040000)
+#define PATCHRAM   ((uint32_t)0x20010000)
 
-#ifdef DEBUG_DWT
-uint32_t dwt_count = 0;
-#endif
+int programRuns = 0;
+bool doLoadProgram = true;
+uint32_t programAddress = PATCHRAM;
 
-__attribute__ ((section (".coderam")))
+void exitProgram(){
+  codec.stop();
+  smem.status = AUDIO_EXIT_STATUS;
+}
+
+void loadProgram(uint32_t address){
+  /* Jump to patch */
+  /* Check Vector Table: Test if user code is programmed starting from address 
+     "APPLICATION_ADDRESS" */
+  if(((*(volatile uint32_t*)address) & 0x2FFE0000 ) == 0x20000000){
+    uint32_t jumpAddress = *(volatile uint32_t*)(address + 4);
+    ProgramFunction jumpToApplication = (ProgramFunction)jumpAddress;
+    /* Initialize user application's Stack Pointer */
+    // __set_MSP(*(volatile uint32_t*) PATCHRAM);
+    jumpToApplication();
+    // where is our stack pointer now?
+    // __set_MSP(msp);
+  }
+}
+
 void run(){
-#ifdef DEBUG_DWT
-  volatile unsigned int *DWT_CYCCNT = (volatile unsigned int *)0xE0001004; //address of the register
-  volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
-  volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; //address of the register
-  *SCB_DEMCR = *SCB_DEMCR | 0x01000000;
-  *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
-#endif
+  /* copy patch from flash to ram */
+  memcpy((void*)PATCHRAM, (void*)PATCHFLASH, 64*1024); // copy 64kb
   for(;;){
-    if(doProcessAudio){
-#ifdef DEBUG_AUDIO
-      setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
-#endif
-#ifdef DEBUG_DWT
-      *DWT_CYCCNT = 0; // reset the counter
-#endif
-      buffer.split(source);
-      patches.process(buffer);
-      buffer.comb(dest);
-      if(collision){
-	collision = false;
-#ifdef DEBUG_AUDIO
-	debugToggle();
-#endif
-      }else{
-	doProcessAudio = false;
-      }
-#ifdef DEBUG_AUDIO
-      clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
-#endif
-#ifdef DEBUG_DWT
-      dwt_count = *DWT_CYCCNT;
-#endif
+    if(doLoadProgram){
+      doLoadProgram = false;
+      programRuns++;
+      loadProgram(programAddress);
     }
   }
 }
+
+int collisions = 0;
+int errors = 0;
+
+// volatile bool doProcessAudio = false;
+// volatile bool collision = false;
+// uint16_t* source;
+// uint16_t* dest;
+
+// #ifdef DEBUG_DWT
+// uint32_t dwt_count = 0;
+// #endif
+
+// __attribute__ ((section (".coderam")))
+// void run(){
+// #ifdef DEBUG_DWT
+//   volatile unsigned int *DWT_CYCCNT = (volatile unsigned int *)0xE0001004; //address of the register
+//   volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
+//   volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; //address of the register
+//   *SCB_DEMCR = *SCB_DEMCR | 0x01000000;
+//   *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
+// #endif
+//   for(;;){
+//     if(doProcessAudio){
+// #ifdef DEBUG_AUDIO
+//       setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+// #endif
+// #ifdef DEBUG_DWT
+//       *DWT_CYCCNT = 0; // reset the counter
+// #endif
+//       buffer.split(source);
+//       patches.process(buffer);
+//       buffer.comb(dest);
+//       if(collision){
+// 	collision = false;
+// #ifdef DEBUG_AUDIO
+// 	debugToggle();
+// #endif
+//       }else{
+// 	doProcessAudio = false;
+//       }
+// #ifdef DEBUG_AUDIO
+//       clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+// #endif
+// #ifdef DEBUG_DWT
+//       dwt_count = *DWT_CYCCNT;
+// #endif
+//     }
+//   }
+// }
 
 void setup(){
 //   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0); // 0 bits for preemption, 4 bits for subpriority
@@ -194,6 +239,17 @@ void setup(){
   printString("startup\n");
   updateBypassMode();
 
+  smem.checksum = sizeof(smem);
+  smem.status = AUDIO_IDLE_STATUS;
+  smem.audio_input = NULL;
+  smem.audio_output = NULL;
+  smem.audio_bitdepth = settings.audio_bitdepth;
+  smem.audio_blocksize = 0;
+  smem.audio_samplingrate = settings.audio_samplingrate;
+  smem.parameters = getAnalogValues();
+  smem.parameters_size = NOF_ADC_VALUES;
+  smem.error = 0;
+
   codec.start();
 }
 
@@ -206,11 +262,17 @@ void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  if(doProcessAudio)
-    collision = true;
-  source = src;
-  dest = dst;
-  doProcessAudio = true;
+  if(smem.status == AUDIO_PROCESSING_STATUS){
+    // oops
+    collisions++;
+  }else if(smem.status == AUDIO_ERROR_STATUS){
+    errors++;
+  }
+  smem.status = AUDIO_READY_STATUS;
+  smem.audio_input = src;
+  smem.audio_output = dst;
+  smem.audio_blocksize = sz;
+  // the blocksize here is the number of halfwords, ie 16bit fixed width ints, for both channels
 }
 
 #ifdef __cplusplus

@@ -6,8 +6,8 @@
 
 /* #define SERIAL_PORT                  1 */
 
-/* #define DEBUG_AUDIO */
-#define DEBUG_DWT
+#define DEBUG_AUDIO
+/* #define DEBUG_DWT */
 
 #define GREEN_PATCH                  0
 #define RED_PATCH                    1
@@ -20,8 +20,8 @@
 #define AUDIO_CHANNELS               2
 #define AUDIO_BITDEPTH               24    /* bits per sample */
 #define AUDIO_SAMPLINGRATE           48000
-#define AUDIO_BLOCK_SIZE             128   /* size in samples of a single channel audio block */
-#define AUDIO_MAX_BLOCK_SIZE         2048  /* size in samples of a single channel audio block */
+#define AUDIO_BLOCK_SIZE             256   /* size in samples of a single channel audio block */
+#define AUDIO_MAX_BLOCK_SIZE         1024  /* size in samples of a single channel audio block */
 
 #ifdef OWLMODULAR
 /* +0db in and out */
@@ -123,7 +123,7 @@
 #define assert_param(expr) ((expr) ? (void)0 : assert_failed((uint8_t *)__FILE__, __LINE__))
 #endif
 
-#define CCM __attribute__ ((section (".ccmdata")))
-#ifdef EXTERNAL_SRAM
-#define EXT __attribute__ ((section (".extdata")))
-#endif
+/* #define CCM __attribute__ ((section (".ccmdata"))) */
+/* #ifdef EXTERNAL_SRAM */
+/* #define EXT __attribute__ ((section (".extdata"))) */
+/* #endif */

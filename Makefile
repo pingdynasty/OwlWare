@@ -13,6 +13,7 @@ ifeq ($(CONFIG),Release)
 CFLAGS   = -O2
 endif
 
+CFLAGS  += --specs=nano.specs
 CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1 -DUSE_FULL_ASSERT
 CFLAGS  += -DEXTERNAL_SRAM 
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
