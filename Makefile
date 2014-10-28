@@ -22,6 +22,7 @@ LDLIBS   = -lm
 LDSCRIPT = Source/flash.ld
 
 C_SRC  = codec.c i2s.c errorhandlers.c main.c basicmaths.c fsmc_sram.c
+# C_SRC += usb_dcd_int.c
 C_SRC += system_hse.c
 C_SRC += usbd_desc.c usb_bsp.c usbd_usr.c
 C_SRC += usbd_audio_core.c 

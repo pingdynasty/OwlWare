@@ -57,7 +57,10 @@ public:
 
   int32_t handleFirmwareUpload(uint8_t* data, uint16_t length){
     int offset = 3;
-    if(packageIndex++ == 0){
+    int idx = decodeInt(data+offset);
+    offset += 5;
+    if(idx == 0){
+      clear();
       // first package
       timestamp = getSysTicks();
       if(length < 3+4+4)
@@ -75,6 +78,9 @@ public:
       if(buffer == NULL)
 	return error(-6);
     }
+    if(packageIndex++ != idx)
+      return error(-7); // out of sequence package
+
     int len = floor((length-offset)*7/8.0f);
     if(index+len < size){
       // mid package

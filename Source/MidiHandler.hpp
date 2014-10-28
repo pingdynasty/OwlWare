@@ -250,14 +250,18 @@ public:
       int32_t ret = loader.handleFirmwareUpload(data, size);
       if(ret < 0){
 	// firmware upload error
-	midi.sendCc(DEVICE_STATUS, -ret);
+	// midi.sendCc(DEVICE_STATUS, -ret);
+	setLed(RED);
       }else if(ret > 0){
 	// firmware upload complete
-	midi.sendCc(DEVICE_STATUS, 0x7f);
+	// midi.sendCc(DEVICE_STATUS, 0x7f);
+	setLed(NONE);
 	loadProgram(loader.getData(), loader.getSize());
+	codec.start();
 	// while(isProgramRunning()); // wait for program to exit
       }else{
-	midi.sendCc(DEVICE_STATUS, 0);
+	// midi.sendCc(DEVICE_STATUS, 0);
+	toggleLed();
       }
       break;
     }
