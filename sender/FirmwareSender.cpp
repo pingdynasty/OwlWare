@@ -10,8 +10,8 @@
 #include "../Source/sysex.h"
 #include "../Source/MidiStatus.h"
 
-#define BINARY_BLOCKSIZE 198 // max size of binary data per sysex message (224b binary = 256b sysex)
-#define BLOCK_DELAY 500 // wait in milliseconds between sysex messages
+#define BINARY_BLOCKSIZE 210 // max size of binary data per sysex message (224b binary = 256b sysex)
+#define BLOCK_DELAY 400 // wait in milliseconds between sysex messages
 
 class CommandLineException : public std::exception {
 private:
