@@ -254,6 +254,8 @@ public:
       }else if(ret > 0){
 	// firmware upload complete
 	midi.sendCc(DEVICE_STATUS, 0x7f);
+	loadProgram(loader.getData(), loader.getSize());
+	// while(isProgramRunning()); // wait for program to exit
       }else{
 	midi.sendCc(DEVICE_STATUS, 0);
       }

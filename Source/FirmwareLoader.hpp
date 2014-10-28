@@ -43,6 +43,10 @@ public:
     return buffer;
   }
 
+  uint32_t getSize(){
+    return size;
+  }
+
   /* decode a 32-bit unsigned integer from 5 bytes of sysex encoded data */
   uint32_t decodeInt(uint8_t *data){
     uint8_t buf[4];
@@ -58,9 +62,9 @@ public:
       timestamp = getSysTicks();
       if(length < 3+4+4)
 	return error(-1);
-      // disable audio processing
-      codec.stop();
-      patches.reset();
+      // stop running program and free its memory
+      exitProgram();
+      // while(isProgramRunning()); // wait for program to exit
       // get firmware data size (decoded)
       size = decodeInt(data+offset);
       offset += 5; // it takes five 7-bit values to encode four bytes
@@ -68,6 +72,8 @@ public:
       if(size > MAX_SYSEX_FIRMWARE_SIZE)
 	return error(-2);
       buffer = (uint8_t*)malloc(size);
+      if(buffer == NULL)
+	return error(-6);
     }
     int len = floor((length-offset)*7/8.0f);
     if(index+len < size){

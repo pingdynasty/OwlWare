@@ -34,7 +34,7 @@ public:
   virtual void handleNoteOff(uint8_t, uint8_t, uint8_t){}
   virtual void handleNoteOn(uint8_t, uint8_t, uint8_t){}
   virtual void handlePitchBend(uint8_t, uint8_t, uint8_t){}
-  virtual void handleSysEx(uint8_t* data, uint8_t size){}
+  virtual void handleSysEx(uint8_t* data, uint16_t size){}
 
   void clear(){
     runningStatus = message[0];

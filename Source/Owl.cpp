@@ -78,37 +78,54 @@ typedef void (*ProgramFunction)(void);
 #define PATCHRAM   ((uint32_t)0x20010000)
 
 int programRuns = 0;
-bool doLoadProgram = true;
-uint32_t programAddress = PATCHRAM;
+bool doRunProgram;
+void* programAddress;
+uint32_t programLength;
 
-void exitProgram(){
-  codec.stop();
-  smem.status = AUDIO_EXIT_STATUS;
+bool isProgramRunning(){
+  return smem.status != AUDIO_IDLE_STATUS;
 }
 
-void loadProgram(uint32_t address){
+void exitProgram(){
+  // disable audio processing
+  codec.stop();
+  smem.status = AUDIO_EXIT_STATUS;
+  // patches.reset();
+}
+
+void loadProgram(void* address, uint32_t length){
+  programAddress = address;
+  programLength = length;
+  doRunProgram = true;
+}
+
+void runProgram(){
+  /* copy patch to ram */
+  memcpy((void*)PATCHRAM, (void*)programAddress, programLength);
   /* Jump to patch */
   /* Check Vector Table: Test if user code is programmed starting from address 
      "APPLICATION_ADDRESS" */
-  if(((*(volatile uint32_t*)address) & 0x2FFE0000 ) == 0x20000000){
-    uint32_t jumpAddress = *(volatile uint32_t*)(address + 4);
+  if(((*(volatile uint32_t*)PATCHRAM) & 0x2FFE0000 ) == 0x20000000){
+    uint32_t jumpAddress = *(volatile uint32_t*)(PATCHRAM + 4);
     ProgramFunction jumpToApplication = (ProgramFunction)jumpAddress;
     /* Initialize user application's Stack Pointer */
     // __set_MSP(*(volatile uint32_t*) PATCHRAM);
     jumpToApplication();
     // where is our stack pointer now?
     // __set_MSP(msp);
+
+    // program has returned
+    smem.status = AUDIO_IDLE_STATUS;
   }
 }
 
 void run(){
-  /* copy patch from flash to ram */
-  memcpy((void*)PATCHRAM, (void*)PATCHFLASH, 64*1024); // copy 64kb
+  loadProgram((uint32_t*)PATCHFLASH, 64*1024);
   for(;;){
-    if(doLoadProgram){
-      doLoadProgram = false;
+    if(doRunProgram){
+      doRunProgram = false;
       programRuns++;
-      loadProgram(programAddress);
+      runProgram();
     }
   }
 }
@@ -262,11 +279,11 @@ void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  if(smem.status == AUDIO_PROCESSING_STATUS){
+  if(smem.status == AUDIO_ERROR_STATUS){
+    errors++;
+  }else if(smem.status != AUDIO_PROCESSED_STATUS){
     // oops
     collisions++;
-  }else if(smem.status == AUDIO_ERROR_STATUS){
-    errors++;
   }
   smem.status = AUDIO_READY_STATUS;
   smem.audio_input = src;
