@@ -1,55 +1,8 @@
-/**
-  ******************************************************************************
-  * @file    usb_conf.h
-  * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    19-March-2012
-  * @brief   General low level driver configuration
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
-  *
-  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
-  * You may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at:
-  *
-  *        http://www.st.com/software_license_agreement_liberty_v2
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  *
-  ******************************************************************************
-  */
-
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USB_CONF__H__
 #define __USB_CONF__H__
 
-/* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
 
-/** @addtogroup USB_OTG_DRIVER
-  * @{
-  */
-
-/** @defgroup USB_CONF
-  * @brief USB low level driver configuration file
-  * @{
-  */
-
-/** @defgroup USB_CONF_Exported_Defines
-  * @{
-  */
-
-/* USB Core and PHY interface configuration.
-   Tip: To avoid modifying these defines each time you need to change the USB
-        configuration, you can declare the needed define in your toolchain
-        compiler preprocessor.
-   */
 /****************** USB OTG FS PHY CONFIGURATION *******************************
 *  The USB OTG FS Core supports one on-chip Full Speed PHY.
 *
@@ -238,51 +191,4 @@
   #define __packed    __unaligned
 #endif /* __CC_ARM */
 
-/**
-  * @}
-  */
-
-
-/** @defgroup USB_CONF_Exported_Types
-  * @{
-  */
-/**
-  * @}
-  */
-
-
-/** @defgroup USB_CONF_Exported_Macros
-  * @{
-  */
-/**
-  * @}
-  */
-
-/** @defgroup USB_CONF_Exported_Variables
-  * @{
-  */
-/**
-  * @}
-  */
-
-/** @defgroup USB_CONF_Exported_FunctionsPrototype
-  * @{
-  */
-/**
-  * @}
-  */
-
-
 #endif //__USB_CONF__H__
-
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-

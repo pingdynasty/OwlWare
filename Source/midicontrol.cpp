@@ -43,13 +43,22 @@ void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){
   }
 }
 
-void midi_send_short_message(uint8_t* msg, uint16_t length) {
-  uint8_t packet[4];
-  assert_param(length < sizeof(packet));
-  packet[0] = msg[0]>>4; // todo: set cable id
-  memcpy(&packet[1], msg, length);
-  midi_send_usb_buffer(packet, sizeof(packet));
-}
+// void midi_send_short_message(uint8_t* msg, uint16_t length) {
+//   uint8_t packet[4];
+//   // assert_param(length < sizeof(packet));
+//   switch(length){
+//   case 3:
+//     packet[3] = msg[2];
+//     // deliberate fall-through
+//   case 2:
+//     packet[2] = msg[1];
+//     // deliberate fall-through
+//   case 1:
+//     packet[1] = msg[0];
+//   }
+//   packet[0] = msg[0]>>4; // todo: set cable id
+//   midi_send_usb_buffer(packet, sizeof(packet));
+// }
 
 void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
   /* Add a MIDI message to the USB buffer. These need to be written in
