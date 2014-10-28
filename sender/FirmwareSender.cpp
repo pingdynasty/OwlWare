@@ -10,6 +10,9 @@
 #include "../Source/sysex.h"
 #include "../Source/MidiStatus.h"
 
+#define BINARY_BLOCKSIZE 198 // max size of binary data per sysex message (224b binary = 256b sysex)
+#define BLOCK_DELAY 500 // wait in milliseconds between sysex messages
+
 class CommandLineException : public std::exception {
 private:
   juce::String cause;
@@ -78,6 +81,8 @@ public:
 	      << "-in FILE\tinput FILE" << std::endl
 	      << "-out DEVICE\tsend output to MIDI interface DEVICE" << std::endl
 	      << "-save FILE\twrite output to FILE" << std::endl
+	      << "-q or --quiet\treduce status output" << std::endl
+	      << "-v or --verbose\tincrease status output" << std::endl
       ;
   }
 
@@ -87,8 +92,10 @@ public:
       if(arg.compare("-h") == 0 || arg.compare("--help") == 0 ){
 	usage();
 	throw CommandLineException(juce::String::empty);
-      }else if(arg.compare("-q") == 0){
+      }else if(arg.compare("-q") == 0 || arg.compare("--quiet") == 0 ){
 	verbose = false;
+      }else if(arg.compare("-v") == 0 || arg.compare("--verbose") == 0 ){
+	verbose = true;
       }else if(arg.compare("-l") == 0 || arg.compare("--list") == 0){
 	std::cout << "MIDI input devices:" << std::endl;
 	listDevices(MidiInput::getDevices());
@@ -127,56 +134,61 @@ public:
 	std::cout << "\tto SysEx file " << fileout->getFullPathName() << std::endl;       
     }
     char header[] =  { MIDI_SYSEX_MANUFACTURER, MIDI_SYSEX_DEVICE, SYSEX_FIRMWARE_UPLOAD };
-    int blocksize = 64;
+    int blocksize = BINARY_BLOCKSIZE;
 
     InputStream* in = input->createInputStream();
     if(fileout != NULL)
       out = fileout->createOutputStream();
-      
+
+    int packageIndex = 0;
     MemoryBlock block;
     block.append(header, sizeof(header));
+    encodeInt(block, packageIndex++);
     // MemoryOutputStream stream;
     // stream.write(header, sizeof(header));
 
     unsigned char buffer[blocksize];
     unsigned char sysex[(int)ceil(blocksize*8/7)];
     int size = input->getSize(); // amount of data, excluding checksum
-    buffer[3] = (uint8_t)size & 0xff;
-    buffer[2] = (uint8_t)(size >> 8) & 0xff;
-    buffer[1] = (uint8_t)(size >> 16) & 0xff;
-    buffer[0] = (uint8_t)(size >> 24) & 0xff;
-    int len = data_to_sysex(buffer, sysex, 4);
-    if(len != 5)
-      throw CommandLineException("Error in sysex conversion"); 
-    block.append(sysex, len);
+    encodeInt(block, size);
+    // buffer[3] = (uint8_t)size & 0xff;
+    // buffer[2] = (uint8_t)(size >> 8) & 0xff;
+    // buffer[1] = (uint8_t)(size >> 16) & 0xff;
+    // buffer[0] = (uint8_t)(size >> 24) & 0xff;
+    // int len = data_to_sysex(buffer, sysex, 4);
+    // if(len != 5)
+    //   throw CommandLineException("Error in sysex conversion"); 
+    // block.append(sysex, len);
     // stream.write(sysex, len);
 
     CRCC crc;
     uint32_t checksum = 0;
     // size = input->getSize(); // amount of data, excluding checksum
     for(int i=0; i < size && running;){
-      len = in->read(buffer, blocksize);
+      int len = in->read(buffer, blocksize);
       checksum = crc.calc(len, buffer, checksum);
       i += len;
       if(verbose)
 	std::cout << "preparing " << std::dec << len;
       len = data_to_sysex(buffer, sysex, len);
       if(verbose)
-	std::cout << "/" << len << " bytes binary/sysex" << std::endl;
+	std::cout << "/" << len << " bytes binary/sysex (total " << 
+	  i << " of " << size << " bytes)" << std::endl;
       block.append(sysex, len);
       // stream.write(sysex, len);
       if(i == size){
 	// last block
 	if(verbose)
 	  std::cout << "checksum 0x" << std::hex << checksum << std::endl;
-	buffer[3] = (uint8_t)checksum & 0xff;
-	buffer[2] = (uint8_t)(checksum >> 8) & 0xff;
-	buffer[1] = (uint8_t)(checksum >> 16) & 0xff;
-	buffer[0] = (uint8_t)(checksum >> 24) & 0xff;
-	len = data_to_sysex(buffer, sysex, 4);
-	if(len != 5)
-	  throw CommandLineException("Error in sysex conversion"); 
-	block.append(sysex, len);
+	encodeInt(block, checksum);
+	// buffer[3] = (uint8_t)checksum & 0xff;
+	// buffer[2] = (uint8_t)(checksum >> 8) & 0xff;
+	// buffer[1] = (uint8_t)(checksum >> 16) & 0xff;
+	// buffer[0] = (uint8_t)(checksum >> 24) & 0xff;
+	// len = data_to_sysex(buffer, sysex, 4);
+	// if(len != 5)
+	//   throw CommandLineException("Error in sysex conversion"); 
+	// block.append(sysex, len);
 	send(block);
 	// stream.write(sysex, len);
 	// send((unsigned char*)stream.getData(), stream.getDataSize());
@@ -184,13 +196,27 @@ public:
 	send(block);
 	block = MemoryBlock();
 	block.append(header, sizeof(header));
+	encodeInt(block, packageIndex++);
 	// send((unsigned char*)stream.getData(), stream.getDataSize());
 	// stream.reset();
 	// stream.write(header, sizeof(header));
       }
-      juce::Time::waitForMillisecondCounter(juce::Time::getMillisecondCounter()+1000);
+      juce::Time::waitForMillisecondCounter(juce::Time::getMillisecondCounter()+BLOCK_DELAY);
     }
     stop();
+  }
+
+  void encodeInt(MemoryBlock& block, uint32_t data){
+    uint8_t in[4];
+    uint8_t out[5];
+    in[3] = (uint8_t)data & 0xff;
+    in[2] = (uint8_t)(data >> 8) & 0xff;
+    in[1] = (uint8_t)(data >> 16) & 0xff;
+    in[0] = (uint8_t)(data >> 24) & 0xff;
+    int len = data_to_sysex(in, out, 4);
+    if(len != 5)
+      throw CommandLineException("Error in sysex conversion"); 
+    block.append(out, len);
   }
 
   void stop(){
