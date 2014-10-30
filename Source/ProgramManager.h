@@ -18,6 +18,12 @@ public:
 
   void exit();
 
+  /* exit and restart program */
+  void reset(){
+    exit();
+    doRunProgram = true;
+  }
+
   void load(void* address, uint32_t length){
     programAddress = address;
     programLength = length;

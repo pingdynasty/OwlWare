@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "StompBox.h"
+#include "OpenWareMidiControl.h"
 
 class MidiController;
 extern MidiController midi;

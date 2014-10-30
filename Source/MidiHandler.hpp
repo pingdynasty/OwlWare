@@ -7,7 +7,6 @@
 #include "MidiReader.hpp"
 #include "MidiController.h"
 #include "CodecController.h"
-#include "PatchController.h"
 #include "ApplicationSettings.h"
 #include "FirmwareLoader.hpp"
 #include "ProgramManager.h"
@@ -43,14 +42,14 @@ public:
     case PATCH_CONTROL:
       if(value == 127){
 	memcpy(midi_values, getAnalogValues(), sizeof(midi_values));
-	patches.setParameterValues(midi_values);
+	// patches.setParameterValues(midi_values);
       }else{
-	patches.setParameterValues(getAnalogValues());
+	// patches.setParameterValues(getAnalogValues());
       }
       break;
     case PATCH_BUTTON:
       if(value == 127)
-	patches.toggleActiveSlot();
+	// patches.toggleActiveSlot();
       break;
     case LED:
       if(value < 42){
@@ -63,16 +62,16 @@ public:
       break;
     case PATCH_MODE:
       settings.patch_mode = value >> 5;
-      patches.setActiveSlot(patches.getActiveSlot());
+      // patches.setActiveSlot(patches.getActiveSlot());
       break;
     case PATCH_SLOT_GREEN:
-      patches.setPatch(GREEN, value);
+      // patches.setPatch(GREEN, value);
       break;
     case PATCH_SLOT_RED:
-      patches.setPatch(RED, value);
+      // patches.setPatch(RED, value);
       break;
     case ACTIVE_SLOT:
-      patches.setActiveSlot(value == 127 ? RED : GREEN);
+      // patches.setActiveSlot(value == 127 ? RED : GREEN);
       break;
     case LEFT_INPUT_GAIN:
       settings.inputGainLeft = value>>2;
@@ -120,7 +119,7 @@ public:
 	settings.audio_samplingrate = frequency;
 	codec.stop();
 	codec.init(settings);
-	patches.reset(); // changing sampling rate may require re-initialisation of patches
+	program.reset(); // changing sampling rate may require re-initialisation of patches
 	codec.start();
       }
       break;
@@ -172,7 +171,7 @@ public:
 	settings.audio_blocksize = blocksize;
 	codec.stop();
 	codec.init(settings);
-	patches.reset(); // changing blocksize may require re-initialisation of patches
+	program.reset(); // changing sampling rate may require re-initialisation of patches
 	codec.start();
       }
       break;
@@ -227,7 +226,8 @@ public:
 	settings.reset();
 	settings.clearFlash();
 	codec.init(settings);
-	patches.setActiveSlot(GREEN);
+	program.reset();
+	// patches.setActiveSlot(GREEN);
       }
       break;
     }

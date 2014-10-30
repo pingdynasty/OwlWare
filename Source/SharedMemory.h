@@ -32,8 +32,7 @@
    } SharedMemory;
 
 #define CHECKSUM_ERROR_STATUS -10
-__attribute__ ((section (".sharedram")))
-static volatile SharedMemory smem;
+extern volatile SharedMemory smem;
 
 #ifdef __cplusplus
 }

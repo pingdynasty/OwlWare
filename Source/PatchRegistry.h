@@ -2,7 +2,6 @@
 #define __PatchRegistry_h__
 
 #include <string>
-#include "StompBox.h"
 #include "device.h"
 
 class PatchRegistry;
@@ -12,8 +11,6 @@ class PatchRegistry {
 public:
   PatchRegistry();
   const char* getName(unsigned int index);
-  Patch* create(unsigned int index);
-  Patch* create(const char* name);
   unsigned int getNumberOfPatches();
   void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels);
 private:

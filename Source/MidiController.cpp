@@ -1,16 +1,15 @@
 #include <errno.h>
 #include <string.h>
-#include "MidiStatus.h"
-#include "MidiController.h"
-#include "CodecController.h"
-#include "OpenWareMidiControl.h"
-#include "PatchController.h"
-#include "PatchRegistry.h"
-#include "ApplicationSettings.h"
+#include "sysex.h"
 #include "fsmc_sram.h"
 #include "owlcontrol.h"
 #include "midicontrol.h"
-#include "sysex.h"
+#include "MidiStatus.h"
+#include "PatchRegistry.h"
+#include "MidiController.h"
+#include "CodecController.h"
+#include "ApplicationSettings.h"
+#include "OpenWareMidiControl.h"
 
 uint32_t log2(uint32_t x){ 
   return x == 0 ? 0 : 31 - __builtin_clz (x); /* clz returns the number of leading 0's */
@@ -21,18 +20,18 @@ void MidiController::init(uint8_t ch){
 }
 
 void MidiController::sendSettings(){
-  PatchProcessor* processor = patches.getActivePatchProcessor();
-  sendCc(PATCH_PARAMETER_A, (uint8_t)(processor->getParameterValue(PARAMETER_A)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_B, (uint8_t)(processor->getParameterValue(PARAMETER_B)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_C, (uint8_t)(processor->getParameterValue(PARAMETER_C)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_D, (uint8_t)(processor->getParameterValue(PARAMETER_D)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_E, (uint8_t)(processor->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
+  // PatchProcessor* processor = patches.getActivePatchProcessor();
+  // sendCc(PATCH_PARAMETER_A, (uint8_t)(processor->getParameterValue(PARAMETER_A)*127.0) & 0x7f);
+  // sendCc(PATCH_PARAMETER_B, (uint8_t)(processor->getParameterValue(PARAMETER_B)*127.0) & 0x7f);
+  // sendCc(PATCH_PARAMETER_C, (uint8_t)(processor->getParameterValue(PARAMETER_C)*127.0) & 0x7f);
+  // sendCc(PATCH_PARAMETER_D, (uint8_t)(processor->getParameterValue(PARAMETER_D)*127.0) & 0x7f);
+  // sendCc(PATCH_PARAMETER_E, (uint8_t)(processor->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
   sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
   sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
   sendCc(PATCH_MODE, settings.patch_mode << 5);
   sendCc(PATCH_SLOT_GREEN, settings.patch_green);
   sendCc(PATCH_SLOT_RED, settings.patch_red);
-  sendCc(ACTIVE_SLOT, patches.getActiveSlot() == GREEN ? 0 : 127);
+  // sendCc(ACTIVE_SLOT, patches.getActiveSlot() == GREEN ? 0 : 127);
   sendCc(LEFT_INPUT_GAIN, codec.getInputGainLeft()<<2);
   sendCc(RIGHT_INPUT_GAIN, codec.getInputGainRight()<<2);
   sendCc(LEFT_OUTPUT_GAIN, codec.getOutputGainLeft());
@@ -51,15 +50,15 @@ void MidiController::sendSettings(){
 }
 
 void MidiController::sendPatchParameterNames(){
-  PatchProcessor* processor = patches.getActivePatchProcessor();
-  for(int i=0; i<NOF_ADC_VALUES; ++i){
-    PatchParameterId pid = (PatchParameterId)i;
-    const char* name = processor->getParameterName(pid);
-    if(name != NULL)
-      sendPatchParameterName(pid, name);
-    else
-      sendPatchParameterName(pid, "");
-  }
+  // PatchProcessor* processor = patches.getActivePatchProcessor();
+  // for(int i=0; i<NOF_ADC_VALUES; ++i){
+  //   PatchParameterId pid = (PatchParameterId)i;
+  //   const char* name = processor->getParameterName(pid);
+  //   if(name != NULL)
+  //     sendPatchParameterName(pid, name);
+  //   else
+  //     sendPatchParameterName(pid, "");
+  // }
 }
 
 void MidiController::sendPatchParameterName(PatchParameterId pid, const char* name){

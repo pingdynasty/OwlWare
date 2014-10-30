@@ -5,6 +5,15 @@
 #define MIDI_SYSEX_DEVICE              0x52     /* OWL Open Ware Laboratory */
 #define MIDI_SYSEX_VERSION             0x03     /* Revision */
 
+enum PatchParameterId {
+  PARAMETER_A,
+  PARAMETER_B,
+  PARAMETER_C,
+  PARAMETER_D,
+  PARAMETER_E,
+  PARAMETER_F
+};
+
 enum OpenWareMidiSysexCommand {
   SYSEX_PRESET_NAME_COMMAND       = 0x01,
   SYSEX_PARAMETER_NAME_COMMAND    = 0x02,

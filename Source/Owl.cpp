@@ -4,12 +4,8 @@
 #include "usbcontrol.h"
 #include "owlcontrol.h"
 #include "PatchRegistry.h"
-#include "StompBox.h"
-#include "PatchProcessor.h"
 #include "MidiController.h"
 #include "CodecController.h"
-#include "PatchController.h"
-// #include "SampleBuffer.hpp"
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
 #include "SharedMemory.h"
@@ -28,11 +24,13 @@ CodecController codec;
 MidiController midi;
 ApplicationSettings settings;
 PatchRegistry registry;
-PatchController patches;
 volatile bool bypass = false;
 
+__attribute__ ((section (".sharedram")))
+volatile SharedMemory smem;
+
 void updateLed(){
-  setLed((LedPin)patches.getActiveSlot());
+  // setLed((LedPin)patches.getActiveSlot());
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
@@ -58,7 +56,7 @@ void footSwitchCallback(){
 }
 
 void toggleActiveSlot(){
-  patches.toggleActiveSlot();
+  // patches.toggleActiveSlot();
   updateLed();
   midi.sendPatchParameterNames(); // todo: this should probably be requested from client
 }
@@ -83,6 +81,9 @@ void exitProgram(){
   program.exit();
 }
 
+void resetProgram(){
+  program.reset();
+}
 
 void run(){
   program.load((uint32_t*)PATCHFLASH, 64*1024);
@@ -180,7 +181,7 @@ void setup(){
 
   settings.init();
   midi.init(MIDI_CHANNEL);
-  patches.init();
+  // patches.init();
 
 #ifdef EXPRESSION_PEDAL
 #ifndef OWLMODULAR
