@@ -13,6 +13,7 @@
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
 #include "SharedMemory.h"
+#include "ProgramManager.h"
 
 #include "serial.h"
 #include "clock.h"
@@ -20,6 +21,8 @@
 
 #define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; \
 if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
+
+#define PATCHFLASH ((uint32_t)0x08040000)
 
 CodecController codec;
 MidiController midi;
@@ -73,93 +76,17 @@ void setBlocksize(uint16_t sz){
 //   buffer.setSize(sz);
 }
 
-typedef void (*ProgramFunction)(void);
-#define PATCHFLASH ((uint32_t)0x08040000)
-#define PATCHRAM   ((uint32_t)0x20010000)
-
-int programRuns = 0;
-volatile bool running = false;
-volatile bool doRunProgram = false;
-volatile void* programAddress;
-volatile uint32_t programLength;
-
-bool isProgramRunning(){
-  return running;
-  // return smem.status != AUDIO_IDLE_STATUS;
-}
-
 void exitProgram(){
   // disable audio processing
   codec.stop();
-  smem.status = AUDIO_EXIT_STATUS;
   // patches.reset();
-  setLed(RED);
+  program.exit();
 }
 
-void loadProgram(void* address, uint32_t length){
-  programAddress = address;
-  programLength = length;
-  doRunProgram = true;
-}
-
-// void runProgram(){
-//   /* copy patch to ram */
-//   memcpy((void*)PATCHRAM, (void*)programAddress, programLength);
-//   /* Jump to patch */
-//   /* Check Vector Table: Test if user code is programmed starting from address 
-//      "APPLICATION_ADDRESS" */
-//   if(((*(volatile uint32_t*)PATCHRAM) & 0x2FFE0000 ) == 0x20000000){
-//     uint32_t jumpAddress = *(volatile uint32_t*)(PATCHRAM + 4);
-//     ProgramFunction jumpToApplication = (ProgramFunction)jumpAddress;
-//     /* Initialize user application Stack Pointer */
-//     // __set_MSP(*(volatile uint32_t*) PATCHRAM);
-//     running = true;
-//     setLed(GREEN);
-//     jumpToApplication();
-//     // where is our stack pointer now?
-//     // __set_MSP(msp);
-
-//     // program has returned
-//     smem.status = AUDIO_IDLE_STATUS;
-//     running = false;
-//   }
-// }
 
 void run(){
-  loadProgram((uint32_t*)PATCHFLASH, 64*1024);
-  for(;;){
-    if(doRunProgram){
-      doRunProgram = false;
-      programRuns++;
-
-      // runProgram();
-
-  /* copy patch to ram */
-  memcpy((void*)PATCHRAM, (void*)programAddress, programLength);
-  /* Jump to patch */
-  /* Check Vector Table: Test if user code is programmed starting from address 
-     "APPLICATION_ADDRESS" */
-  if(((*(volatile uint32_t*)PATCHRAM) & 0x2FFE0000 ) == 0x20000000){
-    uint32_t jumpAddress = *(volatile uint32_t*)(PATCHRAM + 4);
-    ProgramFunction jumpToApplication = (ProgramFunction)jumpAddress;
-    /* store Stack Pointer before jumping */
-    uint32_t msp = __get_MSP();
-    /* Initialize user application Stack Pointer */
-    // __set_MSP(*(volatile uint32_t*) PATCHRAM);
-    running = true;
-    setLed(GREEN);
-    jumpToApplication();
-    // where is our stack pointer now?
-    /* reset Stack Pointer to pre-program state */
-    __set_MSP(msp);
-
-    // program has returned
-    smem.status = AUDIO_IDLE_STATUS;
-    running = false;
-  }
-
-    }
-  }
+  program.load((uint32_t*)PATCHFLASH, 64*1024);
+  program.run();
 }
 
 int collisions = 0;

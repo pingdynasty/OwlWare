@@ -31,7 +31,7 @@ C_SRC += clock.c operators.c serial.c gpio.c sysex.c
 C_SRC += sramalloc.c
 
 CPP_SRC  = StompBox.cpp Owl.cpp CodecController.cpp MidiController.cpp PatchController.cpp ApplicationSettings.cpp
-CPP_SRC += PatchProcessor.cpp PatchRegistry.cpp
+CPP_SRC += PatchProcessor.cpp PatchRegistry.cpp ProgramManager.cpp
 
 OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o)
 
@@ -40,10 +40,10 @@ OBJS += $(PERIPH)
 OBJS += $(BUILD)/startup.o
 OBJS += $(USB_DEVICE) $(USB_OTG)
 OBJS += $(SYSCALLS)
-OBJS += $(DSPLIB)/FastMathFunctions/arm_sin_f32.o
-OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
-OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_f32.o
-OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_init_f32.o
+# OBJS += $(DSPLIB)/FastMathFunctions/arm_sin_f32.o
+# OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
+# OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_f32.o
+# OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_init_f32.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q31.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_q31_to_float.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q15.o

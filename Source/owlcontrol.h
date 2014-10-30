@@ -86,9 +86,7 @@
 
    bool hasExpressionPedal();
 
-   bool isProgramRunning();
    void exitProgram();
-   void loadProgram(void* address, uint32_t length);
 
 #ifdef __cplusplus
 }

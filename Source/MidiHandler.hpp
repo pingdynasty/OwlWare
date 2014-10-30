@@ -10,6 +10,7 @@
 #include "PatchController.h"
 #include "ApplicationSettings.h"
 #include "FirmwareLoader.hpp"
+#include "ProgramManager.h"
 
 uint16_t midi_values[NOF_ADC_VALUES];
 
@@ -256,7 +257,7 @@ public:
 	// firmware upload complete
 	// midi.sendCc(DEVICE_STATUS, 0x7f);
 	setLed(NONE);
-	loadProgram(loader.getData(), loader.getSize());
+	program.load(loader.getData(), loader.getSize());
 	codec.start();
 	// while(isProgramRunning()); // wait for program to exit
       }else{
