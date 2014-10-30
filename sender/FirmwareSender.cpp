@@ -11,7 +11,7 @@
 #include "../Source/MidiStatus.h"
 
 #define BINARY_BLOCKSIZE 210 // max size of binary data per sysex message (224b binary = 256b sysex)
-#define BLOCK_DELAY 400 // wait in milliseconds between sysex messages
+#define DEFAULT_BLOCK_DELAY 20 // wait in milliseconds between sysex messages
 
 class CommandLineException : public std::exception {
 private:
@@ -34,6 +34,7 @@ private:
   juce::ScopedPointer<File> fileout;
   juce::ScopedPointer<File> input;
   juce::ScopedPointer<OutputStream> out;
+  int blockDelay = DEFAULT_BLOCK_DELAY;
 public:
   void listDevices(const StringArray& names){
     for(int i=0; i<names.size(); ++i)
@@ -81,6 +82,7 @@ public:
 	      << "-in FILE\tinput FILE" << std::endl
 	      << "-out DEVICE\tsend output to MIDI interface DEVICE" << std::endl
 	      << "-save FILE\twrite output to FILE" << std::endl
+	      << "-d NUM\tdelay for NUM milliseconds between blocks" << std::endl
 	      << "-q or --quiet\treduce status output" << std::endl
 	      << "-v or --verbose\tincrease status output" << std::endl
       ;
@@ -102,6 +104,8 @@ public:
 	std::cout << "MIDI output devices:" << std::endl;
 	listDevices(MidiOutput::getDevices());
 	throw CommandLineException(juce::String::empty);
+      }else if(arg.compare("-d") == 0 && ++i < argc){
+	blockDelay = juce::String(argv[i]).getIntValue();
       }else if(arg.compare("-in") == 0 && ++i < argc){
 	juce::String name = juce::String(argv[i]);
 	input = new juce::File(name);
@@ -201,7 +205,7 @@ public:
 	// stream.reset();
 	// stream.write(header, sizeof(header));
       }
-      juce::Time::waitForMillisecondCounter(juce::Time::getMillisecondCounter()+BLOCK_DELAY);
+      juce::Time::waitForMillisecondCounter(juce::Time::getMillisecondCounter()+blockDelay);
     }
     stop();
   }
