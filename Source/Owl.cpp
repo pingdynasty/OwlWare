@@ -86,7 +86,7 @@ void exitProgram(){
 
 void run(){
   program.load((uint32_t*)PATCHFLASH, 64*1024);
-  program.run();
+  program.run(); // never returns
 }
 
 int collisions = 0;
@@ -138,6 +138,15 @@ int errors = 0;
 //     }
 //   }
 // }
+
+void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
+  // hello!
+  registry.registerPatch(name, inputChannels, outputChannels);
+}
+
+void registerPatchParameter(uint8_t id, const char* name){
+  
+}
 
 void setup(){
 //   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0); // 0 bits for preemption, 4 bits for subpriority
@@ -225,6 +234,8 @@ void setup(){
   smem.parameters = getAnalogValues();
   smem.parameters_size = NOF_ADC_VALUES;
   smem.error = 0;
+  smem.registerPatch = registerPatch;
+  smem.registerPatchParameter = registerPatchParameter;
 
   codec.start();
 }

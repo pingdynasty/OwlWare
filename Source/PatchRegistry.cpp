@@ -2,10 +2,9 @@
 #include "basicmaths.h"
 #include "OwlPatches/includes.h"
 
-#define REGISTER_PATCH(T, STR, UNUSED, UNUSED2) registerPatch(STR, Register<T>::construct)
+// #define REGISTER_PATCH(T, STR, UNUSED, UNUSED2) registerPatch(STR, Register<T>::construct)
 
 PatchRegistry::PatchRegistry() : nofPatches(0) {
-#include "OwlPatches/patches.cpp"
 }
 
 const char* PatchRegistry::getName(unsigned int index){
@@ -18,16 +17,9 @@ unsigned int PatchRegistry::getNumberOfPatches(){
   return nofPatches;
 }
 
-Patch* PatchRegistry::create(unsigned int index) {
-  if(index < getNumberOfPatches())
-    return (*creators[index])();
-  return NULL;
-}
-
-void PatchRegistry::registerPatch(const char* name, PatchCreator creator){
+void PatchRegistry::registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
   if(nofPatches < MAX_NUMBER_OF_PATCHES){
     names[nofPatches] = name;
-    creators[nofPatches] = creator;
     nofPatches++;
   }
 }

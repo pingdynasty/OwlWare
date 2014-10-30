@@ -30,7 +30,7 @@ void PatchProcessor::setPatch(uint8_t patchIndex){
     index = patchIndex;
   else
     index = 0;
-  patch = registry.create(index);
+  // patch = registry.create(index);
 }
 
 void PatchProcessor::registerParameter(PatchParameterId pid, const char* name, const char* description){

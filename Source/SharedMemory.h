@@ -27,6 +27,8 @@
      uint16_t* parameters;
      uint8_t parameters_size;
      int8_t error;
+     void (*registerPatch)(const char* name, uint8_t inputChannels, uint8_t outputChannels);
+     void (*registerPatchParameter)(uint8_t id, const char* name);
    } SharedMemory;
 
 #define CHECKSUM_ERROR_STATUS -10
