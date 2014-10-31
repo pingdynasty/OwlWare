@@ -10,7 +10,6 @@
    typedef enum { 
      AUDIO_IDLE_STATUS = 0, 
      AUDIO_READY_STATUS, 
-     AUDIO_PROCESSING_STATUS, 
      AUDIO_PROCESSED_STATUS, 
      AUDIO_EXIT_STATUS, 
      AUDIO_ERROR_STATUS 
@@ -26,6 +25,7 @@
      uint32_t audio_samplingrate;
      uint16_t* parameters;
      uint8_t parameters_size;
+     uint16_t buttons;
      int8_t error;
      void (*registerPatch)(const char* name, uint8_t inputChannels, uint8_t outputChannels);
      void (*registerPatchParameter)(uint8_t id, const char* name);

@@ -14,6 +14,13 @@ enum PatchParameterId {
   PARAMETER_F
 };
 
+enum PatchButtonId {
+  BYPASS_BUTTON,
+  PUSHBUTTON,
+  GREEN_BUTTON,
+  RED_BUTTON
+};
+
 enum OpenWareMidiSysexCommand {
   SYSEX_PRESET_NAME_COMMAND       = 0x01,
   SYSEX_PARAMETER_NAME_COMMAND    = 0x02,

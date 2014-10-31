@@ -29,23 +29,48 @@ volatile bool bypass = false;
 __attribute__ ((section (".sharedram")))
 volatile SharedMemory smem;
 
+bool getButton(PatchButtonId bid){
+  return smem.buttons & (1<<bid);
+}
+
+void setButton(PatchButtonId bid, bool on){
+  if(on)
+    smem.buttons |= 1<<bid;
+  else
+    smem.buttons &= ~(1<<bid);
+}
+
+void updateButtons(){
+  setButton(GREEN_BUTTON, getLed() == GREEN);
+  setButton(RED_BUTTON, getLed() == RED);
+}
+
 void updateLed(){
-  // setLed((LedPin)patches.getActiveSlot());
+  if(getButton(GREEN_BUTTON))  
+    setLed(GREEN);
+  else if(getButton(RED_BUTTON))
+    setLed(RED);
+  else
+    setLed(NONE);
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
 void updateBypassMode(){
 #ifdef OWLMODULAR
   bypass = false;
-  updateLed();
 #else
   if(isStompSwitchPressed()){
+    setButton(PUSHBUTTON, true);
     bypass = true;
     setLed(NONE);
-    midi.sendCc(LED, 0);
+    
   }else{
+    setButton(PUSHBUTTON, false);
     bypass = false;
-    updateLed();
+    if(getButton(GREEN_BUTTON))
+       setLed(GREEN);
+    else if(getButton(RED_BUTTON))
+       setLed(RED);
   }
 #endif
 }
@@ -56,6 +81,7 @@ void footSwitchCallback(){
 }
 
 void toggleActiveSlot(){
+  if(getLed() ==
   // patches.toggleActiveSlot();
   updateLed();
   midi.sendPatchParameterNames(); // todo: this should probably be requested from client
@@ -66,8 +92,6 @@ void pushButtonCallback(){
   if(isPushButtonPressed() && settings.patch_mode != PATCHMODE_SINGLE)
     toggleActiveSlot();
 }
-
-// SampleBuffer buffer CCM;
 
 void setBlocksize(uint16_t sz){
   // smem.audio_blocksize = sz; // different blocksize!
@@ -234,6 +258,7 @@ void setup(){
   smem.audio_samplingrate = settings.audio_samplingrate;
   smem.parameters = getAnalogValues();
   smem.parameters_size = NOF_ADC_VALUES;
+  smem.buttons = 0;
   smem.error = 0;
   smem.registerPatch = registerPatch;
   smem.registerPatchParameter = registerPatchParameter;
