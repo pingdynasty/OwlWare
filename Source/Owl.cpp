@@ -81,9 +81,13 @@ void footSwitchCallback(){
 }
 
 void toggleActiveSlot(){
-  if(getLed() ==
+  if(getLed() == GREEN)
+    setLed(RED);
+  else if(getLed() == RED)
+    setLed(GREEN);
+  updateButtons();
   // patches.toggleActiveSlot();
-  updateLed();
+  // updateLed();
   midi.sendPatchParameterNames(); // todo: this should probably be requested from client
 }
 

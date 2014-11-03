@@ -23,6 +23,8 @@
      uint8_t audio_bitdepth;
      uint16_t audio_blocksize;
      uint32_t audio_samplingrate;
+     uint16_t patch_selected_id;
+     uint8_t patch_mode;
      uint16_t* parameters;
      uint8_t parameters_size;
      uint16_t buttons;
