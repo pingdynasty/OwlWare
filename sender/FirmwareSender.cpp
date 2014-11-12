@@ -6,7 +6,7 @@
 #include <math.h>
 #include "../../OwlNest/JuceLibraryCode/JuceHeader.h"
 #include "../Source/OpenWareMidiControl.h"
-#include "../Source/CRCC.hpp"
+#include "../Source/crc32.h"
 #include "../Source/sysex.h"
 #include "../Source/MidiStatus.h"
 
@@ -155,22 +155,11 @@ public:
     unsigned char sysex[(int)ceil(blocksize*8/7)];
     int size = input->getSize(); // amount of data, excluding checksum
     encodeInt(block, size);
-    // buffer[3] = (uint8_t)size & 0xff;
-    // buffer[2] = (uint8_t)(size >> 8) & 0xff;
-    // buffer[1] = (uint8_t)(size >> 16) & 0xff;
-    // buffer[0] = (uint8_t)(size >> 24) & 0xff;
-    // int len = data_to_sysex(buffer, sysex, 4);
-    // if(len != 5)
-    //   throw CommandLineException("Error in sysex conversion"); 
-    // block.append(sysex, len);
-    // stream.write(sysex, len);
 
-    CRCC crc;
     uint32_t checksum = 0;
-    // size = input->getSize(); // amount of data, excluding checksum
     for(int i=0; i < size && running;){
       int len = in->read(buffer, blocksize);
-      checksum = crc.calc(len, buffer, checksum);
+      checksum = crc32(buffer, len, checksum);
       i += len;
       if(verbose)
 	std::cout << "preparing " << std::dec << len;
@@ -185,14 +174,6 @@ public:
 	if(verbose)
 	  std::cout << "checksum 0x" << std::hex << checksum << std::endl;
 	encodeInt(block, checksum);
-	// buffer[3] = (uint8_t)checksum & 0xff;
-	// buffer[2] = (uint8_t)(checksum >> 8) & 0xff;
-	// buffer[1] = (uint8_t)(checksum >> 16) & 0xff;
-	// buffer[0] = (uint8_t)(checksum >> 24) & 0xff;
-	// len = data_to_sysex(buffer, sysex, 4);
-	// if(len != 5)
-	//   throw CommandLineException("Error in sysex conversion"); 
-	// block.append(sysex, len);
 	send(block);
 	// stream.write(sysex, len);
 	// send((unsigned char*)stream.getData(), stream.getDataSize());
@@ -205,7 +186,8 @@ public:
 	// stream.reset();
 	// stream.write(header, sizeof(header));
       }
-      juce::Time::waitForMillisecondCounter(juce::Time::getMillisecondCounter()+blockDelay);
+      if(blockDelay > 0)
+	juce::Time::waitForMillisecondCounter(juce::Time::getMillisecondCounter()+blockDelay);
     }
     stop();
   }

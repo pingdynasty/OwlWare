@@ -21,7 +21,7 @@ vpath %.c ../Source
 vpath %.cpp ../sender
 vpath %.cpp ../sender
 
-C_SRC  = sysex.c
+C_SRC  = sysex.c crc32.c
 CPP_SRC  = FirmwareSender.cpp 
 CPP_SRC += juce_core.cpp juce_audio_basics.cpp juce_audio_devices.cpp juce_events.cpp
 

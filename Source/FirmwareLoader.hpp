@@ -3,7 +3,7 @@
 
 #include <malloc.h>
 #include <math.h>
-#include "CRCC.hpp"
+#include "crc32.h"
 #include "sysex.h"
 #include "clock.h"
 
@@ -97,7 +97,7 @@ public:
     if(index != size)
       return error(-4); // size mismatch
     // check crc
-    crc = CRCC().calc(size, buffer);
+    crc = crc32(buffer, size, 0);
     // get checksum: last 4 bytes of buffer
     uint32_t checksum = decodeInt(data+length-5);
     if(crc != checksum)

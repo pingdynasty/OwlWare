@@ -168,12 +168,12 @@ _fastcode_size = _fastcode_end - _fastcode_start;
 
   /* External SRAM, vars must be located here explicitly */
   /* Example: int foo __attribute__ ((section (".extdata"))); */
-.extdata (NOLOAD) :
-{
-  . = ALIGN(4);
-  *(.extdata)
-  . = ALIGN(4);
-} >BANK1_SRAM3
+/* .extdata (NOLOAD) : */
+/* { */
+/*   . = ALIGN(4); */
+/*   *(.extdata) */
+/*   . = ALIGN(4); */
+/* } >BANK1_SRAM3 */
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
