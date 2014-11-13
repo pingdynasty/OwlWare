@@ -28,7 +28,7 @@ private:
 
 public:
   void clear(){
-    free(buffer);
+    // free(buffer);
     buffer = NULL;
     index = 0;
     packageIndex = 0;
@@ -55,6 +55,8 @@ public:
     return result;
   }
 
+#define PATCHRAM ((uint32_t)0x20010000)
+
   int32_t handleFirmwareUpload(uint8_t* data, uint16_t length){
     int offset = 3;
     int idx = decodeInt(data+offset);
@@ -74,13 +76,13 @@ public:
       // allocate memory
       if(size > MAX_SYSEX_FIRMWARE_SIZE)
 	return error(-2);
-      buffer = (uint8_t*)malloc(size);
-      if(buffer == NULL)
-	return error(-6);
+      // buffer = (uint8_t*)malloc(size);
+      buffer = (uint8_t*)PATCHRAM;
+      // if(buffer == NULL)
+      // 	return error(-6);
     }
     if(packageIndex++ != idx)
       return error(-7); // out of sequence package
-
     int len = floor((length-offset)*7/8.0f);
     if(index+len < size){
       // mid package
