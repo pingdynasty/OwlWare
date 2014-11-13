@@ -92,7 +92,6 @@ void CodecController::init(ApplicationSettings& settings){
   setOutputGainRight(settings.outputGainRight);
 
   I2S_Block_Init(tx_buffer, rx_buffer, settings.audio_blocksize);
-  setBlocksize(settings.audio_blocksize);
 
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
 }

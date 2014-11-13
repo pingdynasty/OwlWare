@@ -81,25 +81,21 @@ void footSwitchCallback(){
 }
 
 void toggleActiveSlot(){
-  if(getLed() == GREEN)
+  if(getLed() == GREEN){
     setLed(RED);
-  else if(getLed() == RED)
+    smem.patch_selected_id = settings.patch_red;
+  }else if(getLed() == RED){
     setLed(GREEN);
+    smem.patch_selected_id = settings.patch_green;
+  }
   updateButtons();
-  // patches.toggleActiveSlot();
-  // updateLed();
-  midi.sendPatchParameterNames(); // todo: this should probably be requested from client
+  // midi.sendPatchParameterNames(); // todo: this should probably be requested from client
 }
 
 void pushButtonCallback(){
   DEBOUNCE(pushbutton, 200);
   if(isPushButtonPressed() && settings.patch_mode != PATCHMODE_SINGLE)
     toggleActiveSlot();
-}
-
-void setBlocksize(uint16_t sz){
-  // smem.audio_blocksize = sz; // different blocksize!
-//   buffer.setSize(sz);
 }
 
 void exitProgram(){
@@ -168,6 +164,10 @@ int errors = 0;
 //   }
 // }
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
   // hello!
   registry.registerPatch(name, inputChannels, outputChannels);
@@ -176,6 +176,10 @@ void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChanne
 void registerPatchParameter(uint8_t id, const char* name){
   
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 void setup(){
 //   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0); // 0 bits for preemption, 4 bits for subpriority
@@ -260,6 +264,8 @@ void setup(){
   smem.audio_bitdepth = settings.audio_bitdepth;
   smem.audio_blocksize = 0;
   smem.audio_samplingrate = settings.audio_samplingrate;
+  smem.patch_selected_id = settings.patch_green;
+  smem.patch_mode = settings.patch_mode;
   smem.parameters = getAnalogValues();
   smem.parameters_size = NOF_ADC_VALUES;
   smem.buttons = 0;

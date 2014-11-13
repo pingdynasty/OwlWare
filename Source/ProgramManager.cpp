@@ -12,6 +12,22 @@ ProgramManager program;
 void ProgramManager::exit(){
   smem.status = AUDIO_EXIT_STATUS;
   setLed(RED);
+  doRunProgram = false;
+}
+
+/* exit and restart program */
+void ProgramManager::reset(){
+  exit();
+  doRunProgram = true;
+}
+
+void ProgramManager::load(void* address, uint32_t length){
+  programAddress = address;
+  programLength = length;
+}
+
+void ProgramManager::start(){
+  doRunProgram = true;
 }
 
 void ProgramManager::run(){

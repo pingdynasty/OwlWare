@@ -31,9 +31,13 @@
      int8_t error;
      void (*registerPatch)(const char* name, uint8_t inputChannels, uint8_t outputChannels);
      void (*registerPatchParameter)(uint8_t id, const char* name);
+     /* uint16_t cycles_per_block; */
+     /* uint32_t heap_bytes_used; */
    } SharedMemory;
 
-#define CHECKSUM_ERROR_STATUS -10
+#define CHECKSUM_ERROR_STATUS      -10
+#define OUT_OF_MEMORY_ERROR_STATUS -20
+
 extern volatile SharedMemory smem;
 
 #ifdef __cplusplus

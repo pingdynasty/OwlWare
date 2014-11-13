@@ -6,6 +6,10 @@
 PatchRegistry::PatchRegistry() : nofPatches(0) {
 }
 
+void PatchRegistry::reset(){
+  nofPatches = 0;
+}
+
 const char* PatchRegistry::getName(unsigned int index){
   if(index < getNumberOfPatches())
     return names[index];

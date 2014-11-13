@@ -5,7 +5,6 @@
 
 class ProgramManager {
 private:
-  int programRuns = 0;
   volatile bool running = false;
   volatile bool doRunProgram = false;
   volatile void* programAddress;
@@ -16,21 +15,13 @@ public:
     return running;
   }
 
-  void exit();
-
-  /* exit and restart program */
-  void reset(){
-    exit();
-    doRunProgram = true;
-  }
-
-  void load(void* address, uint32_t length){
-    programAddress = address;
-    programLength = length;
-    doRunProgram = true;
-  }
-
+  void load(void* address, uint32_t length);
+  void start();
   void run();
+  void exit();
+  /* exit and restart program */
+  void reset();
+
 };
 
 extern ProgramManager program;

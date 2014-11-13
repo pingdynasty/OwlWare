@@ -10,6 +10,7 @@ extern PatchRegistry registry;
 class PatchRegistry {
 public:
   PatchRegistry();
+  void reset();
   const char* getName(unsigned int index);
   unsigned int getNumberOfPatches();
   void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels);
