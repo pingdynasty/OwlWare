@@ -101,7 +101,7 @@ void pushButtonCallback(){
 void exitProgram(){
   // disable audio processing
   codec.stop();
-  // patches.reset();
+  registry.reset();
   program.exit();
 }
 
@@ -175,6 +175,12 @@ void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChanne
 
 void registerPatchParameter(uint8_t id, const char* name){
   
+}
+
+void exitProgramCallback(){
+  for(;;);
+  // restart program
+  // program.exec();
 }
 
 #ifdef __cplusplus
@@ -272,6 +278,7 @@ void setup(){
   smem.error = 0;
   smem.registerPatch = registerPatch;
   smem.registerPatchParameter = registerPatchParameter;
+  smem.exitProgram = exitProgramCallback;
 
   codec.start();
 }

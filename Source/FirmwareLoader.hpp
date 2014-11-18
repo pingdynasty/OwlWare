@@ -1,7 +1,7 @@
 #ifndef __FirmwareLoader_H__
 #define __FirmwareLoader_H__
 
-#include <malloc.h>
+// #include <malloc.h>
 #include <math.h>
 #include "crc32.h"
 #include "sysex.h"
@@ -55,7 +55,8 @@ public:
     return result;
   }
 
-#define PATCHRAM ((uint32_t)0x20010000)
+#define PATCHRAM    ((uint32_t)0x20010000)
+#define BANK1_SRAM3 ((uint32_t)0x68000000)
 
   int32_t handleFirmwareUpload(uint8_t* data, uint16_t length){
     int offset = 3;
@@ -77,7 +78,7 @@ public:
       if(size > MAX_SYSEX_FIRMWARE_SIZE)
 	return error(-2);
       // buffer = (uint8_t*)malloc(size);
-      buffer = (uint8_t*)PATCHRAM;
+      buffer = (uint8_t*)BANK1_SRAM3;
       // if(buffer == NULL)
       // 	return error(-6);
     }

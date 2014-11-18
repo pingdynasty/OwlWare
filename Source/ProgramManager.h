@@ -9,7 +9,7 @@ private:
   volatile bool doRunProgram = false;
   volatile void* programAddress;
   volatile uint32_t programLength;
-
+  uint32_t msp; // Main stack pointer
 public:
   bool isRunning(){
     return running;

@@ -6,7 +6,7 @@ Linker script for STM32F407
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = 0x2001c000;    /* end of 112K RAM */
+_estack = 0x20010000;    /* end of loader RAM */
 
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0;      /* required amount of heap  */
@@ -22,7 +22,7 @@ MEMORY
   SHAREDRAM (rwx)  : ORIGIN = 0x10000000, LENGTH = 8K
   CCMRAM (rwx)     : ORIGIN = 0x10002000, LENGTH = 56K    /* total CCM is 64kb */
   RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 64K
-  PATCHRAM (rwx)   : ORIGIN = 0x20010000, LENGTH = 64K    /* total RAM is 128kb */
+  PATCHRAM (rwx)   : ORIGIN = 0x20010000, LENGTH = 48K    /* total RAM is 112kb */
   BANK1_SRAM1 (rx) : ORIGIN = 0x60000000, LENGTH = 0K
   BANK1_SRAM2 (rx) : ORIGIN = 0x64000000, LENGTH = 0K
   BANK1_SRAM3 (rx) : ORIGIN = 0x68000000, LENGTH = 1M
