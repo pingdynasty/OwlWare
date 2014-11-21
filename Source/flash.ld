@@ -21,7 +21,7 @@ MEMORY
   PATCHFLASH (rx)  : ORIGIN = 0x08040000, LENGTH = 128K   /* Sector 6 */ /* total Flash memory is 1Mb */
   SHAREDRAM (rwx)  : ORIGIN = 0x10000000, LENGTH = 8K
   CCMRAM (rwx)     : ORIGIN = 0x10002000, LENGTH = 56K    /* total CCM is 64kb */
-  RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 64K
+  RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 32K  /* todo: set limit at 0x2000c000 and PATCHRAM to 64k */
   PATCHRAM (rwx)   : ORIGIN = 0x20010000, LENGTH = 48K    /* total RAM is 112kb */
   BANK1_SRAM1 (rx) : ORIGIN = 0x60000000, LENGTH = 0K
   BANK1_SRAM2 (rx) : ORIGIN = 0x64000000, LENGTH = 0K

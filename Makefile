@@ -18,17 +18,17 @@ CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1 -DUSE_FULL_ASSERT
 CFLAGS  += -DEXTERNAL_SRAM 
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
 CFLAGS  += -std=gnu99
-LDLIBS   = -lm
+# LDLIBS   = -lm
 LDSCRIPT = Source/flash.ld
 
-C_SRC  = codec.c i2s.c errorhandlers.c main.c basicmaths.c fsmc_sram.c crc32.c
+C_SRC  = codec.c i2s.c errorhandlers.c main.c basicmaths.c crc32.c # fsmc_sram.c 
 # C_SRC += usb_dcd_int.c
 C_SRC += system_hse.c
 C_SRC += usbd_desc.c usb_bsp.c usbd_usr.c
 C_SRC += usbd_audio_core.c 
 C_SRC += armcontrol.c usbcontrol.c owlcontrol.c midicontrol.c eepromcontrol.c
-C_SRC += clock.c operators.c serial.c gpio.c sysex.c
-C_SRC += sramalloc.c
+C_SRC += clock.c operators.c gpio.c sysex.c # serial.c 
+# C_SRC += sramalloc.c
 
 CPP_SRC  = Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchRegistry.cpp ProgramManager.cpp

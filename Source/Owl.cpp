@@ -11,7 +11,7 @@
 #include "SharedMemory.h"
 #include "ProgramManager.h"
 
-#include "serial.h"
+// #include "serial.h"
 #include "clock.h"
 #include "device.h"
 
@@ -100,9 +100,9 @@ void pushButtonCallback(){
 
 void exitProgram(){
   // disable audio processing
-  codec.stop();
-  registry.reset();
+  // codec.stop();
   program.exit();
+  registry.reset();
 }
 
 void resetProgram(){
@@ -119,8 +119,8 @@ int errors = 0;
 
 // volatile bool doProcessAudio = false;
 // volatile bool collision = false;
-// uint16_t* source;
-// uint16_t* dest;
+// int16_t* source;
+// int16_t* dest;
 
 // #ifdef DEBUG_DWT
 // uint32_t dwt_count = 0;
@@ -260,7 +260,7 @@ void setup(){
   codec.setup();
   codec.init(settings);
 
-  printString("startup\n");
+  // printString("startup\n");
   updateBypassMode();
 
   smem.checksum = sizeof(smem);
@@ -288,7 +288,7 @@ void setup(){
 #endif
 
 __attribute__ ((section (".coderam")))
-void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
+void audioCallback(int16_t *src, int16_t *dst, uint16_t sz){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
@@ -298,10 +298,10 @@ void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
     // oops
     collisions++;
   }
-  smem.status = AUDIO_READY_STATUS;
   smem.audio_input = src;
   smem.audio_output = dst;
   smem.audio_blocksize = sz;
+  smem.status = AUDIO_READY_STATUS;
   // the blocksize here is the number of halfwords, ie 16bit fixed width ints, for both channels
 }
 

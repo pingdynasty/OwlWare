@@ -17,7 +17,8 @@ void assert_failed(uint8_t* file, uint32_t line){
   setLed(NONE);
   for(delayCounter = 0; delayCounter < 4000000; delayCounter++);
   setLed(RED);
-  NVIC_SystemReset();
+  for(;;);
+  /* NVIC_SystemReset(); */
 }
 
 /* exception handlers - so we know what's failing */

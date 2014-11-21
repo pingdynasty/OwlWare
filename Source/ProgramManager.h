@@ -7,6 +7,8 @@ class ProgramManager {
 private:
   volatile bool running = false;
   volatile bool doRunProgram = false;
+  volatile bool doCopyProgram = false;
+  volatile bool doRestartProgram = false;
   volatile void* programAddress;
   volatile uint32_t programLength;
   uint32_t msp; // Main stack pointer

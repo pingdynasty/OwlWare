@@ -18,8 +18,8 @@
    typedef struct {
      uint8_t checksum;
      SharedMemoryAudioStatus status;
-     uint16_t* audio_input;
-     uint16_t* audio_output;
+     int16_t* audio_input;
+     int16_t* audio_output;
      uint8_t audio_bitdepth;
      uint16_t audio_blocksize;
      uint32_t audio_samplingrate;

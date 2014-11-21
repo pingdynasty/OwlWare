@@ -3,8 +3,8 @@
 #include "codec.h"
 #include "device.h"
 
-uint16_t *txbuf;
-uint16_t *rxbuf;
+int16_t *txbuf;
+int16_t *rxbuf;
 uint16_t szbuf;
 
 void I2S_Pause(){
@@ -28,7 +28,7 @@ void I2S_Resume(){
 /*
  * Init I2S channel for DMA with IRQ per block 
  */
-void I2S_Block_Init(uint16_t *tx, uint16_t *rx, uint16_t blocksize){ 
+void I2S_Block_Init(int16_t *tx, int16_t *rx, uint16_t blocksize){ 
   DMA_InitTypeDef DMA_InitStructure;
   /* save for IRQ svc  */
   txbuf = tx;

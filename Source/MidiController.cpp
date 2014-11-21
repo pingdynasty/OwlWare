@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <string.h>
 #include "sysex.h"
-#include "fsmc_sram.h"
 #include "owlcontrol.h"
 #include "midicontrol.h"
 #include "MidiStatus.h"
@@ -104,13 +103,13 @@ void MidiController::sendFirmwareVersion(){
   uint8_t len = strlen(version);
   char buffer[len+32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
-#ifdef DEBUG_DWT
-  uint32_t cycles = dwt_count/settings.audio_blocksize;
-  len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
-#else /* DEBUG_DWT */
-  len = sprintf(buffer+1, "%s (%d bytes)", version, used);
-#endif /* DEBUG_DWT */
-  sendSysEx((uint8_t*)buffer, len+2);
+// #ifdef DEBUG_DWT
+//   uint32_t cycles = dwt_count/settings.audio_blocksize;
+//   len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
+// #else /* DEBUG_DWT */
+//   len = sprintf(buffer+1, "%s (%d bytes)", version, used);
+// #endif /* DEBUG_DWT */
+//   sendSysEx((uint8_t*)buffer, len+2);
 }
 
 void MidiController::sendDeviceId(){

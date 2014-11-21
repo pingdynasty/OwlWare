@@ -18,16 +18,17 @@ void ProgramManager::exit(){
 /* exit and restart program */
 void ProgramManager::reset(){
   exit();
-  doRunProgram = true;
+  doRestartProgram = true;
 }
 
 void ProgramManager::load(void* address, uint32_t length){
-  smem.status = AUDIO_IDLE_STATUS;
   programAddress = address;
   programLength = length;
+  doCopyProgram = true;
 }
 
 void ProgramManager::start(){
+  smem.status = AUDIO_IDLE_STATUS;
   doRunProgram = true;
 }
 
@@ -35,8 +36,11 @@ void ProgramManager::run(){
   for(;;){
     if(doRunProgram){
       doRunProgram = false;
-      /* copy patch to ram */
-      memcpy((void*)PATCHRAM, (void*)programAddress, programLength);
+      if(doCopyProgram){
+	doCopyProgram = false;
+	/* copy patch to ram */
+	memcpy((void*)PATCHRAM, (void*)programAddress, programLength);
+      }
       /* Jump to patch */
       /* Check Vector Table: Test if user code is programmed starting from address 
 	 "APPLICATION_ADDRESS" */
@@ -55,6 +59,10 @@ void ProgramManager::run(){
 	// program has returned
 	smem.status = AUDIO_IDLE_STATUS;
 	running = false;
+	if(doRestartProgram){
+	  doRestartProgram = false;
+	  doRunProgram = true;
+	}
       }
     }
   }

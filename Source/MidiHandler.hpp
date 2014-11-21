@@ -117,10 +117,8 @@ public:
       }
       if(frequency != settings.audio_samplingrate){
 	settings.audio_samplingrate = frequency;
-	codec.stop();
 	codec.init(settings);
 	program.reset(); // changing sampling rate may require re-initialisation of patches
-	codec.start();
       }
       break;
     case SAMPLING_BITS: {
@@ -134,9 +132,7 @@ public:
       }      
       if(format != settings.audio_codec_format){
 	settings.audio_codec_format = format;
-	codec.stop();
 	codec.init(settings);
-	codec.start();
       }
       break;
     }
@@ -144,9 +140,7 @@ public:
       bool master = value > 63;
       if(master != settings.audio_codec_master){
 	settings.audio_codec_master = master;
-	codec.stop();
 	codec.init(settings);
-	codec.start();
       }
       break;
     }
@@ -159,9 +153,7 @@ public:
       }
       if(protocol != settings.audio_codec_protocol){
 	settings.audio_codec_protocol = protocol;
-	codec.stop();
 	codec.init(settings);
-	codec.start();
       }
       break;
     }
@@ -169,10 +161,8 @@ public:
       uint32_t blocksize = 1L << value;
       if(settings.audio_blocksize != blocksize && blocksize <= AUDIO_MAX_BLOCK_SIZE){
 	settings.audio_blocksize = blocksize;
-	codec.stop();
 	codec.init(settings);
-	program.reset(); // changing sampling rate may require re-initialisation of patches
-	codec.start();
+	program.reset(); // changing blocksize may require re-initialisation of patches
       }
       break;
     }
@@ -248,11 +238,14 @@ public:
       jump_to_bootloader();
       break;
     case SYSEX_FIRMWARE_UPLOAD:
+      // codec.stop();
       int32_t ret = loader.handleFirmwareUpload(data, size);
       if(ret < 0){
 	// firmware upload error
 	// midi.sendCc(DEVICE_STATUS, -ret);
 	setLed(RED);
+	// program.reset();
+	// codec.start(); // doesn't synchronise the codec well
       }else if(ret > 0){
 	// firmware upload complete
 	// midi.sendCc(DEVICE_STATUS, 0x7f);
@@ -260,7 +253,7 @@ public:
 	program.load(loader.getData(), loader.getSize());
 	// while(isProgramRunning()); // wait for program to exit
 	program.start();
-	codec.start();
+	// codec.start();
 	loader.clear();
       }else{
 	// midi.sendCc(DEVICE_STATUS, 0);

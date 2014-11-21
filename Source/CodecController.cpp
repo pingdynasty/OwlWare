@@ -16,8 +16,8 @@
 #endif
 
 /* DMA buffers for I2S */
-uint16_t tx_buffer[AUDIO_BUFFER_SIZE]; 
-uint16_t rx_buffer[AUDIO_BUFFER_SIZE];
+int16_t tx_buffer[AUDIO_BUFFER_SIZE]; 
+int16_t rx_buffer[AUDIO_BUFFER_SIZE];
 
 const uint16_t wm8731_init_data[] = {
 	WM8731_INVOL_P6DB,                   			  // Reg 0x00: Left Line In
@@ -75,6 +75,7 @@ void CodecController::setup(){
 
 void CodecController::init(ApplicationSettings& settings){
 //   setPin(GPIOA, GPIO_Pin_6); // DEBUG
+  setActive(false);
 
   /* configure codec */
   setCodecMaster(settings.audio_codec_master);
@@ -92,6 +93,8 @@ void CodecController::init(ApplicationSettings& settings){
   setOutputGainRight(settings.outputGainRight);
 
   I2S_Block_Init(tx_buffer, rx_buffer, settings.audio_blocksize);
+
+  setActive(true);
 
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
 }
@@ -189,6 +192,7 @@ void CodecController::start(){
 //   setPin(GPIOA, GPIO_Pin_7); // DEBUG
   setActive(true);
   if(isMaster()){
+    /* See STM32F405 Errata, I2S device limitations */
     /* The I2S peripheral must be enabled when the external master sets the WS line at: */
     if(getProtocol() == I2S_PROTOCOL_PHILIPS){
       while(getPin(CODEC_I2S_GPIO, CODEC_I2S_WS_PIN)); // wait for low

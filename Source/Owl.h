@@ -21,7 +21,7 @@
 #endif /* abs */
 
 uint16_t getAnalogValue(uint8_t index);
-void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz);
+void audioCallback(int16_t *src, int16_t *dst, uint16_t sz);
    
 #ifdef __cplusplus
 }
