@@ -32,8 +32,8 @@
      void (*registerPatch)(const char* name, uint8_t inputChannels, uint8_t outputChannels);
      void (*registerPatchParameter)(uint8_t id, const char* name);
      void (*exitProgram)();
-     /* uint16_t cycles_per_block; */
-     /* uint32_t heap_bytes_used; */
+     uint32_t cycles_per_block;
+     uint32_t heap_bytes_used;
    } SharedMemory;
 
 #define CHECKSUM_ERROR_STATUS      -10

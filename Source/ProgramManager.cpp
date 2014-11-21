@@ -10,9 +10,9 @@ typedef void (*ProgramFunction)(void);
 ProgramManager program;
 
 void ProgramManager::exit(){
+  doRunProgram = false;
   smem.status = AUDIO_EXIT_STATUS;
   setLed(RED);
-  doRunProgram = false;
 }
 
 /* exit and restart program */
