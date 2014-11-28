@@ -165,8 +165,11 @@ public:
     unsigned char sysex[blockSize];
     int size = input->getSize(); // amount of data, excluding checksum
     encodeInt(block, size);
-    // send(block);
-    // block = MemoryBlock();
+    // send first message with index and length, then start new message
+    send(block);
+    block = MemoryBlock();
+    block.append(header, sizeof(header));
+    encodeInt(block, packageIndex++);
 
     uint32_t checksum = 0;
     for(int i=0; i < size && running;){

@@ -78,13 +78,13 @@ public:
       // buffer = (uint8_t*)malloc(size);
       // if(buffer == NULL)
       // 	return error(-6);
-      // return 0;
+      return 0;
     }
-    // if(++packageIndex != idx)
-    if(packageIndex++ != idx)
+    if(++packageIndex != idx)
       return error(-7); // out of sequence package
     int len = floor((length-offset)*7/8.0f);
-    // while(program.isRunning()); // wait for program to exit before writing to buffer
+    // todo: change this to kill the program with a PendSV if it is running
+    while(program.isRunning()); // wait for program to exit before writing to buffer
     if(index+len < size){
       // mid package
       len = sysex_to_data(data+offset, buffer+index, length-offset);
