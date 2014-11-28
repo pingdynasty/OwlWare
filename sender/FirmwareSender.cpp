@@ -11,7 +11,7 @@
 #include "../Source/MidiStatus.h"
 
 #define MESSAGE_SIZE 8
-#define DEFAULT_BLOCK_SIZE (256-MESSAGE_SIZE)
+#define DEFAULT_BLOCK_SIZE (250-MESSAGE_SIZE)
 #define DEFAULT_BLOCK_DELAY 20 // wait in milliseconds between sysex messages
 
 class CommandLineException : public std::exception {
@@ -27,7 +27,7 @@ public:
   }
 };
 
-class FirmwareUploadApplication {
+class FirmwareSender {
 private:
   bool running = false;
   bool verbose = true;
@@ -146,7 +146,7 @@ public:
       if(fileout != NULL)
 	std::cout << "\tto SysEx file " << fileout->getFullPathName() << std::endl;       
     }
-    char header[] =  { MIDI_SYSEX_MANUFACTURER, MIDI_SYSEX_DEVICE, SYSEX_FIRMWARE_UPLOAD };
+    const char header[] =  { MIDI_SYSEX_MANUFACTURER, MIDI_SYSEX_DEVICE, SYSEX_FIRMWARE_UPLOAD };
     int binblock = (int)floor(blockSize*7/8);
     // int sysblock = (int)ceil(binblock*8/7);
 
@@ -165,6 +165,8 @@ public:
     unsigned char sysex[blockSize];
     int size = input->getSize(); // amount of data, excluding checksum
     encodeInt(block, size);
+    // send(block);
+    // block = MemoryBlock();
 
     uint32_t checksum = 0;
     for(int i=0; i < size && running;){
@@ -231,7 +233,7 @@ public:
   }
 };
 
-FirmwareUploadApplication app;
+FirmwareSender app;
 
 void sigfun(int sig){
   std::cout << "shutting down" << std::endl;

@@ -16,7 +16,6 @@ public:
   bool isRunning(){
     return running;
   }
-
   void load(void* address, uint32_t length);
   void start();
   void run();

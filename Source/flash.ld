@@ -1,12 +1,10 @@
-/*
-Linker script for STM32F407
-*/
+/* Linker script for STM32F407 */
 
 /* Entry Point */
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = 0x20010000;    /* end of loader RAM */
+_estack = 0x20008000;    /* end of loader RAM */
 
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0;      /* required amount of heap  */
@@ -19,10 +17,10 @@ MEMORY
   EEPROM (rw)      : ORIGIN = 0x08004000, LENGTH = 16K    /* Sector 1 */
   FLASH    (rx)    : ORIGIN = 0x08008000, LENGTH = 224K   /* Sector 2 */
   PATCHFLASH (rx)  : ORIGIN = 0x08040000, LENGTH = 128K   /* Sector 6 */ /* total Flash memory is 1Mb */
-  SHAREDRAM (rwx)  : ORIGIN = 0x10000000, LENGTH = 8K
+  SHAREDRAM (rwx)  : ORIGIN = 0x10000000, LENGTH = 8K     /* Closely Coupled Memory */
   CCMRAM (rwx)     : ORIGIN = 0x10002000, LENGTH = 56K    /* total CCM is 64kb */
-  RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 32K  /* todo: set limit at 0x2000c000 and PATCHRAM to 64k */
-  PATCHRAM (rwx)   : ORIGIN = 0x20010000, LENGTH = 48K    /* total RAM is 112kb */
+  RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 32K    /* 32k for the main firmware */
+  PATCHRAM (rwx)   : ORIGIN = 0x20008000, LENGTH = 80K    /* total RAM is 112kb */
   BANK1_SRAM1 (rx) : ORIGIN = 0x60000000, LENGTH = 0K
   BANK1_SRAM2 (rx) : ORIGIN = 0x64000000, LENGTH = 0K
   BANK1_SRAM3 (rx) : ORIGIN = 0x68000000, LENGTH = 1M

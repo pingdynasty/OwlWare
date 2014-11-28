@@ -1,5 +1,4 @@
 #include "Owl.h"
-#include "arm_math.h"
 #include "armcontrol.h"
 #include "usbcontrol.h"
 #include "owlcontrol.h"
@@ -83,13 +82,10 @@ void footSwitchCallback(){
 void toggleActiveSlot(){
   if(getLed() == GREEN){
     setLed(RED);
-    smem.patch_selected_id = settings.patch_red;
   }else if(getLed() == RED){
     setLed(GREEN);
-    smem.patch_selected_id = settings.patch_green;
   }
   updateButtons();
-  // midi.sendPatchParameterNames(); // todo: this should probably be requested from client
 }
 
 void pushButtonCallback(){
@@ -100,7 +96,7 @@ void pushButtonCallback(){
 
 void exitProgram(){
   // disable audio processing
-  // codec.stop();
+  // codec.stop(); // codec.start() doesn't recover well
   program.exit();
   registry.reset();
 }
@@ -117,70 +113,20 @@ void run(){
 int collisions = 0;
 int errors = 0;
 
-// volatile bool doProcessAudio = false;
-// volatile bool collision = false;
-// int16_t* source;
-// int16_t* dest;
-
-// #ifdef DEBUG_DWT
-// uint32_t dwt_count = 0;
-// #endif
-
-// __attribute__ ((section (".coderam")))
-// void run(){
-// #ifdef DEBUG_DWT
-//   volatile unsigned int *DWT_CYCCNT = (volatile unsigned int *)0xE0001004; //address of the register
-//   volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
-//   volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; //address of the register
-//   *SCB_DEMCR = *SCB_DEMCR | 0x01000000;
-//   *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
-// #endif
-//   for(;;){
-//     if(doProcessAudio){
-// #ifdef DEBUG_AUDIO
-//       setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
-// #endif
-// #ifdef DEBUG_DWT
-//       *DWT_CYCCNT = 0; // reset the counter
-// #endif
-//       buffer.split(source);
-//       patches.process(buffer);
-//       buffer.comb(dest);
-//       if(collision){
-// 	collision = false;
-// #ifdef DEBUG_AUDIO
-// 	debugToggle();
-// #endif
-//       }else{
-// 	doProcessAudio = false;
-//       }
-// #ifdef DEBUG_AUDIO
-//       clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
-// #endif
-// #ifdef DEBUG_DWT
-//       dwt_count = *DWT_CYCCNT;
-// #endif
-//     }
-//   }
-// }
-
 #ifdef __cplusplus
  extern "C" {
 #endif
 
 void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
-  // hello!
   registry.registerPatch(name, inputChannels, outputChannels);
 }
 
 void registerPatchParameter(uint8_t id, const char* name){
-  
+  midi.sendPatchParameterName((PatchParameterId)id, name);
 }
 
-void exitProgramCallback(){
-  for(;;);
-  // restart program
-  // program.exec();
+void setParameter(int pid, uint16_t value){
+  getAnalogValues()[pid] = value;
 }
 
 #ifdef __cplusplus
@@ -270,15 +216,18 @@ void setup(){
   smem.audio_bitdepth = settings.audio_bitdepth;
   smem.audio_blocksize = 0;
   smem.audio_samplingrate = settings.audio_samplingrate;
-  smem.patch_selected_id = settings.patch_green;
-  smem.patch_mode = settings.patch_mode;
   smem.parameters = getAnalogValues();
-  smem.parameters_size = NOF_ADC_VALUES;
+  smem.parameters_size = NOF_PARAMETERS;
   smem.buttons = 0;
   smem.error = 0;
   smem.registerPatch = registerPatch;
   smem.registerPatchParameter = registerPatchParameter;
-  smem.exitProgram = exitProgramCallback;
+  smem.cycles_per_block = 0;
+  smem.heap_bytes_used = 0;
+
+  setParameter(PATCH_MODE_PARAMETER_ID, settings.patch_mode);
+  setParameter(GREEN_PATCH_PARAMETER_ID, settings.patch_green);
+  setParameter(RED_PATCH_PARAMETER_ID, settings.patch_red);
 
   codec.start();
 }
@@ -292,17 +241,22 @@ void audioCallback(int16_t *src, int16_t *dst, uint16_t sz){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  if(smem.status == AUDIO_ERROR_STATUS){
+  switch(smem.status){
+  case AUDIO_ERROR_STATUS:
     errors++;
-  }else if(smem.status != AUDIO_PROCESSED_STATUS){
+  case AUDIO_EXIT_STATUS:
+    break;
+  case AUDIO_PROCESSED_STATUS:
     // oops
     collisions++;
+  default:
+    smem.audio_input = src;
+    smem.audio_output = dst;
+    smem.audio_blocksize = sz;
+    smem.status = AUDIO_READY_STATUS;
+    // the blocksize here is the number of halfwords,
+    // ie 16bit ints, for both channels, regardless of 32, 24 or 16 bit sample width
   }
-  smem.audio_input = src;
-  smem.audio_output = dst;
-  smem.audio_blocksize = sz;
-  smem.status = AUDIO_READY_STATUS;
-  // the blocksize here is the number of halfwords, ie 16bit fixed width ints, for both channels
 }
 
 #ifdef __cplusplus

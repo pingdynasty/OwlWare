@@ -16,8 +16,10 @@ endif
 CFLAGS  += --specs=nano.specs
 CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1 -DUSE_FULL_ASSERT
 CFLAGS  += -DEXTERNAL_SRAM 
+CFLAGS += -fdata-sections -ffunction-sections -fno-omit-frame-pointer
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
 CFLAGS  += -std=gnu99
+LDFLAGS = -flto -Wl,--gc-sections
 # LDLIBS   = -lm
 LDSCRIPT = Source/flash.ld
 

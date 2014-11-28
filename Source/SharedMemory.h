@@ -23,18 +23,19 @@
      uint8_t audio_bitdepth;
      uint16_t audio_blocksize;
      uint32_t audio_samplingrate;
-     uint16_t patch_selected_id;
-     uint8_t patch_mode;
      uint16_t* parameters;
      uint8_t parameters_size;
      uint16_t buttons;
      int8_t error;
      void (*registerPatch)(const char* name, uint8_t inputChannels, uint8_t outputChannels);
      void (*registerPatchParameter)(uint8_t id, const char* name);
-     void (*exitProgram)();
      uint32_t cycles_per_block;
      uint32_t heap_bytes_used;
    } SharedMemory;
+
+#define PATCH_MODE_PARAMETER_ID    16
+#define GREEN_PATCH_PARAMETER_ID   17
+#define RED_PATCH_PARAMETER_ID     18
 
 #define CHECKSUM_ERROR_STATUS      -10
 #define OUT_OF_MEMORY_ERROR_STATUS -20

@@ -6,7 +6,7 @@
 
 /* #define SERIAL_PORT                  1 */
 
-#define DEBUG_AUDIO
+/* #define DEBUG_AUDIO */
 /* #define DEBUG_DWT */
 
 #define GREEN_PATCH                  0
@@ -22,6 +22,9 @@
 #define AUDIO_SAMPLINGRATE           48000
 #define AUDIO_BLOCK_SIZE             256   /* size in samples of a single channel audio block */
 #define AUDIO_MAX_BLOCK_SIZE         1024  /* size in samples of a single channel audio block */
+
+#define PATCHRAM                    ((uint32_t)0x20008000)
+#define EXTRAM                      ((uint32_t)0x68000000)
 
 #ifdef OWLMODULAR
 /* +0db in and out */
@@ -40,6 +43,7 @@
 #define MIDI_CHANNEL                 0
 #define MIDI_MAX_MESSAGE_SIZE        256
 #define NOF_ADC_VALUES               5
+#define NOF_PARAMETERS               24
 #define MAX_BUFFERS_PER_PATCH        8
 #define MAX_NUMBER_OF_PATCHES        64
 

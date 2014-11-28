@@ -10,6 +10,7 @@
 #include "ApplicationSettings.h"
 #include "FirmwareLoader.hpp"
 #include "ProgramManager.h"
+#include "SharedMemory.h"
 
 uint16_t midi_values[NOF_ADC_VALUES];
 
@@ -61,16 +62,22 @@ public:
       }
       break;
     case PATCH_MODE:
-      settings.patch_mode = value >> 5;
+      settings.patch_mode = value >> 4;
+      smem.parameters[PATCH_MODE_PARAMETER_ID] = settings.patch_mode;
       // patches.setActiveSlot(patches.getActiveSlot());
       break;
     case PATCH_SLOT_GREEN:
+      settings.patch_green = value;
+      smem.parameters[GREEN_PATCH_PARAMETER_ID] = value;
       // patches.setPatch(GREEN, value);
       break;
     case PATCH_SLOT_RED:
+      settings.patch_red = value;      
+      smem.parameters[RED_PATCH_PARAMETER_ID] = value;
       // patches.setPatch(RED, value);
       break;
     case ACTIVE_SLOT:
+      smem.parameters[PATCH_MODE_PARAMETER_ID] |= (value == 127);
       // patches.setActiveSlot(value == 127 ? RED : GREEN);
       break;
     case LEFT_INPUT_GAIN:

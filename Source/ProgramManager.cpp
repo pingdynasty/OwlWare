@@ -4,7 +4,6 @@
 #include "SharedMemory.h"
 #include "owlcontrol.h"
 
-#define PATCHRAM   ((uint32_t)0x20010000)
 typedef void (*ProgramFunction)(void);
 
 ProgramManager program;
