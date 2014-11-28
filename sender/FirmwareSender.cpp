@@ -10,7 +10,8 @@
 #include "../Source/sysex.h"
 #include "../Source/MidiStatus.h"
 
-#define BINARY_BLOCKSIZE 210 // max size of binary data per sysex message (224b binary = 256b sysex)
+#define MESSAGE_SIZE 8
+#define DEFAULT_BLOCK_SIZE (256-MESSAGE_SIZE)
 #define DEFAULT_BLOCK_DELAY 20 // wait in milliseconds between sysex messages
 
 class CommandLineException : public std::exception {
@@ -35,6 +36,7 @@ private:
   juce::ScopedPointer<File> input;
   juce::ScopedPointer<OutputStream> out;
   int blockDelay = DEFAULT_BLOCK_DELAY;
+  int blockSize = DEFAULT_BLOCK_SIZE;
 public:
   void listDevices(const StringArray& names){
     for(int i=0; i<names.size(); ++i)
@@ -82,7 +84,8 @@ public:
 	      << "-in FILE\tinput FILE" << std::endl
 	      << "-out DEVICE\tsend output to MIDI interface DEVICE" << std::endl
 	      << "-save FILE\twrite output to FILE" << std::endl
-	      << "-d NUM\tdelay for NUM milliseconds between blocks" << std::endl
+	      << "-d NUM\t\tdelay for NUM milliseconds between blocks" << std::endl
+	      << "-s NUM\t\tlimit SysEx messages to NUM bytes" << std::endl
 	      << "-q or --quiet\treduce status output" << std::endl
 	      << "-v or --verbose\tincrease status output" << std::endl
       ;
@@ -106,9 +109,13 @@ public:
 	throw CommandLineException(juce::String::empty);
       }else if(arg.compare("-d") == 0 && ++i < argc){
 	blockDelay = juce::String(argv[i]).getIntValue();
+      }else if(arg.compare("-s") == 0 && ++i < argc){
+	blockSize = juce::String(argv[i]).getIntValue() - MESSAGE_SIZE;
       }else if(arg.compare("-in") == 0 && ++i < argc){
 	juce::String name = juce::String(argv[i]);
 	input = new juce::File(name);
+	if(!input->exists())
+	  throw CommandLineException("No such file: "+name);
       }else if(arg.compare("-out") == 0 && ++i < argc){
 	juce::String name = juce::String(argv[i]);
 	midiout = openMidiOutput(name);
@@ -126,6 +133,8 @@ public:
       usage();
       throw CommandLineException(juce::String::empty);
     }
+    if(midiout == NULL && blockDelay == DEFAULT_BLOCK_DELAY)
+      blockDelay = 0;
   }
 
   void run(){
@@ -138,7 +147,8 @@ public:
 	std::cout << "\tto SysEx file " << fileout->getFullPathName() << std::endl;       
     }
     char header[] =  { MIDI_SYSEX_MANUFACTURER, MIDI_SYSEX_DEVICE, SYSEX_FIRMWARE_UPLOAD };
-    int blocksize = BINARY_BLOCKSIZE;
+    int binblock = (int)floor(blockSize*7/8);
+    // int sysblock = (int)ceil(binblock*8/7);
 
     InputStream* in = input->createInputStream();
     if(fileout != NULL)
@@ -151,14 +161,14 @@ public:
     // MemoryOutputStream stream;
     // stream.write(header, sizeof(header));
 
-    unsigned char buffer[blocksize];
-    unsigned char sysex[(int)ceil(blocksize*8/7)];
+    unsigned char buffer[binblock];
+    unsigned char sysex[blockSize];
     int size = input->getSize(); // amount of data, excluding checksum
     encodeInt(block, size);
 
     uint32_t checksum = 0;
     for(int i=0; i < size && running;){
-      int len = in->read(buffer, blocksize);
+      int len = in->read(buffer, binblock);
       checksum = crc32(buffer, len, checksum);
       i += len;
       if(verbose)
@@ -171,10 +181,10 @@ public:
       // stream.write(sysex, len);
       if(i == size){
 	// last block
-	if(verbose)
-	  std::cout << "checksum 0x" << std::hex << checksum << std::endl;
 	encodeInt(block, checksum);
 	send(block);
+	if(verbose)
+	  std::cout << "checksum 0x" << std::hex << checksum << std::endl;
 	// stream.write(sysex, len);
 	// send((unsigned char*)stream.getData(), stream.getDataSize());
       }else{
