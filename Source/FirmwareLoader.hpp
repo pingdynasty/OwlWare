@@ -9,8 +9,6 @@
 #include "device.h"
 #include "ProgramManager.h"
 
-#define MAX_SYSEX_FIRMWARE_SIZE (80*1024)
-
 class FirmwareLoader {
 private:
   // enum SysexFirmwareStatus {
@@ -21,7 +19,6 @@ private:
   // SysexFirmwareStatus status = NORMAL;
   int packageIndex = 0;
   uint32_t timestamp;
-  // unsigned long crc32(const unsigned char* buffer, const unsigned int length);
   uint8_t* buffer = NULL;
   uint32_t size;
   uint32_t index;
