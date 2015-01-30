@@ -1,5 +1,4 @@
 #include "PatchRegistry.h"
-#include "basicmaths.h"
 
 // #define REGISTER_PATCH(T, STR, UNUSED, UNUSED2) registerPatch(STR, Register<T>::construct)
 
