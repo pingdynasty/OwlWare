@@ -1,3 +1,4 @@
+#include <string.h>
 #include "Owl.h"
 #include "armcontrol.h"
 #include "usbcontrol.h"
@@ -9,6 +10,7 @@
 #include "OpenWareMidiControl.h"
 #include "SharedMemory.h"
 #include "ProgramManager.h"
+#include "bkp_sram.h"
 
 // #include "serial.h"
 #include "clock.h"
@@ -25,18 +27,15 @@ ApplicationSettings settings;
 PatchRegistry registry;
 volatile bool bypass = false;
 
-__attribute__ ((section (".sharedram")))
-volatile SharedMemory smem;
-
 bool getButton(PatchButtonId bid){
-  return smem.buttons & (1<<bid);
+  return getSharedMemory()->buttons & (1<<bid);
 }
 
 void setButton(PatchButtonId bid, bool on){
   if(on)
-    smem.buttons |= 1<<bid;
+    getSharedMemory()->buttons |= 1<<bid;
   else
-    smem.buttons &= ~(1<<bid);
+    getSharedMemory()->buttons &= ~(1<<bid);
 }
 
 void updateButtons(){
@@ -152,6 +151,7 @@ void setup(){
 
   ledSetup();
   setLed(RED);
+  BKPSRAM_Init();
 
   /* check if we need to DFU boot */
   configureDigitalInput(SWITCH_B_PORT, SWITCH_B_PIN, GPIO_PuPd_UP);
@@ -209,21 +209,26 @@ void setup(){
   // printString("startup\n");
   updateBypassMode();
 
-  smem.checksum = sizeof(smem);
-  smem.status = AUDIO_IDLE_STATUS;
-  smem.audio_input = NULL;
-  smem.audio_output = NULL;
-  smem.audio_bitdepth = settings.audio_bitdepth;
-  smem.audio_blocksize = 0;
-  smem.audio_samplingrate = settings.audio_samplingrate;
-  smem.parameters = getAnalogValues();
-  smem.parameters_size = NOF_PARAMETERS;
-  smem.buttons = 0;
-  smem.error = 0;
-  smem.registerPatch = registerPatch;
-  smem.registerPatchParameter = registerPatchParameter;
-  smem.cycles_per_block = 0;
-  smem.heap_bytes_used = 0;
+  getSharedMemory()->checksum = sizeof(SharedMemory);
+  getSharedMemory()->status = AUDIO_IDLE_STATUS;
+  getSharedMemory()->audio_input = NULL;
+  getSharedMemory()->audio_output = NULL;
+  getSharedMemory()->audio_bitdepth = settings.audio_bitdepth;
+  getSharedMemory()->audio_blocksize = 0;
+  getSharedMemory()->audio_samplingrate = settings.audio_samplingrate;
+  getSharedMemory()->parameters = getAnalogValues();
+  getSharedMemory()->parameters_size = NOF_PARAMETERS;
+  getSharedMemory()->buttons = 0;
+  getSharedMemory()->error = 0;
+  getSharedMemory()->registerPatch = registerPatch;
+  getSharedMemory()->registerPatchParameter = registerPatchParameter;
+  getSharedMemory()->cycles_per_block = 0;
+  getSharedMemory()->heap_bytes_used = 0;
+  // set pointer to smem in the backup ram
+  // uint32_t pointer = (uint32_t)&smem;
+  // memcpy(BKPSRAM_GetMemoryAddress(), &pointer, 4);
+  // SharedMemory* smemp = (SharedMemory*)BKPSRAM_GetMemoryAddress();
+  // smemp = &smem;
 
   setParameter(PATCH_MODE_PARAMETER_ID, settings.patch_mode);
   setParameter(GREEN_PATCH_PARAMETER_ID, settings.patch_green);
@@ -241,7 +246,7 @@ void audioCallback(int16_t *src, int16_t *dst, uint16_t sz){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  switch(smem.status){
+  switch(getSharedMemory()->status){
   case AUDIO_ERROR_STATUS:
     errors++;
   case AUDIO_EXIT_STATUS:
@@ -250,10 +255,10 @@ void audioCallback(int16_t *src, int16_t *dst, uint16_t sz){
     // oops
     collisions++;
   default:
-    smem.audio_input = src;
-    smem.audio_output = dst;
-    smem.audio_blocksize = sz;
-    smem.status = AUDIO_READY_STATUS;
+    getSharedMemory()->audio_input = src;
+    getSharedMemory()->audio_output = dst;
+    getSharedMemory()->audio_blocksize = sz;
+    getSharedMemory()->status = AUDIO_READY_STATUS;
     // the blocksize here is the number of halfwords,
     // ie 16bit ints, for both channels, regardless of 32, 24 or 16 bit sample width
   }

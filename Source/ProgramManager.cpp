@@ -10,7 +10,7 @@ ProgramManager program;
 
 void ProgramManager::exit(){
   doRunProgram = false;
-  smem.status = AUDIO_EXIT_STATUS;
+  getSharedMemory()->status = AUDIO_EXIT_STATUS;
   setLed(RED);
 }
 
@@ -27,7 +27,7 @@ void ProgramManager::load(void* address, uint32_t length){
 }
 
 void ProgramManager::start(){
-  smem.status = AUDIO_IDLE_STATUS;
+  getSharedMemory()->status = AUDIO_IDLE_STATUS;
   doRunProgram = true;
 }
 
@@ -56,7 +56,7 @@ void ProgramManager::run(){
 	/* reset Stack Pointer to pre-program state */
 	__set_MSP(msp);
 	// program has returned
-	smem.status = AUDIO_IDLE_STATUS;
+	getSharedMemory()->status = AUDIO_IDLE_STATUS;
 	running = false;
 	if(doRestartProgram){
 	  doRestartProgram = false;

@@ -102,8 +102,8 @@ void MidiController::sendFirmwareVersion(){
   uint8_t len = strlen(version);  
   char buffer[len+32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
-  uint32_t cycles = smem.cycles_per_block/settings.audio_blocksize;
-  len = sprintf(buffer+1, "%s (%lu | %lu)", version, cycles, smem.heap_bytes_used);
+  uint32_t cycles = getSharedMemory()->cycles_per_block/settings.audio_blocksize;
+  len = sprintf(buffer+1, "%s (%lu | %lu)", version, cycles, getSharedMemory()->heap_bytes_used);
 // #ifdef DEBUG_DWT
 //   uint32_t cycles = dwt_count/settings.audio_blocksize;
 //   len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);

@@ -40,7 +40,9 @@
 #define CHECKSUM_ERROR_STATUS      -10
 #define OUT_OF_MEMORY_ERROR_STATUS -20
 
-extern volatile SharedMemory smem;
+   inline SharedMemory* getSharedMemory(){
+     return (SharedMemory*)((uint32_t)0x40024000);
+   }
 
 #ifdef __cplusplus
 }
