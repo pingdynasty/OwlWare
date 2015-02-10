@@ -28,8 +28,8 @@ uint32_t getSysTicks(){
   return systicks;
 }
 
-/* void SysTick_Handler(void){ */
-/*   if(TimingDelay != 0x00) */
-/*     TimingDelay--; */
-/*   systicks++; */
-/* } */
+void SysTick_Handler(void){
+  /* if(TimingDelay != 0x00) */
+  /*   TimingDelay--; */
+  systicks++;
+}

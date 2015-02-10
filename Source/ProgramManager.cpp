@@ -30,6 +30,7 @@ void ProgramManager::start(){
   if(xHandle == NULL){
     // Create a task
     uint8_t ret = xTaskCreate(runTask, "OWL", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    vPortYield(); // can we call this from an interrupt?
   }
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
   doRunProgram = true;
@@ -40,6 +41,7 @@ void ProgramManager::stop(){
   if(xHandle != NULL){
     vTaskDelete(xHandle);
     xHandle = NULL;
+    vPortYield(); // can we call this from an interrupt?
   }
 }
 
