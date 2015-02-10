@@ -3,9 +3,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "ProgramManager.h"
+
 extern void setup();
 extern void run();
-extern "C" void runTask(void*);
 
 int main(void){
   /*   SRAM_Init(); called in system_hsx.c before interrupts are enabled */
@@ -13,9 +14,6 @@ int main(void){
   setup();	
 
   // NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-
-  // Create a task
-  uint8_t ret = xTaskCreate(runTask, "OWL", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
   vTaskStartScheduler();  // should never return
 
@@ -38,9 +36,4 @@ extern "C" {
     taskDISABLE_INTERRUPTS();
     for(;;);
   }
-
-  void runTask(void* p){
-    run();
-  }
-
 }

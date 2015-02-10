@@ -4,14 +4,43 @@
 #include "SharedMemory.h"
 #include "owlcontrol.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 typedef void (*ProgramFunction)(void);
 
 ProgramManager program;
+
+TaskHandle_t xHandle = NULL;
+
+extern "C" {
+  void runTask(void* p){
+    program.run();
+  }
+}
 
 void ProgramManager::exit(){
   doRunProgram = false;
   getSharedMemory()->status = AUDIO_EXIT_STATUS;
   setLed(RED);
+  stop();
+}
+
+void ProgramManager::start(){
+  if(xHandle == NULL){
+    // Create a task
+    uint8_t ret = xTaskCreate(runTask, "OWL", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+  }
+  getSharedMemory()->status = AUDIO_IDLE_STATUS;
+  doRunProgram = true;
+}
+
+void ProgramManager::stop(){
+  // Use the handle to delete the task.
+  if(xHandle != NULL){
+    vTaskDelete(xHandle);
+    xHandle = NULL;
+  }
 }
 
 /* exit and restart program */
@@ -30,11 +59,6 @@ bool ProgramManager::verify(){
   if(*(uint32_t*)programAddress != 0xDADAC0DE)
     return false;
   return true;
-}
-
-void ProgramManager::start(){
-  getSharedMemory()->status = AUDIO_IDLE_STATUS;
-  doRunProgram = true;
 }
 
 void ProgramManager::run(){

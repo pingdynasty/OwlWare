@@ -19,6 +19,7 @@ public:
   void load(void* address, uint32_t length);
   bool verify();
   void start();
+  void stop();
   void run();
   void exit();
   /* exit and restart program */

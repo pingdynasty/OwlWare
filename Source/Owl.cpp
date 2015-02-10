@@ -106,8 +106,8 @@ void resetProgram(){
 
 void run(){
   program.load((uint32_t*)PATCHFLASH, 64*1024);
-  // program.run(); // never returns
-  for(;;);
+  program.run(); // never returns
+  // for(;;);
 }
 
 int collisions = 0;
