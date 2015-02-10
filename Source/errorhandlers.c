@@ -42,14 +42,16 @@ void UsageFault_Handler(void){
   for(;;);
 }
 
-void SVC_Handler(void){ 
+void DebugMon_Handler(void){ 
   for(;;);
 }
 
-void DebugMon_Handler(void){ 
+/*
+void SVC_Handler(void){ 
   for(;;);
 }
 
 void PendSV_Handler(void){ 
   for(;;);
 }
+*/

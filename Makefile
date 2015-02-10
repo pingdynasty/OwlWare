@@ -33,10 +33,24 @@ C_SRC += clock.c operators.c gpio.c sysex.c # serial.c
 C_SRC += bkp_sram.c
 # C_SRC += sramalloc.c
 
+# FreeRTOS Source Files
+FREERTOS_SRC = port.c
+FREERTOS_SRC += list.c
+FREERTOS_SRC += queue.c
+FREERTOS_SRC += tasks.c
+FREERTOS_SRC += event_groups.c
+FREERTOS_SRC += timers.c
+FREERTOS_SRC += heap_1.c
+
 CPP_SRC  = Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchRegistry.cpp ProgramManager.cpp
 
-OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o)
+OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o) $(FREERTOS_SRC:%.c=Build/%.o)
+vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/
+vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/portable/GCC/ARM_CM4F
+vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/portable/MemMang
+CFLAGS += -I$(TEMPLATEROOT)/Libraries/FreeRTOS/include
+CFLAGS += -I$(TEMPLATEROOT)/Libraries/FreeRTOS/portable/GCC/ARM_CM4F
 
 # object files
 OBJS += $(PERIPH) 
