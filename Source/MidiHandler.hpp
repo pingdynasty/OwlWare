@@ -258,9 +258,8 @@ public:
 	// midi.sendCc(DEVICE_STATUS, 0x7f);
 	setLed(NONE);
 	program.load(loader.getData(), loader.getSize());
-	// while(isProgramRunning()); // wait for program to exit
-	program.start();
-	// codec.start();
+	if(program.verify())
+	  program.start();
 	loader.clear();
       }else{
 	// midi.sendCc(DEVICE_STATUS, 0);

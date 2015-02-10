@@ -9,7 +9,7 @@ private:
   volatile bool doRunProgram = false;
   volatile bool doCopyProgram = false;
   volatile bool doRestartProgram = false;
-  volatile void* programAddress;
+  volatile uint8_t* programAddress;
   volatile uint32_t programLength;
   uint32_t msp; // Main stack pointer
 public:
@@ -17,6 +17,7 @@ public:
     return running;
   }
   void load(void* address, uint32_t length);
+  bool verify();
   void start();
   void run();
   void exit();

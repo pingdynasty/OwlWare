@@ -21,9 +21,15 @@ void ProgramManager::reset(){
 }
 
 void ProgramManager::load(void* address, uint32_t length){
-  programAddress = address;
+  programAddress = (uint8_t*)address;
   programLength = length;
   doCopyProgram = true;
+}
+
+bool ProgramManager::verify(){
+  if(*(uint32_t*)programAddress != 0xDADAC0DE)
+    return false;
+  return true;
 }
 
 void ProgramManager::start(){
@@ -38,23 +44,32 @@ void ProgramManager::run(){
       if(doCopyProgram){
 	doCopyProgram = false;
 	/* copy patch to ram */
-	memcpy((void*)PATCHRAM, (void*)programAddress, programLength);
+	// memcpy((void*)PATCHRAM, (void*)(programAddress+4), programLength-4);
+	memcpy((void*)PATCHRAM, (void*)(programAddress), programLength);
       }
       /* Jump to patch */
+
+      /*
+    __set_CONTROL(0x3); // Switch to use Process Stack, unprivilegedstate
+    __ISB(); // Execute ISB after changing CONTROL (architecturalrecommendation)
+      */
+
       /* Check Vector Table: Test if user code is programmed starting from address 
 	 "APPLICATION_ADDRESS" */
-      if(((*(volatile uint32_t*)PATCHRAM) & 0x2FFE0000 ) == 0x20000000){
+      volatile uint32_t* bin = (volatile uint32_t*)PATCHRAM;
+      uint32_t sp = *(bin+1);
+      if((sp & 0x2FFE0000) == 0x20000000){
 	/* store Stack Pointer before jumping */
-	msp = __get_MSP();
-	uint32_t jumpAddress = *(volatile uint32_t*)(PATCHRAM + 4);
+	// msp = __get_MSP();
+	uint32_t jumpAddress = *(bin+2); // (volatile uint32_t*)(PATCHRAM + 8);
 	ProgramFunction jumpToApplication = (ProgramFunction)jumpAddress;
 	/* Initialize user application Stack Pointer */
-	__set_MSP(*(volatile uint32_t*)PATCHRAM);
+	// __set_MSP(sp); // volatile uint32_t*)PATCHRAM);
 	running = true;
 	jumpToApplication();
 	// where is our stack pointer now?
 	/* reset Stack Pointer to pre-program state */
-	__set_MSP(msp);
+	// __set_MSP(msp);
 	// program has returned
 	getSharedMemory()->status = AUDIO_IDLE_STATUS;
 	running = false;
