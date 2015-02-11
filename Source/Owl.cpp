@@ -138,16 +138,16 @@ void setup(){
    * 2 bits for sub-priority (0-3). Priorities control which
    * interrupts are allowed to preempt one another.
    */
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+  // NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
   /* Increase SysTick priority to be higher than USB interrupt
    * priority. USB code stalls inside interrupt and we can't let
    * this throw off the SysTick timer.
    */
-  NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, SYSTICK_PRIORITY, SYSTICK_SUBPRIORITY));
-  NVIC_SetPriority(DMA1_Stream3_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 0, 0));
-  NVIC_SetPriority(DMA1_Stream4_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 0, 0));
-  NVIC_SetPriority(SPI2_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 1, 0));
-  NVIC_SetPriority(ADC_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 2, 0));
+  NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, SYSTICK_PRIORITY, SYSTICK_SUBPRIORITY));
+  NVIC_SetPriority(DMA1_Stream3_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 0, 0));
+  NVIC_SetPriority(DMA1_Stream4_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 0, 0));
+  NVIC_SetPriority(SPI2_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 1, 0));
+  NVIC_SetPriority(ADC_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 2, 0));
 
   ledSetup();
   setLed(RED);

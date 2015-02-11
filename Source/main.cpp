@@ -39,9 +39,9 @@ extern "C" {
 
 int main(void){
   /*   SRAM_Init(); called in system_hsx.c before interrupts are enabled */
-
-  // NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-  NVIC_SetPriorityGrouping(0);
+  // NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
+  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+  // NVIC_SetPriorityGrouping(0);
 
   setup();	
 

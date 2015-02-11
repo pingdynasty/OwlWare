@@ -90,7 +90,7 @@
 #define configUSE_TICK_HOOK			1
 #define configCPU_CLOCK_HZ			( SystemCoreClock )
 #define configTICK_RATE_HZ			( ( portTickType ) 1000 )
-#define configMAX_PRIORITIES			( 5 )
+#define configMAX_PRIORITIES			( 3 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 130 )
 /* #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 75 * 1024 ) ) */
 #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 50 * 1024 ) )
