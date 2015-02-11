@@ -7,7 +7,7 @@
 #include "sysex.h"
 #include "clock.h"
 #include "device.h"
-#include "ProgramManager.h"
+// #include "ProgramManager.h"
 
 class FirmwareLoader {
 private:
@@ -80,8 +80,10 @@ public:
     if(++packageIndex != idx)
       return error(-7); // out of sequence package
     int len = floor((length-offset)*7/8.0f);
-    // todo: change this to kill the program with a PendSV if it is running
-    while(program.isRunning()); // wait for program to exit before writing to buffer
+    // // todo: change this to kill the program with a PendSV if it is running
+    // while(program.isRunning());
+    //   program.stop();
+    //   // wait for program to exit before writing to buffer
     if(index+len < size){
       // mid package
       len = sysex_to_data(data+offset, buffer+index, length-offset);

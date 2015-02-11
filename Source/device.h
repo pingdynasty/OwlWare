@@ -4,6 +4,9 @@
 #define FIRMWARE_VERSION             "sysex-01"
 #define HARDWARE_VERSION             "OWL Rev05"
 
+/* #define DEFINE_OWL_SYSTICK */
+/* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
+
 /* #define SERIAL_PORT                  1 */
 
 /* #define DEBUG_AUDIO */
@@ -128,7 +131,7 @@
 #define assert_param(expr) ((expr) ? (void)0 : assert_failed((uint8_t *)__FILE__, __LINE__))
 #endif
 
-/* #define CCM __attribute__ ((section (".ccmdata"))) */
+#define CCM __attribute__ ((section (".ccmdata")))
 /* #ifdef EXTERNAL_SRAM */
 /* #define EXT __attribute__ ((section (".extdata"))) */
 /* #endif */

@@ -60,8 +60,7 @@ void updateBypassMode(){
   if(isStompSwitchPressed()){
     setButton(PUSHBUTTON, true);
     bypass = true;
-    setLed(NONE);
-    
+    setLed(NONE);    
   }else{
     setButton(PUSHBUTTON, false);
     bypass = false;

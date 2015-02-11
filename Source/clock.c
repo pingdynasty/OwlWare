@@ -28,8 +28,10 @@ uint32_t getSysTicks(){
   return systicks;
 }
 
+#ifdef DEFINE_OWL_SYSTICK
 void SysTick_Handler(void){
   /* if(TimingDelay != 0x00) */
   /*   TimingDelay--; */
   systicks++;
 }
+#endif /* DEFINE_OWL_SYSTICK */

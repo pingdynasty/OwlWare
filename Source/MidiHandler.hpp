@@ -264,6 +264,8 @@ public:
       }else{
 	// midi.sendCc(DEVICE_STATUS, 0);
 	toggleLed();
+	if(program.isRunning())
+	  program.stop();
       }
       break;
     }

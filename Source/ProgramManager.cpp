@@ -21,16 +21,16 @@ extern "C" {
 
 void ProgramManager::exit(){
   doRunProgram = false;
-  getSharedMemory()->status = AUDIO_EXIT_STATUS;
-  setLed(RED);
-  stop();
+  getSharedMemory()->status = AUDIO_EXIT_STATUS; // request program exit
 }
 
 void ProgramManager::start(){
   if(xHandle == NULL){
     // Create a task
-    uint8_t ret = xTaskCreate(runTask, "OWL", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    xTaskCreate(runTask, "OWL", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+#ifdef DEFINE_OWL_SYSTICK
     vPortYield(); // can we call this from an interrupt?
+#endif /* DEFINE_OWL_SYSTICK */
   }
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
   doRunProgram = true;
@@ -39,10 +39,13 @@ void ProgramManager::start(){
 void ProgramManager::stop(){
   // Use the handle to delete the task.
   if(xHandle != NULL){
+#ifdef DEFINE_OWL_SYSTICK
     vTaskDelete(xHandle);
+#endif /* DEFINE_OWL_SYSTICK */
     xHandle = NULL;
-    vPortYield(); // can we call this from an interrupt?
+    // vPortYield();
   }
+  running = false;
 }
 
 /* exit and restart program */
