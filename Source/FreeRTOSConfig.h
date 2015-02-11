@@ -79,11 +79,11 @@
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
 
-/* Ensure stdint is only used by the compiler, and not the assembler. */
-#ifdef __ICCARM__
+/* /\* Ensure stdint is only used by the compiler, and not the assembler. *\/ */
+/* #ifdef __ICCARM__ */
 	#include <stdint.h>
 	extern uint32_t SystemCoreClock;
-#endif
+/* #endif */
 
 #define configUSE_PREEMPTION			1
 #define configUSE_IDLE_HOOK			1

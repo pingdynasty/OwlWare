@@ -5,12 +5,12 @@
 
 class ProgramManager {
 private:
-  volatile bool running = false;
-  volatile bool doRunProgram = false;
-  volatile bool doCopyProgram = false;
-  volatile bool doRestartProgram = false;
-  volatile uint8_t* programAddress;
-  volatile uint32_t programLength;
+  bool running = false;
+  bool doRunProgram = false;
+  bool doCopyProgram = false;
+  bool doRestartProgram = false;
+  uint8_t* programAddress;
+  uint32_t programLength;
   uint32_t msp; // Main stack pointer
 public:
   bool isRunning(){
@@ -19,8 +19,10 @@ public:
   void load(void* address, uint32_t length);
   bool verify();
   void start();
-  void stop();
-  void run();
+  /* void stop(); */
+  void runPatch();
+  void startManager();
+  void runManager();
   void exit();
   /* exit and restart program */
   void reset();

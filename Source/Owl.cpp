@@ -103,11 +103,11 @@ void resetProgram(){
   program.reset();
 }
 
-void run(){
-  program.load((uint32_t*)PATCHFLASH, 64*1024);
-  program.run(); // never returns
-  // for(;;);
-}
+// void run(){
+//   program.load((uint32_t*)PATCHFLASH, 64*1024);
+//   program.run(); // never returns
+//   // for(;;);
+// }
 
 int collisions = 0;
 int errors = 0;

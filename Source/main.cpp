@@ -8,19 +8,18 @@
 extern void setup();
 extern void run();
 
-int main(void){
-  /*   SRAM_Init(); called in system_hsx.c before interrupts are enabled */
-
-  setup();	
-
-  // NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-
-  vTaskStartScheduler();  // should never return
-
-  for (;;);
-}
-
 extern "C" {
+
+  // void runManagerTask(void* p){
+  //   program.runManager();
+  // }
+
+  // void dumpTaskStats(){
+  //   char buf[5*40]; // 40 bytes per task
+  //   vTaskGetRunTimeStats(buf);
+  // }
+		     
+
   void vApplicationMallocFailedHook(void) {
     taskDISABLE_INTERRUPTS();
     for(;;);
@@ -36,4 +35,21 @@ extern "C" {
     taskDISABLE_INTERRUPTS();
     for(;;);
   }
+}
+
+int main(void){
+  /*   SRAM_Init(); called in system_hsx.c before interrupts are enabled */
+
+  // NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+  NVIC_SetPriorityGrouping(0);
+
+  setup();	
+
+
+  // program.start(); // schedules first program task
+  program.startManager();
+
+  vTaskStartScheduler();  // should never return
+
+  for (;;);
 }
