@@ -88,6 +88,13 @@ static void HardFault_Handler(void) {
      );
 }
 
+void WWDG_IRQHandler(void) {
+  for(;;);
+}
+void PVD_IRQHandler(void) {
+  for(;;);
+}
+
 /* void HardFault_Handler(void){  */
 /*   assert_failed(0, 0); */
 /* } */

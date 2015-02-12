@@ -28,7 +28,7 @@ extern "C" {
 }
 
 void ProgramManager::startManager(){
-  xTaskCreate(runManagerTask, "OWL Manager", configMINIMAL_STACK_SIZE, NULL, 1, &xManagerHandle);
+  xTaskCreate(runManagerTask, "Manager", configMINIMAL_STACK_SIZE, NULL, 4, &xManagerHandle);
 }
 
 bool doStopProgram = false;
@@ -40,6 +40,7 @@ void ProgramManager::start(){
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
     xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 #ifdef DEFINE_OWL_SYSTICK
   // vPortYield(); // can we call this from an interrupt?
   taskYIELD();
@@ -53,6 +54,7 @@ void ProgramManager::exit(){
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
     xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 #ifdef DEFINE_OWL_SYSTICK
   // vPortYield(); // can we call this from an interrupt?
   taskYIELD();
@@ -77,6 +79,7 @@ void ProgramManager::reset(){
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
     xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
+  portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
   // exit();
   // doRestartProgram = true;
 }
@@ -108,11 +111,14 @@ void ProgramManager::runPatch(){
     /* Initialize user application Stack Pointer */
     // __set_MSP(sp); // volatile uint32_t*)PATCHRAM);
     running = true;
+    setLed(GREEN);
     jumpToApplication();
     // where is our stack pointer now?
     /* reset Stack Pointer to pre-program state */
     // __set_MSP(msp);
     // program has returned
+  }else{
+    setLed(RED);
   }
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
   running = false;
@@ -121,16 +127,19 @@ void ProgramManager::runPatch(){
 
 void ProgramManager::runManager(){
   uint32_t ulNotifiedValue = 0;
-  for(;;){
 
- /* Block indefinitely (without a timeout, so no need to check the function's
-    return value) to wait for a notification.
-    Bits in this RTOS task's notification value are set by the notifying
-    tasks and interrupts to indicate which events have occurred. */
-    xTaskNotifyWait(0x00,      /* Don't clear any notification bits on entry. */
+  const TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5000 );
+  // const TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
+  for(;;){
+    
+    /* Block indefinitely (without a timeout, so no need to check the function's
+       return value) to wait for a notification.
+       Bits in this RTOS task's notification value are set by the notifying
+       tasks and interrupts to indicate which events have occurred. */
+    xTaskNotifyWait(pdFALSE,      /* Don't clear any notification bits on entry. */
 		    UINT32_MAX, /* Reset the notification value to 0 on exit. */
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
-		    portMAX_DELAY );  /* Block indefinitely. */
+		    xMaxBlockTime ); 
 
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION) // start
       doRunProgram = true;
@@ -149,7 +158,7 @@ void ProgramManager::runManager(){
     if(doRunProgram){
       doRunProgram = false;
       if(xPatchHandle == NULL){
-	xTaskCreate(runPatchTask, "OWL Patch", configMINIMAL_STACK_SIZE, NULL, 1, &xPatchHandle);
+	xTaskCreate(runPatchTask, "Patch", configMINIMAL_STACK_SIZE, NULL, 2, &xPatchHandle);
       }
     }
     if(doStopProgram){

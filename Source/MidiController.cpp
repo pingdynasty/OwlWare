@@ -103,6 +103,7 @@ void MidiController::sendFirmwareVersion(){
   char buffer[len+32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
   uint32_t cycles = getSharedMemory()->cycles_per_block/settings.audio_blocksize;
+  // todo: remove sprintf to remove malloc dependency
   len = sprintf(buffer+1, "%s (%lu | %lu)", version, cycles, getSharedMemory()->heap_bytes_used);
 // #ifdef DEBUG_DWT
 //   uint32_t cycles = dwt_count/settings.audio_blocksize;
