@@ -16,8 +16,7 @@ public:
   void load(void* address, uint32_t length);
   bool verify();
   void start();
-  /* void stop(); */
-  void runPatch();
+  void runProgram();
   void startManager();
   void runManager();
   void exit();

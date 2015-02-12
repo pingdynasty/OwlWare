@@ -11,16 +11,19 @@ typedef void (*ProgramFunction)(void);
 
 ProgramManager program;
 
-TaskHandle_t xPatchHandle = NULL;
+TaskHandle_t xProgramHandle = NULL;
 TaskHandle_t xManagerHandle = NULL;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
 #define RESET_PROGRAM_NOTIFICATION  0x04
 
+#define MANAGER_STACK_SIZE          (configMINIMAL_STACK_SIZE*5)
+#define PROGRAM_STACK_SIZE          (configMINIMAL_STACK_SIZE*5)
+
 extern "C" {
-  void runPatchTask(void* p){
-    program.runPatch();
+  void runProgramTask(void* p){
+    program.runProgram();
   }
   void runManagerTask(void* p){
     program.runManager();
@@ -28,7 +31,7 @@ extern "C" {
 }
 
 void ProgramManager::startManager(){
-  xTaskCreate(runManagerTask, "Manager", configMINIMAL_STACK_SIZE, NULL, 4, &xManagerHandle);
+  xTaskCreate(runManagerTask, "Manager", MANAGER_STACK_SIZE, NULL, 4, &xManagerHandle);
 }
 
 void ProgramManager::start(){
@@ -59,18 +62,6 @@ void ProgramManager::exit(){
 #endif /* DEFINE_OWL_SYSTICK */
 }
 
-// void ProgramManager::stop(){
-//   // Use the handle to delete the task.
-//   if(xHandle != NULL){
-// #ifdef DEFINE_OWL_SYSTICK
-//     vTaskDelete(xHandle);
-// #endif /* DEFINE_OWL_SYSTICK */
-//     xHandle = NULL;
-//     // vPortYield();
-//   }
-//   running = false;
-// }
-
 /* exit and restart program */
 void ProgramManager::reset(){
   uint32_t ulValue = RESET_PROGRAM_NOTIFICATION;
@@ -83,7 +74,7 @@ void ProgramManager::reset(){
 void ProgramManager::load(void* address, uint32_t length){
   programAddress = (uint8_t*)address;
   programLength = length;
-  /* copy patch to ram */
+  /* copy program to ram */
   memcpy((void*)PATCHRAM, (void*)(programAddress), programLength);
 }
 
@@ -93,8 +84,8 @@ bool ProgramManager::verify(){
   return true;
 }
 
-void ProgramManager::runPatch(){
-  /* Jump to patch */
+void ProgramManager::runProgram(){
+  /* Jump to program */
   /* Check Vector Table: Test if user code is programmed starting from address 
      "APPLICATION_ADDRESS" */
   volatile uint32_t* bin = (volatile uint32_t*)PATCHRAM;
@@ -117,8 +108,9 @@ void ProgramManager::runPatch(){
     setLed(RED);
   }
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
-  running = false;
   vTaskDelete(NULL); // delete ourselves
+  xProgramHandle = NULL;
+  running = false;
 }
 
 void ProgramManager::runManager(){
@@ -127,8 +119,8 @@ void ProgramManager::runManager(){
   bool doRunProgram = false;
   bool doRestartProgram = false;
 
-  const TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5000 );
-  // const TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
+  TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5000 );
+  // TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
   for(;;){
     
     /* Block indefinitely (without a timeout, so no need to check the function's
@@ -151,18 +143,17 @@ void ProgramManager::runManager(){
 
     if(doRunProgram){
       doRunProgram = false;
-      if(xPatchHandle == NULL){
-	xTaskCreate(runPatchTask, "Patch", configMINIMAL_STACK_SIZE, NULL, 2, &xPatchHandle);
-      }
+      if(xProgramHandle == NULL)
+	xTaskCreate(runProgramTask, "Program", configMINIMAL_STACK_SIZE*4, NULL, 2, &xProgramHandle);
     }
     if(doStopProgram){
       doStopProgram = false;
       // Use the handle to delete the task.
-      if(xPatchHandle != NULL){
-	vTaskDelete(xPatchHandle);
-	xPatchHandle = NULL;
+      if(xProgramHandle != NULL){
+	vTaskDelete(xProgramHandle);
+	xProgramHandle = NULL;
+	running = false;
       }
-      running = false;
       if(doRestartProgram){
 	doRunProgram = true;
 	doRestartProgram = false;
