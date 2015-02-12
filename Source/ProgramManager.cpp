@@ -31,8 +31,6 @@ void ProgramManager::startManager(){
   xTaskCreate(runManagerTask, "Manager", configMINIMAL_STACK_SIZE, NULL, 4, &xManagerHandle);
 }
 
-bool doStopProgram = false;
-
 void ProgramManager::start(){
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
   // doRunProgram = true;
@@ -43,7 +41,7 @@ void ProgramManager::start(){
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 #ifdef DEFINE_OWL_SYSTICK
   // vPortYield(); // can we call this from an interrupt?
-  taskYIELD();
+  // taskYIELD();
 #endif /* DEFINE_OWL_SYSTICK */
 }
 
@@ -57,7 +55,7 @@ void ProgramManager::exit(){
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 #ifdef DEFINE_OWL_SYSTICK
   // vPortYield(); // can we call this from an interrupt?
-  taskYIELD();
+  // taskYIELD();
 #endif /* DEFINE_OWL_SYSTICK */
 }
 
@@ -75,13 +73,11 @@ void ProgramManager::exit(){
 
 /* exit and restart program */
 void ProgramManager::reset(){
-  uint32_t ulValue = STOP_PROGRAM_NOTIFICATION|RESET_PROGRAM_NOTIFICATION;
+  uint32_t ulValue = RESET_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
     xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
   portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-  // exit();
-  // doRestartProgram = true;
 }
 
 void ProgramManager::load(void* address, uint32_t length){
@@ -122,11 +118,14 @@ void ProgramManager::runPatch(){
   }
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
   running = false;
-  vTaskSuspend(NULL); // suspend ourselves
+  vTaskDelete(NULL); // delete ourselves
 }
 
 void ProgramManager::runManager(){
   uint32_t ulNotifiedValue = 0;
+  bool doStopProgram = false;
+  bool doRunProgram = false;
+  bool doRestartProgram = false;
 
   const TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5000 );
   // const TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
@@ -145,16 +144,11 @@ void ProgramManager::runManager(){
       doRunProgram = true;
     if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION) // stop
       doStopProgram = true;
-    if(ulNotifiedValue & 0x04) // restart
+    if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // restart
+      doStopProgram = true;
       doRestartProgram = true;
-    // if(ulNotifiedValue & 0x08) // copy
-    //   doCopyProgram = true;
+    }
 
-    // if(doCopyProgram){
-    //   doCopyProgram = false;
-    //   /* copy patch to ram */
-    //   memcpy((void*)PATCHRAM, (void*)(programAddress), programLength);
-    // }
     if(doRunProgram){
       doRunProgram = false;
       if(xPatchHandle == NULL){
@@ -174,7 +168,6 @@ void ProgramManager::runManager(){
 	doRestartProgram = false;
       }
     }
-    // vTaskDelay(200/portTICK_PERIOD_MS); // delay some ms
   }
 }
 

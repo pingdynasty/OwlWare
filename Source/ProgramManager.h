@@ -6,9 +6,6 @@
 class ProgramManager {
 private:
   bool running = false;
-  bool doRunProgram = false;
-  bool doCopyProgram = false;
-  bool doRestartProgram = false;
   uint8_t* programAddress;
   uint32_t programLength;
   uint32_t msp; // Main stack pointer
