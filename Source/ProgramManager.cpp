@@ -118,9 +118,9 @@ void ProgramManager::runManager(){
   bool doStopProgram = false;
   bool doRunProgram = false;
   bool doRestartProgram = false;
-
   TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5000 );
   // TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
+  setLed(GREEN);
   for(;;){
     
     /* Block indefinitely (without a timeout, so no need to check the function's
