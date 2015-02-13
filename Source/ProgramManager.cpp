@@ -16,7 +16,6 @@ TaskHandle_t xManagerHandle = NULL;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
-#define RESET_PROGRAM_NOTIFICATION  0x04
 
 #define MANAGER_STACK_SIZE          (configMINIMAL_STACK_SIZE*15)
 #define PROGRAM_STACK_SIZE          (configMINIMAL_STACK_SIZE*15)
@@ -86,7 +85,7 @@ void ProgramManager::exit(){
 
 /* exit and restart program */
 void ProgramManager::reset(){
-  uint32_t ulValue = RESET_PROGRAM_NOTIFICATION;
+  uint32_t ulValue = STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
     xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
@@ -139,9 +138,6 @@ void ProgramManager::runProgram(){
 
 void ProgramManager::runManager(){
   uint32_t ulNotifiedValue = 0;
-  bool doStopProgram = false;
-  bool doRunProgram = false;
-  bool doRestartProgram = false;
   TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5000 );
   // TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
   setLed(GREEN);
@@ -160,31 +156,18 @@ void ProgramManager::runManager(){
 
     stats();    
 
-    if(ulNotifiedValue & START_PROGRAM_NOTIFICATION) // start
-      doRunProgram = true;
-    if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION) // stop
-      doStopProgram = true;
-    if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // restart
-      doStopProgram = true;
-      doRestartProgram = true;
-    }
-    if(doRunProgram){
-      doRunProgram = false;
-      if(xProgramHandle == NULL)
-	xTaskCreate(runProgramTask, "Program", configMINIMAL_STACK_SIZE*4, NULL, 2, &xProgramHandle);
-    }
-    if(doStopProgram){
-      doStopProgram = false;
-      // Use the handle to delete the task.
+    if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){
+      // stop
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
 	running = false;
       }
-      if(doRestartProgram){
-	doRunProgram = true;
-	doRestartProgram = false;
-      }
+    }
+    if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){
+      // start
+      if(xProgramHandle == NULL)
+	xTaskCreate(runProgramTask, "Program", configMINIMAL_STACK_SIZE*4, NULL, 2, &xProgramHandle);
     }
   }
 }
