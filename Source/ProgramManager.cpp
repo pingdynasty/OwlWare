@@ -18,8 +18,8 @@ TaskHandle_t xManagerHandle = NULL;
 #define STOP_PROGRAM_NOTIFICATION   0x02
 #define RESET_PROGRAM_NOTIFICATION  0x04
 
-#define MANAGER_STACK_SIZE          (configMINIMAL_STACK_SIZE*5)
-#define PROGRAM_STACK_SIZE          (configMINIMAL_STACK_SIZE*5)
+#define MANAGER_STACK_SIZE          (configMINIMAL_STACK_SIZE*15)
+#define PROGRAM_STACK_SIZE          (configMINIMAL_STACK_SIZE*15)
 
 extern "C" {
   void runProgramTask(void* p){
@@ -30,8 +30,30 @@ extern "C" {
   }
 }
 
+unsigned long pH = 0;
+unsigned long mH = 0;
+unsigned long tH = 0;
+
+void stats(){
+  UBaseType_t high;
+  if(xProgramHandle != NULL){
+    high = uxTaskGetStackHighWaterMark(xProgramHandle);
+    if(high > pH)
+      pH = high;
+  }
+  if(xManagerHandle != NULL){
+    high = uxTaskGetStackHighWaterMark(xManagerHandle);
+    if(high > mH)
+      mH = high;
+  }
+  high = uxTaskGetNumberOfTasks();
+  if(high > tH)
+    tH = high;
+}
+
 void ProgramManager::startManager(){
-  xTaskCreate(runManagerTask, "Manager", MANAGER_STACK_SIZE, NULL, 4, &xManagerHandle);
+  if(xManagerHandle == NULL)
+    xTaskCreate(runManagerTask, "Manager", MANAGER_STACK_SIZE, NULL, 4, &xManagerHandle);
 }
 
 void ProgramManager::start(){
@@ -108,8 +130,10 @@ void ProgramManager::runProgram(){
     setLed(RED);
   }
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
-  vTaskDelete(NULL); // delete ourselves
-  xProgramHandle = NULL;
+  if(xProgramHandle != NULL){
+    vTaskDelete(NULL); // delete ourselves
+    xProgramHandle = NULL;
+  }
   running = false;
 }
 
@@ -122,7 +146,9 @@ void ProgramManager::runManager(){
   // TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
   setLed(GREEN);
   for(;;){
-    
+
+    stats();    
+
     /* Block indefinitely (without a timeout, so no need to check the function's
        return value) to wait for a notification.
        Bits in this RTOS task's notification value are set by the notifying
@@ -132,6 +158,8 @@ void ProgramManager::runManager(){
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
 		    xMaxBlockTime ); 
 
+    stats();    
+
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION) // start
       doRunProgram = true;
     if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION) // stop
@@ -140,7 +168,6 @@ void ProgramManager::runManager(){
       doStopProgram = true;
       doRestartProgram = true;
     }
-
     if(doRunProgram){
       doRunProgram = false;
       if(xProgramHandle == NULL)

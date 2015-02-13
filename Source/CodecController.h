@@ -25,6 +25,7 @@ public:
   CodecController();
 
   void setup();
+  void clear();
   void init(ApplicationSettings& settings);
   uint32_t getSamplingRate();
   I2SProtocol getProtocol();

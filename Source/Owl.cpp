@@ -98,6 +98,7 @@ void exitProgram(){
   // codec.stop(); // codec.start() doesn't recover well
   program.exit();
   registry.reset();
+  codec.clear();
   setLed(RED);
 }
 

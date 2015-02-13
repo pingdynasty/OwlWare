@@ -71,11 +71,19 @@ void CodecController::setup(){
 //   configureDigitalOutput(GPIOA, GPIO_Pin_7); // DEBUG
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
 //   clearPin(GPIOA, GPIO_Pin_7); // DEBUG
+
+  
+}
+
+void CodecController::clear(){
+  memset(tx_buffer, 0, sizeof(tx_buffer));
+  memset(rx_buffer, 0, sizeof(rx_buffer));
 }
 
 void CodecController::init(ApplicationSettings& settings){
 //   setPin(GPIOA, GPIO_Pin_6); // DEBUG
   setActive(false);
+  clear();
 
   /* configure codec */
   setCodecMaster(settings.audio_codec_master);
