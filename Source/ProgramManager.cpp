@@ -50,6 +50,22 @@ void stats(){
     tH = high;
 }
 
+void ProgramManager::audioReady(){
+  if(xProgramHandle != NULL){
+    BaseType_t xHigherPriorityTaskWoken = 0; 
+    xHigherPriorityTaskWoken = xTaskResumeFromISR(xProgramHandle);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  }
+}
+
+void ProgramManager::programReady(){
+  vTaskSuspend(xProgramHandle);
+}
+
+void ProgramManager::programStatus(int){
+  for(;;);
+}
+
 void ProgramManager::startManager(){
   if(xManagerHandle == NULL)
     xTaskCreate(runManagerTask, "Manager", MANAGER_STACK_SIZE, NULL, 4, &xManagerHandle);
@@ -57,7 +73,6 @@ void ProgramManager::startManager(){
 
 void ProgramManager::start(){
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
-  // doRunProgram = true;
   uint32_t ulValue = START_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
@@ -71,7 +86,6 @@ void ProgramManager::start(){
 
 void ProgramManager::exit(){
   getSharedMemory()->status = AUDIO_EXIT_STATUS; // request program exit
-  // doStopProgram = true;
   uint32_t ulValue = STOP_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
@@ -110,30 +124,26 @@ void ProgramManager::runProgram(){
   /* Check Vector Table: Test if user code is programmed starting from address 
      "APPLICATION_ADDRESS" */
   volatile uint32_t* bin = (volatile uint32_t*)PATCHRAM;
-  uint32_t sp = *(bin+1);
-  if((sp & 0x2FFE0000) == 0x20000000){
-    /* store Stack Pointer before jumping */
-    // msp = __get_MSP();
-    uint32_t jumpAddress = *(bin+2); // (volatile uint32_t*)(PATCHRAM + 8);
+  uint32_t sp = *(bin+1); // stack pointer
+  uint32_t ld = *(bin+3); // link base address
+  uint32_t jumpAddress = *(bin+2); // main pointer
+  if((sp & 0x2FFE0000) == 0x20000000 && ld == PATCHRAM){
     ProgramFunction jumpToApplication = (ProgramFunction)jumpAddress;
-    /* Initialize user application Stack Pointer */
-    // __set_MSP(sp); // volatile uint32_t*)PATCHRAM);
     running = true;
     setLed(GREEN);
     jumpToApplication();
-    // where is our stack pointer now?
-    /* reset Stack Pointer to pre-program state */
-    // __set_MSP(msp);
     // program has returned
   }else{
     setLed(RED);
   }
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
-  if(xProgramHandle != NULL){
-    vTaskDelete(NULL); // delete ourselves
-    xProgramHandle = NULL;
-  }
   running = false;
+  vTaskSuspend(NULL);
+  for(;;); // wait to be killed
+  // if(xProgramHandle != NULL){
+  //   vTaskDelete(NULL); // delete ourselves
+  //   xProgramHandle = NULL;
+  // }
 }
 
 void ProgramManager::runManager(){
@@ -156,18 +166,37 @@ void ProgramManager::runManager(){
 
     stats();    
 
-    if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){
-      // stop
+    if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){ // stop      
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
 	running = false;
       }
     }
-    if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){
-      // start
+    if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start      
+#ifdef USE_FREERTOS_MPU
+      static portSTACK_TYPE xTaskStack[512] __attribute__((aligned(512*4))) CCM;
+      static const TaskParameters_t xTaskDefinition = {
+	runProgramTask,  /* pvTaskCode */
+	"Program",        /* pcName */
+	512,             /* usStackDepth - defined in words, not bytes. */
+	NULL,            /* pvParameters */
+	2,               /* uxPriority - priority 1, start in User mode. */
+	xTaskStack,      /* puxStackBuffer - the array to use as the task stack. */
+	/* xRegions */
+	{
+	  /* Base address   Length                    Parameters */
+	  { PATCHRAM,       80*1024,                  portMPU_REGION_READ_WRITE },
+	  { EXTRAM,	    1024*1024,                portMPU_REGION_READ_WRITE },
+	  { 0,	            0,                        0                         },
+	}
+      };
+      if(xProgramHandle == NULL)
+	xTaskCreateRestricted( &xTaskDefinition, &xProgramHandle );
+#else
       if(xProgramHandle == NULL)
 	xTaskCreate(runProgramTask, "Program", configMINIMAL_STACK_SIZE*4, NULL, 2, &xProgramHandle);
+#endif /* USE_FREERTOS_MPU */
     }
   }
 }

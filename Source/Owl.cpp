@@ -119,16 +119,24 @@ int errors = 0;
  extern "C" {
 #endif
 
-void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
-  registry.registerPatch(name, inputChannels, outputChannels);
-}
+   void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
+     registry.registerPatch(name, inputChannels, outputChannels);
+   }
 
-void registerPatchParameter(uint8_t id, const char* name){
-  midi.sendPatchParameterName((PatchParameterId)id, name);
-}
+   void registerPatchParameter(uint8_t id, const char* name){
+     midi.sendPatchParameterName((PatchParameterId)id, name);
+   }
 
-void setParameter(int pid, uint16_t value){
-  getAnalogValues()[pid] = value;
+   void programReady(){
+     program.programReady();
+   }
+
+   void programStatus(SharedMemoryAudioStatus status){
+     program.programStatus(status);
+   }
+
+   void setParameter(int pid, uint16_t value){
+     getAnalogValues()[pid] = value;
 }
 
 #ifdef __cplusplus
@@ -228,6 +236,8 @@ void setup(){
   getSharedMemory()->registerPatchParameter = registerPatchParameter;
   getSharedMemory()->cycles_per_block = 0;
   getSharedMemory()->heap_bytes_used = 0;
+  getSharedMemory()->programReady = programReady;
+  getSharedMemory()->programStatus = programStatus;;
   // set pointer to smem in the backup ram
   // uint32_t pointer = (uint32_t)&smem;
   // memcpy(BKPSRAM_GetMemoryAddress(), &pointer, 4);
@@ -263,6 +273,7 @@ void audioCallback(int16_t *src, int16_t *dst, uint16_t sz){
     getSharedMemory()->audio_output = dst;
     getSharedMemory()->audio_blocksize = sz;
     getSharedMemory()->status = AUDIO_READY_STATUS;
+    program.audioReady();
     // the blocksize here is the number of halfwords,
     // ie 16bit ints, for both channels, regardless of 32, 24 or 16 bit sample width
   }

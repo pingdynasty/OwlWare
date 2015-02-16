@@ -23,6 +23,9 @@ public:
   /* exit and restart program */
   void reset();
 
+  void audioReady();
+  void programReady();
+  void programStatus(int);
 };
 
 extern ProgramManager program;
