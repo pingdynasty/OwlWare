@@ -6,6 +6,7 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 
 typedef void (*ProgramFunction)(void);
 
@@ -13,6 +14,7 @@ ProgramManager program;
 
 TaskHandle_t xProgramHandle = NULL;
 TaskHandle_t xManagerHandle = NULL;
+SemaphoreHandle_t xSemaphore = NULL;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
@@ -51,15 +53,21 @@ void stats(){
 }
 
 void ProgramManager::audioReady(){
-  if(xProgramHandle != NULL){
-    BaseType_t xHigherPriorityTaskWoken = 0; 
-    xHigherPriorityTaskWoken = xTaskResumeFromISR(xProgramHandle);
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-  }
+  // if(xProgramHandle != NULL){
+  //   BaseType_t xHigherPriorityTaskWoken = 0; 
+  //   xHigherPriorityTaskWoken = xTaskResumeFromISR(xProgramHandle);
+  //   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  // }
+  signed long int xHigherPriorityTaskWoken = pdFALSE; 
+  // signed BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  xSemaphoreGiveFromISR(xSemaphore, &xHigherPriorityTaskWoken);
+  // xSemaphoreGiveFromISR(xSemaphore, NULL);
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void ProgramManager::programReady(){
-  vTaskSuspend(xProgramHandle);
+  // vTaskSuspend(xProgramHandle);
+  xSemaphoreTake(xSemaphore, 0);
 }
 
 void ProgramManager::programStatus(int){
@@ -69,6 +77,8 @@ void ProgramManager::programStatus(int){
 void ProgramManager::startManager(){
   if(xManagerHandle == NULL)
     xTaskCreate(runManagerTask, "Manager", MANAGER_STACK_SIZE, NULL, 4, &xManagerHandle);
+  if(xSemaphore == NULL)
+    xSemaphore = xSemaphoreCreateBinary();
 }
 
 void ProgramManager::start(){
