@@ -14,6 +14,8 @@
 
 uint16_t midi_values[NOF_ADC_VALUES];
 
+#define MAX_FACTORY_PROGRAM 32
+
 class MidiHandler : public MidiReader {
 private:
   uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
@@ -21,6 +23,16 @@ public:
   MidiHandler() : MidiReader(buffer, sizeof(buffer)) {
     memset(midi_values, 0, sizeof(midi_values));
   }
+
+  // void handleProgramChange(uint8_t status, uint8_t program){
+  //   if(program < MAX_FACTORY_PROGRAM)
+  //     loadFactoryPatch(program);
+  //   else
+  //     // time to erase 128kB flash sector, typ 875ms
+  //     // Program/erase parallelism
+  //     // (PSIZE) = x 32 : 1-2s
+  //     loadProgram(program);
+  // }
 
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){

@@ -90,10 +90,11 @@ void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
 }
 
-#include <stdio.h>
+// #include <stdio.h>
 // #ifdef DEBUG_DWT
 // extern uint32_t dwt_count;
 // #endif /* DEBUG_DWT */
+#include <stdlib.h>
 
 void MidiController::sendFirmwareVersion(){
   char* version = getFirmwareVersion();
@@ -102,16 +103,21 @@ void MidiController::sendFirmwareVersion(){
   uint8_t len = strlen(version);  
   char buffer[len+32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
-  uint32_t cycles = getSharedMemory()->cycles_per_block/settings.audio_blocksize;
+
+  memcpy(buffer+1, version, len);
+  sendSysEx((uint8_t*)buffer, len+3);
+
+  // uint32_t cycles = getSharedMemory()->cycles_per_block/settings.audio_blocksize;
   // todo: remove sprintf to remove malloc dependency
-  len = sprintf(buffer+1, "%s (%lu | %lu)", version, cycles, getSharedMemory()->heap_bytes_used);
+
+  // len = sprintf(buffer+1, "%s (%lu | %lu)", version, cycles, getSharedMemory()->heap_bytes_used);
 // #ifdef DEBUG_DWT
 //   uint32_t cycles = dwt_count/settings.audio_blocksize;
 //   len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
 // #else /* DEBUG_DWT */
 //   len = sprintf(buffer+1, "%s (%d bytes)", version, used);
 // #endif /* DEBUG_DWT */
-  sendSysEx((uint8_t*)buffer, len+2);
+  // sendSysEx((uint8_t*)buffer, len+2);
 }
 
 void MidiController::sendDeviceId(){

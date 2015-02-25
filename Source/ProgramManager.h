@@ -5,14 +5,14 @@
 
 class ProgramManager {
 private:
-  bool running = false;
-  uint8_t* programAddress;
+  /* bool running = false; */
+  uint32_t* programAddress;
   uint32_t programLength;
-  uint32_t msp; // Main stack pointer
 public:
-  bool isRunning(){
-    return running;
-  }
+  ProgramManager();
+  /* bool isRunning(){ */
+  /*   return running; */
+  /* } */
   void load(void* address, uint32_t length);
   bool verify();
   void start();
@@ -26,6 +26,9 @@ public:
   void audioReady();
   void programReady();
   void programStatus(int);
+
+  bool saveProgram(uint8_t sector);
+  bool loadProgram(uint8_t sector);
 };
 
 extern ProgramManager program;

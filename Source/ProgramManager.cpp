@@ -3,12 +3,14 @@
 #include "ProgramManager.h"
 #include "SharedMemory.h"
 #include "owlcontrol.h"
+#include "eepromcontrol.h"
+#include "device.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
 
-typedef void (*ProgramFunction)(void);
+#define JUMPTO(address) ((void (*)(void))address)();
 
 ProgramManager program;
 
@@ -22,13 +24,41 @@ SemaphoreHandle_t xSemaphore = NULL;
 #define MANAGER_STACK_SIZE          (configMINIMAL_STACK_SIZE*15)
 #define PROGRAM_STACK_SIZE          (configMINIMAL_STACK_SIZE*15)
 
+#define AUDIO_TASK_SUSPEND
+// #define AUDIO_TASK_SEMAPHORE
+// #define AUDIO_TASK_DIRECT
+// #define AUDIO_TASK_YIELD
+/* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
+
 extern "C" {
+  typedef void (*ProgramFunction)(void);
+  ProgramFunction programFunction = NULL;
   void runProgramTask(void* p){
-    program.runProgram();
+    setLed(GREEN);
+    programFunction();
+    for(;;);
+    // uint32_t address = *(PATCHRAM);
+    // void (*fptr)(void) = (void (*)(void))address;
+    // fptr();
+    // if(p != NULL)
+    // program.runProgram();
   }
   void runManagerTask(void* p){
     program.runManager();
   }
+}
+
+#ifdef DEBUG_DWT
+volatile uint32_t *DWT_CYCCNT = (volatile uint32_t *)0xE0001004; //address of the register
+#endif /* DEBUG_DWT */
+ProgramManager::ProgramManager(){
+#ifdef DEBUG_DWT
+  // initialise DWT cycle counter
+  volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
+  volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; //address of the register
+  *SCB_DEMCR = *SCB_DEMCR | 0x01000000;
+  *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
+#endif /* DEBUG_DWT */
 }
 
 unsigned long pH = 0;
@@ -52,24 +82,46 @@ void stats(){
     tH = high;
 }
 
+/* called by the audio interrupt when a block should be processed */
 void ProgramManager::audioReady(){
-  // if(xProgramHandle != NULL){
-  //   BaseType_t xHigherPriorityTaskWoken = 0; 
-  //   xHigherPriorityTaskWoken = xTaskResumeFromISR(xProgramHandle);
-  //   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-  // }
+#ifdef DEBUG_DWT
+  *DWT_CYCCNT = 0; // reset the performance counter
+#endif /* DEBUG_DWT */
+#if defined AUDIO_TASK_SUSPEND || defined AUDIO_TASK_YIELD
+  if(xProgramHandle != NULL){
+    BaseType_t xHigherPriorityTaskWoken = 0; 
+    xHigherPriorityTaskWoken = xTaskResumeFromISR(xProgramHandle);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  }
+#elif defined AUDIO_TASK_SEMAPHORE
   signed long int xHigherPriorityTaskWoken = pdFALSE; 
   // signed BaseType_t xHigherPriorityTaskWoken = pdFALSE;
   xSemaphoreGiveFromISR(xSemaphore, &xHigherPriorityTaskWoken);
   // xSemaphoreGiveFromISR(xSemaphore, NULL);
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+#else /* AUDIO_TASK_DIRECT */
+  getSharedMemory()->status = AUDIO_READY_STATUS;
+#endif
 }
 
+/* called by the program when a block has been processed */
 void ProgramManager::programReady(){
-  // vTaskSuspend(xProgramHandle);
+#ifdef DEBUG_DWT
+  getSharedMemory()->cycles_per_block = *DWT_CYCCNT;
+#endif /* DEBUG_DWT */
+#ifdef AUDIO_TASK_SUSPEND
+  vTaskSuspend(xProgramHandle);
+#elif defined AUDIO_TASK_SEMAPHORE
   xSemaphoreTake(xSemaphore, 0);
+#elif defined AUDIO_TASK_YIELD
+  taskYIELD();
+#else /* AUDIO_TASK_DIRECT */
+  while(getSharedMemory()->status != AUDIO_READY_STATUS);
+  getSharedMemory()->status = AUDIO_PROCESSED_STATUS;
+#endif
 }
 
+/* called by the program when an error or anomaly has occured */
 void ProgramManager::programStatus(int){
   for(;;);
 }
@@ -117,14 +169,26 @@ void ProgramManager::reset(){
 }
 
 void ProgramManager::load(void* address, uint32_t length){
-  programAddress = (uint8_t*)address;
+  programAddress = (uint32_t*)address;
   programLength = length;
+  uint32_t sp = *(programAddress+1); // stack pointer
+  // todo: stack end pointer
+  uint32_t jumpAddress = *(programAddress+2); // main pointer
+  uint32_t link = *(programAddress+3); // link base address
+  // todo: program name
   /* copy program to ram */
-  memcpy((void*)PATCHRAM, (void*)(programAddress), programLength);
+  if(link == PATCHRAM && length < 80*1024){
+    memcpy((void*)link, (void*)programAddress, programLength);
+    programFunction = (ProgramFunction)jumpAddress;    
+  }else{
+    programFunction = NULL;
+  }
 }
 
 bool ProgramManager::verify(){
   if(*(uint32_t*)programAddress != 0xDADAC0DE)
+    return false;
+  if(programFunction == NULL)
     return false;
   return true;
 }
@@ -135,11 +199,11 @@ void ProgramManager::runProgram(){
      "APPLICATION_ADDRESS" */
   volatile uint32_t* bin = (volatile uint32_t*)PATCHRAM;
   uint32_t sp = *(bin+1); // stack pointer
-  uint32_t ld = *(bin+3); // link base address
   uint32_t jumpAddress = *(bin+2); // main pointer
+  uint32_t ld = *(bin+3); // link base address
   if((sp & 0x2FFE0000) == 0x20000000 && ld == PATCHRAM){
     ProgramFunction jumpToApplication = (ProgramFunction)jumpAddress;
-    running = true;
+    // running = true;
     setLed(GREEN);
     jumpToApplication();
     // program has returned
@@ -147,7 +211,7 @@ void ProgramManager::runProgram(){
     setLed(RED);
   }
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
-  running = false;
+  // running = false;
   vTaskSuspend(NULL);
   for(;;); // wait to be killed
   // if(xProgramHandle != NULL){
@@ -180,7 +244,7 @@ void ProgramManager::runManager(){
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
-	running = false;
+	// running = false;
       }
     }
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start      
@@ -209,6 +273,32 @@ void ProgramManager::runManager(){
 #endif /* USE_FREERTOS_MPU */
     }
   }
+}
+
+bool ProgramManager::saveProgram(uint8_t sector){
+  if(sector > 4)
+    return false;
+  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
+  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000
+  addr -= 0x08004000; // FLASH_SECTOR_1, eeprom base address
+  if(addr < 0x3c000 || addr > 0xdc000)
+    return false;
+  eeprom_unlock();
+  eeprom_erase(addr);
+  // todo: write program size (and name) in first few bytes
+  // assumes program is loaded to PATCHRAM
+  eeprom_write_block(addr, (uint8_t*)PATCHRAM, programLength);
+  eeprom_lock();
+}
+
+bool ProgramManager::loadProgram(uint8_t sector){
+  if(sector > 4)
+    return false;
+  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
+  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000  
+  uint32_t size = 80*1024; // todo: read program size (and name) from first few bytes
+  load((void*)addr, size);
+  return true;
 }
 
 /*

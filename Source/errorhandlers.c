@@ -45,6 +45,7 @@ void DebugMon_Handler(void){
 /**
  * @see http://www.freertos.org/Debugging-Hard-Faults-On-Cortex-M-Microcontrollers.html
  */
+#if 0
 void prvGetRegistersFromStack(uint32_t *pulFaultStackAddress) {
 /* These are volatile to try and prevent the compiler/linker optimising them
 away as the variables never actually get used. If the debugger won't show the
@@ -73,8 +74,8 @@ of this function. */
   for (;;);
 }
 
-/* The fault handler implementation calls a function called
-   prvGetRegistersFromStack(). */
+The fault handler implementation calls a function called
+   prvGetRegistersFromStack().
 static void HardFault_Handler(void) {
   __asm volatile (
      " tst lr, #4                                                \n"
@@ -87,6 +88,7 @@ static void HardFault_Handler(void) {
      " handler2_address_const: .word prvGetRegistersFromStack    \n"
      );
 }
+#endif
 
 void WWDG_IRQHandler(void) {
   for(;;);
@@ -94,12 +96,56 @@ void WWDG_IRQHandler(void) {
 void PVD_IRQHandler(void) {
   for(;;);
 }
-
-/* void HardFault_Handler(void){  */
-/*   assert_failed(0, 0); */
-/* } */
-
 /*
+see also
+https://blog.feabhas.com/2013/02/developing-a-generic-hard-fault-handler-for-arm-cortex-m3cortex-m4/
+*/
+/*
+  HardFault_Handler from http://blog.frankvh.com/2011/12/07/cortex-m3-m4-hard-fault-handler/
+*/
+#if 0
+void HardFault_Handler(void) __attribute__((naked));
+ 
+void HardFault_Handler(void) {
+/* HardFault_Handler: */
+  __asm("TST LR, #4");
+  __asm("ITE EQ");
+  __asm("MRSEQ R0, MSP");
+  __asm("MRSNE R0, PSP");
+  __asm("B hard_fault_handler_c");
+}
+
+void hard_fault_handler_c (unsigned int * hardfault_args){
+  volatile unsigned int stacked_r0;
+  volatile unsigned int stacked_r1;
+  volatile unsigned int stacked_r2;
+  volatile unsigned int stacked_r3;
+  volatile unsigned int stacked_r12;
+  volatile unsigned int stacked_lr;
+  volatile unsigned int stacked_pc;
+  volatile unsigned int stacked_psr;
+ 
+  stacked_r0 = ((unsigned long) hardfault_args[0]);
+  stacked_r1 = ((unsigned long) hardfault_args[1]);
+  stacked_r2 = ((unsigned long) hardfault_args[2]);
+  stacked_r3 = ((unsigned long) hardfault_args[3]);
+ 
+  stacked_r12 = ((unsigned long) hardfault_args[4]);
+  stacked_lr = ((unsigned long) hardfault_args[5]);
+  stacked_pc = ((unsigned long) hardfault_args[6]);
+  stacked_psr = ((unsigned long) hardfault_args[7]);
+}
+#endif
+
+void HardFault_Handler(void){
+  volatile uin32_t hfsr = SCB->HFSR;
+  volatile uin32_t cfsr = SCB->CFSR;
+  __asm__("BKPT");
+  /* __builtin_trap(); */
+  assert_failed(0, 0);
+}
+
+/* defined by FreeRTOS
 void SVC_Handler(void){ 
   for(;;);
 }
@@ -108,3 +154,50 @@ void PendSV_Handler(void){
   for(;;);
 }
 */
+
+void FPU_IRQHandler(void){
+  for(;;);
+}
+
+void UART4_IRQHandler(void){
+  for(;;);
+}
+
+void UART5_IRQHandler(void){
+  for(;;);
+}
+
+void USART6_IRQHandler(void){
+  for(;;);
+}
+
+void USART3_IRQHandler(void){
+  for(;;);
+} 
+void USART2_IRQHandler(void){
+  for(;;);
+} 
+void USART1_IRQHandler(void){
+  for(;;);
+} 
+/* void WWDG_IRQHandler(void){ */
+/*   for(;;); */
+/* }  */
+/* void PVD_IRQHandler(void){ */
+/*   for(;;); */
+/* }  */
+void FLASH_IRQHandler(void){
+  for(;;);
+}
+
+void TIM8_UP_TIM13_IRQHandler(void){
+  for(;;);
+}
+
+void TIM8_TRG_COM_TIM14_IRQHandler(void){
+  for(;;);
+}
+
+void TIM8_CC_IRQHandler(void){
+  for(;;);
+}

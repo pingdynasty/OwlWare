@@ -272,7 +272,6 @@ void audioCallback(int16_t *src, int16_t *dst, uint16_t sz){
     getSharedMemory()->audio_input = src;
     getSharedMemory()->audio_output = dst;
     getSharedMemory()->audio_blocksize = sz;
-    getSharedMemory()->status = AUDIO_READY_STATUS;
     program.audioReady();
     // the blocksize here is the number of halfwords,
     // ie 16bit ints, for both channels, regardless of 32, 24 or 16 bit sample width

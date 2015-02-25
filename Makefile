@@ -16,10 +16,14 @@ endif
 CFLAGS  += --specs=nano.specs
 CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1 -DUSE_FULL_ASSERT
 CFLAGS  += -DEXTERNAL_SRAM 
-CFLAGS += -fdata-sections -ffunction-sections -fno-omit-frame-pointer
+CFLAGS  += -fdata-sections -ffunction-sections -fno-omit-frame-pointer
+CFLAGS  += -fno-builtin
+# CFLAGS  += -nostdlib -nostartfiles -ffreestanding
+# CFLAGS  += -mtune=cortex-m4
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
 CFLAGS  += -std=gnu99
-LDFLAGS = -flto -Wl,--gc-sections
+# LDFLAGS = -flto -Wl,--gc-sections
+
 # LDLIBS   = -lm
 LDSCRIPT = Source/flash.ld
 
@@ -56,7 +60,7 @@ CFLAGS += -I$(TEMPLATEROOT)/Libraries/FreeRTOS/portable/GCC/ARM_CM4F
 OBJS += $(PERIPH) 
 OBJS += $(BUILD)/startup.o
 OBJS += $(USB_DEVICE) $(USB_OTG)
-OBJS += $(SYSCALLS)
+OBJS += libnosys_gnu.o
 # OBJS += $(DSPLIB)/FastMathFunctions/arm_sin_f32.o
 # OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
 # OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_f32.o

@@ -42,13 +42,13 @@ void ApplicationSettings::loadFromFlash(){
 
 void ApplicationSettings::saveToFlash(){
   eeprom_unlock();
-  eeprom_erase();
+  eeprom_erase(APPLICATION_SETTINGS_OFFSET);
   eeprom_write_block(APPLICATION_SETTINGS_OFFSET, (uint8_t*)this, sizeof(*this));
   eeprom_lock();
 }
 
 void ApplicationSettings::clearFlash(){
   eeprom_unlock();
-  eeprom_erase();
+  eeprom_erase(APPLICATION_SETTINGS_OFFSET);
   eeprom_lock();
 }

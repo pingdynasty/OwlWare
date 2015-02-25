@@ -62,6 +62,38 @@ int eeprom_write_block(uint32_t address, uint8_t* data, uint32_t size){
   return status;
 }
 
-int eeprom_erase(){
-  return FLASH_EraseSector(EEPROM_FLASH_SECTOR, VoltageRange_3);
+int eeprom_erase(uint32_t address){
+  address += EEPROM_FLASH_ADDRESS;
+  if(address < 0x08004000)
+    return -1;
+    /* FLASH_EraseSector(FLASH_Sector_0, VoltageRange_3); */
+  else if(address < 0x08008000)
+    FLASH_EraseSector(FLASH_Sector_1, VoltageRange_3);
+  else if(address < 0x0800C000)
+    return -1;
+    /* FLASH_EraseSector(FLASH_Sector_2, VoltageRange_3); */
+  else if(address < 0x08010000)
+    return -1;
+    /* FLASH_EraseSector(FLASH_Sector_3, VoltageRange_3); */
+  else if(address < 0x08020000)
+    return -1;
+    /* FLASH_EraseSector(FLASH_Sector_4, VoltageRange_3); */
+  else if(address < 0x08040000)
+    return -1;
+    /* FLASH_EraseSector(FLASH_Sector_5, VoltageRange_3); */
+  else if(address < 0x08060000)
+    return -1;
+    /* FLASH_EraseSector(FLASH_Sector_6, VoltageRange_3); */
+  else if(address < 0x08080000)
+    FLASH_EraseSector(FLASH_Sector_7, VoltageRange_3);
+  else if(address < 0x080A0000)
+    FLASH_EraseSector(FLASH_Sector_8, VoltageRange_3);
+  else if(address < 0x080C0000)
+    FLASH_EraseSector(FLASH_Sector_9, VoltageRange_3);
+  else if(address < 0x080E0000)
+    FLASH_EraseSector(FLASH_Sector_10, VoltageRange_3);
+  else if(address < 0x08100000)
+    FLASH_EraseSector(FLASH_Sector_11, VoltageRange_3);
+  else
+    return -1;
 }

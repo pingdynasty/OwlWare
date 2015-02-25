@@ -127,8 +127,6 @@ Reboot_Loader:
 	bx   r0
 .size Reboot_Loader, .-Reboot_Loader
 
-
-
 /**
  * @brief  This is the code that gets called when the processor receives an 
  *         unexpected interrupt.  This simply enters an infinite loop, preserving
