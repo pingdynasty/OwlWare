@@ -5,7 +5,7 @@ ifndef CONFIG
 endif
 
 ifeq ($(CONFIG),Debug)
-CFLAGS = -g -Wall -Wcpp
+CFLAGS   = -g -Wall -Wcpp -Wunused-function
 ASFLAGS  = -g
 endif
 
