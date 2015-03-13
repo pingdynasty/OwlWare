@@ -96,10 +96,7 @@ void WWDG_IRQHandler(void) {
 void PVD_IRQHandler(void) {
   for(;;);
 }
-/*
-see also
-https://blog.feabhas.com/2013/02/developing-a-generic-hard-fault-handler-for-arm-cortex-m3cortex-m4/
-*/
+
 /*
   HardFault_Handler from http://blog.frankvh.com/2011/12/07/cortex-m3-m4-hard-fault-handler/
 */
@@ -137,9 +134,13 @@ void hard_fault_handler_c (unsigned int * hardfault_args){
 }
 #endif
 
+/*
+see 
+https://blog.feabhas.com/2013/02/developing-a-generic-hard-fault-handler-for-arm-cortex-m3cortex-m4/
+*/
 void HardFault_Handler(void){
-  volatile uin32_t hfsr = SCB->HFSR;
-  volatile uin32_t cfsr = SCB->CFSR;
+  volatile unsigned int hfsr = SCB->HFSR;
+  volatile unsigned int cfsr = (SCB->CFSR) >> 16;
   __asm__("BKPT");
   /* __builtin_trap(); */
   assert_failed(0, 0);
