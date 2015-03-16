@@ -271,7 +271,7 @@ public:
 	setLed(NONE);
 	program.load(loader.getData(), loader.getSize());
 	if(program.verify())
-	  program.start();
+	  program.startProgram();
 	loader.clear();
       }else{
 	// midi.sendCc(DEVICE_STATUS, 0);

@@ -140,7 +140,9 @@ https://blog.feabhas.com/2013/02/developing-a-generic-hard-fault-handler-for-arm
 */
 void HardFault_Handler(void){
   volatile unsigned int hfsr = SCB->HFSR;
-  volatile unsigned int cfsr = (SCB->CFSR) >> 16;
+  volatile unsigned int cfsr = SCB->CFSR;
+  volatile unsigned int msp = __get_MSP();
+  volatile unsigned int psp = __get_PSP();
   __asm__("BKPT");
   /* __builtin_trap(); */
   assert_failed(0, 0);

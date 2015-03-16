@@ -96,7 +96,7 @@ void ledSetup(){
   clearPin(LED_PORT, LED_RED|LED_GREEN);
 }
 
-uint16_t adc_values[NOF_PARAMETERS] CCM;
+uint16_t adc_values[NOF_PARAMETERS];
 void adcSetup(){
   memset(adc_values, 0, sizeof(adc_values));
   adcSetupDMA(&adc_values[0]);

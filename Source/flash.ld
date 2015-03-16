@@ -5,9 +5,10 @@ ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
 _estack = 0x20008000;    /* end of loader RAM */
+/* _estack = 0x10010000;    /\* end of CCM RAM *\/ */
 
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0;      /* required amount of heap  */
+_Min_Heap_Size = 0x100;      /* required amount of heap  */
 _Min_Stack_Size = 0x800; /* required amount of stack */
 
 /* Specify the memory areas */
@@ -17,8 +18,8 @@ MEMORY
   EEPROM (rw)      : ORIGIN = 0x08004000, LENGTH = 16K    /* Sector 1 */
   FLASH    (rx)    : ORIGIN = 0x08008000, LENGTH = 224K   /* Sector 2 */
   PATCHFLASH (rx)  : ORIGIN = 0x08040000, LENGTH = 128K   /* Sector 6 */ /* total Flash memory is 1Mb */
-  RAM (rwx)     : ORIGIN = 0x10000000, LENGTH = 64K    /* Closely Coupled Memory */
-  CCMRAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 32K    /* 32k for the main firmware */
+  CCMRAM (rwx)     : ORIGIN = 0x10000000, LENGTH = 64K    /* Closely Coupled Memory */
+  RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 32K    /* 32k for the main firmware */
   PATCHRAM (rwx)   : ORIGIN = 0x20008000, LENGTH = 80K    /* total RAM is 112kb */
   BANK1_SRAM1 (rx) : ORIGIN = 0x60000000, LENGTH = 0K
   BANK1_SRAM2 (rx) : ORIGIN = 0x64000000, LENGTH = 0K
@@ -64,7 +65,7 @@ SECTIONS
    *(.text.arm_cos_f32);
    *(.text.arm_sin_f32);
    _fastcode_end = .;
-  } >CCMRAM AT>FLASH
+  } >RAM AT>FLASH
 _fastcode_load = LOADADDR (.fastcode);
 _fastcode_size = _fastcode_end - _fastcode_start;
 
@@ -145,15 +146,6 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     . = ALIGN(4);
   } >RAM
 
-/* /\* Shared RAM section, vars must be located here explicitly *\/ */
-/* /\* Example: int foo __attribute__ ((section (".sharedram"))); *\/ */
-/* .sharedram (NOLOAD) : */
-/* { */
-/*   . = ALIGN(4); */
-/*   *(.sharedram) */
-/*   . = ALIGN(4); */
-/* } >SHAREDRAM */
-
   /* CCM section, vars must be located here explicitly */
   /* Example: int foo __attribute__ ((section (".ccmdata"))); */
 .ccmdata (NOLOAD) :
@@ -162,6 +154,15 @@ _fastcode_size = _fastcode_end - _fastcode_start;
   *(.ccmdata)
   . = ALIGN(4);
 } >CCMRAM
+
+/* /\* Shared RAM section, vars must be located here explicitly *\/ */
+/* /\* Example: int foo __attribute__ ((section (".sharedram"))); *\/ */
+/* .sharedram (NOLOAD) : */
+/* { */
+/*   . = ALIGN(4); */
+/*   *(.sharedram) */
+/*   . = ALIGN(4); */
+/* } >SHAREDRAM */
 
   /* External SRAM, vars must be located here explicitly */
   /* Example: int foo __attribute__ ((section (".extdata"))); */

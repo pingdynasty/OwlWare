@@ -43,6 +43,11 @@ int main(void){
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
   // NVIC_SetPriorityGrouping(0);
 
+  // uint32t *ACTLR = (uint32_t *)0xE000E008;
+  // *ACTLR |= 2;
+  // DISDEFWBUF : disable write buffer (to track down BusFault IMPRECISERR faults)
+  SCnSCB->ACTLR |= 2; 
+
   setup();	
 
   // program.start(); // schedules first program task

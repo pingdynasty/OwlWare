@@ -18,11 +18,13 @@ TaskHandle_t xProgramHandle = NULL;
 TaskHandle_t xManagerHandle = NULL;
 SemaphoreHandle_t xSemaphore = NULL;
 
+uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
+
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
 
-#define MANAGER_STACK_SIZE          (configMINIMAL_STACK_SIZE*15)
-#define PROGRAM_STACK_SIZE          (configMINIMAL_STACK_SIZE*15)
+#define MANAGER_STACK_SIZE          (8*1024/sizeof(portSTACK_TYPE))
+#define PROGRAM_STACK_SIZE          (16*1024/sizeof(portSTACK_TYPE))
 
 #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -133,7 +135,7 @@ void ProgramManager::startManager(){
     xSemaphore = xSemaphoreCreateBinary();
 }
 
-void ProgramManager::start(){
+void ProgramManager::startProgram(){
   getSharedMemory()->status = AUDIO_IDLE_STATUS;
   uint32_t ulValue = START_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
@@ -171,7 +173,7 @@ void ProgramManager::reset(){
 void ProgramManager::load(void* address, uint32_t length){
   programAddress = (uint32_t*)address;
   programLength = length;
-  uint32_t sp = *(programAddress+1); // stack pointer
+  programStackPointer = (uint32_t*)*(programAddress+1); // stack pointer
   // todo: stack end pointer
   uint32_t jumpAddress = *(programAddress+2); // main pointer
   uint32_t link = *(programAddress+3); // link base address
@@ -189,6 +191,10 @@ bool ProgramManager::verify(){
   if(*(uint32_t*)programAddress != 0xDADAC0DE)
     return false;
   if(programFunction == NULL)
+    return false;
+  if(programStackPointer < (uint32_t*)PATCHRAM)
+    return false;
+  if(programStackPointer > (uint32_t*)(PATCHRAM+80*1024))
     return false;
   return true;
 }
@@ -269,7 +275,8 @@ void ProgramManager::runManager(){
 	xTaskCreateRestricted( &xTaskDefinition, &xProgramHandle );
 #else
       if(xProgramHandle == NULL)
-	xTaskCreate(runProgramTask, "Program", configMINIMAL_STACK_SIZE*4, NULL, 2, &xProgramHandle);
+	// xTaskGenericCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle, programStackPointer, NULL);
+	xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
 #endif /* USE_FREERTOS_MPU */
     }
   }

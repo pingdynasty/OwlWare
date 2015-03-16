@@ -8,6 +8,7 @@ private:
   /* bool running = false; */
   uint32_t* programAddress;
   uint32_t programLength;
+  uint32_t* programStackPointer;
 public:
   ProgramManager();
   /* bool isRunning(){ */
@@ -15,7 +16,7 @@ public:
   /* } */
   void load(void* address, uint32_t length);
   bool verify();
-  void start();
+  void startProgram();
   void runProgram();
   void startManager();
   void runManager();
