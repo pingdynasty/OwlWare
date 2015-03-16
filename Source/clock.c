@@ -1,4 +1,5 @@
 #include "clock.h"
+#include "device.h"
 #include "stm32f4xx.h"
 
 __IO uint32_t systicks = 0;
@@ -27,5 +28,4 @@ uint32_t getSysTicks(){
 void SysTick_Handler(void){
   systicks++;
 }
-
 #endif /* DEFINE_OWL_SYSTICK */

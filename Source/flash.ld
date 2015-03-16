@@ -135,6 +135,15 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     __bss_end__ = _ebss;
   } >RAM
 
+  /* CCM section, vars must be located here explicitly */
+  /* Example: int foo __attribute__ ((section (".ccmdata"))); */
+  .ccmdata (NOLOAD) :
+  {
+    . = ALIGN(4);
+    *(.ccmdata)
+    . = ALIGN(4);
+  } >CCMRAM
+
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
@@ -145,15 +154,6 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     . = . + _Min_Stack_Size;
     . = ALIGN(4);
   } >RAM
-
-  /* CCM section, vars must be located here explicitly */
-  /* Example: int foo __attribute__ ((section (".ccmdata"))); */
-.ccmdata (NOLOAD) :
-{
-  . = ALIGN(4);
-  *(.ccmdata)
-  . = ALIGN(4);
-} >CCMRAM
 
 /* /\* Shared RAM section, vars must be located here explicitly *\/ */
 /* /\* Example: int foo __attribute__ ((section (".sharedram"))); *\/ */

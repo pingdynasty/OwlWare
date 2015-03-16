@@ -10,7 +10,7 @@
 /* #define SERIAL_PORT                  1 */
 
 /* #define DEBUG_AUDIO */
-/* #define DEBUG_DWT */
+#define DEBUG_DWT
 
 #define GREEN_PATCH                  0
 #define RED_PATCH                    1
@@ -24,7 +24,7 @@
 #define AUDIO_BITDEPTH               16    /* bits per sample */
 #define AUDIO_SAMPLINGRATE           48000
 #define AUDIO_BLOCK_SIZE             256   /* size in samples of a single channel audio block */
-#define AUDIO_MAX_BLOCK_SIZE         1024  /* size in samples of a single channel audio block */
+#define AUDIO_MAX_BLOCK_SIZE         512  /* size in samples of a single channel audio block */
 
 #define PATCHRAM                    ((uint32_t)0x20008000)
 #define EXTRAM                      ((uint32_t)0x68000000)

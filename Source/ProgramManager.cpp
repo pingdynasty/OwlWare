@@ -36,8 +36,12 @@ extern "C" {
   typedef void (*ProgramFunction)(void);
   ProgramFunction programFunction = NULL;
   void runProgramTask(void* p){
-    setLed(GREEN);
-    programFunction();
+    if(programFunction == NULL){
+      setLed(RED);
+    }else{
+      setLed(GREEN);
+      programFunction();
+    }
     for(;;);
     // uint32_t address = *(PATCHRAM);
     // void (*fptr)(void) = (void (*)(void))address;
@@ -173,11 +177,11 @@ void ProgramManager::reset(){
 void ProgramManager::load(void* address, uint32_t length){
   programAddress = (uint32_t*)address;
   programLength = length;
-  programStackPointer = (uint32_t*)*(programAddress+1); // stack pointer
-  // todo: stack end pointer
-  uint32_t jumpAddress = *(programAddress+2); // main pointer
-  uint32_t link = *(programAddress+3); // link base address
-  // todo: program name
+  programStackBase = (uint32_t*)*(programAddress+3); // stack base pointer (low end of heap/stack)
+  programStackSize = *(programAddress+4) - *(programAddress+3);
+  strncpy(programName, (char*)(programAddress+5), sizeof(programName));
+  uint32_t jumpAddress = *(programAddress+1); // main pointer
+  uint32_t link = *(programAddress+2); // link base address
   /* copy program to ram */
   if(link == PATCHRAM && length < 80*1024){
     memcpy((void*)link, (void*)programAddress, programLength);
@@ -192,38 +196,11 @@ bool ProgramManager::verify(){
     return false;
   if(programFunction == NULL)
     return false;
-  if(programStackPointer < (uint32_t*)PATCHRAM)
+  if(programStackBase < (uint32_t*)PATCHRAM)
     return false;
-  if(programStackPointer > (uint32_t*)(PATCHRAM+80*1024))
+  if(programStackBase > (uint32_t*)(PATCHRAM+80*1024))
     return false;
   return true;
-}
-
-void ProgramManager::runProgram(){
-  /* Jump to program */
-  /* Check Vector Table: Test if user code is programmed starting from address 
-     "APPLICATION_ADDRESS" */
-  volatile uint32_t* bin = (volatile uint32_t*)PATCHRAM;
-  uint32_t sp = *(bin+1); // stack pointer
-  uint32_t jumpAddress = *(bin+2); // main pointer
-  uint32_t ld = *(bin+3); // link base address
-  if((sp & 0x2FFE0000) == 0x20000000 && ld == PATCHRAM){
-    ProgramFunction jumpToApplication = (ProgramFunction)jumpAddress;
-    // running = true;
-    setLed(GREEN);
-    jumpToApplication();
-    // program has returned
-  }else{
-    setLed(RED);
-  }
-  getSharedMemory()->status = AUDIO_IDLE_STATUS;
-  // running = false;
-  vTaskSuspend(NULL);
-  for(;;); // wait to be killed
-  // if(xProgramHandle != NULL){
-  //   vTaskDelete(NULL); // delete ourselves
-  //   xProgramHandle = NULL;
-  // }
 }
 
 void ProgramManager::runManager(){
@@ -275,7 +252,7 @@ void ProgramManager::runManager(){
 	xTaskCreateRestricted( &xTaskDefinition, &xProgramHandle );
 #else
       if(xProgramHandle == NULL)
-	// xTaskGenericCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle, programStackPointer, NULL);
+	// xTaskGenericCreate(runProgramTask, "Program", programStackSize/sizeof(portSTACK_TYPE), NULL, 2, &xProgramHandle, programStackBase, NULL);
 	xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
 #endif /* USE_FREERTOS_MPU */
     }

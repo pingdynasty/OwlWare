@@ -16,8 +16,8 @@
 #endif
 
 /* DMA buffers for I2S */
-int16_t tx_buffer[AUDIO_BUFFER_SIZE] CCM;
-int16_t rx_buffer[AUDIO_BUFFER_SIZE] CCM;
+int16_t tx_buffer[AUDIO_BUFFER_SIZE];
+int16_t rx_buffer[AUDIO_BUFFER_SIZE];
 
 const uint16_t wm8731_init_data[] = {
 	WM8731_INVOL_P6DB,                   			  // Reg 0x00: Left Line In
