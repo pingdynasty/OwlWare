@@ -26,7 +26,7 @@ uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 #define STOP_PROGRAM_NOTIFICATION   0x02
 
 #define MANAGER_STACK_SIZE          (8*1024/sizeof(portSTACK_TYPE))
-#define PROGRAM_STACK_SIZE          (36*1024/sizeof(portSTACK_TYPE))
+#define PROGRAM_STACK_SIZE          (46*1024/sizeof(portSTACK_TYPE))
 
 #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -75,17 +75,13 @@ unsigned long mH = 0;
 unsigned long tH = 0;
 
 void stats(){
-  UBaseType_t high;
   if(xProgramHandle != NULL){
-    high = uxTaskGetStackHighWaterMark(xProgramHandle);
-    if(high > pH)
-      pH = high;
+    pH = uxTaskGetStackHighWaterMark(xProgramHandle);
   }
   if(xManagerHandle != NULL){
-    high = uxTaskGetStackHighWaterMark(xManagerHandle);
-    if(high > mH)
-      mH = high;
+    mH = uxTaskGetStackHighWaterMark(xManagerHandle);
   }
+  UBaseType_t high;
   high = uxTaskGetNumberOfTasks();
   if(high > tH)
     tH = high;
