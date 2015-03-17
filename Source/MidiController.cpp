@@ -94,18 +94,38 @@ void MidiController::sendDeviceInfo(){
 // #ifdef DEBUG_DWT
 // extern uint32_t dwt_count;
 // #endif /* DEBUG_DWT */
-#include <stdlib.h>
+// #include <stdlib.h>
+// char* itoa(int val, char* buf, int base, int max){
+//   for(int i=max; val && i ; --i, val /= base)
+//     buf[i] = "0123456789abcdef"[val % base];
+//   return &buf[i+1];	
+// }
+char* itoa(int val, int base){
+  static char buf[10] = {0};
+  int i=8;
+  for(; val && i ; --i, val /= base)
+    buf[i] = "0123456789abcdef"[val % base];
+  return &buf[i+1];
+}
+#include <string.h>
 
 void MidiController::sendFirmwareVersion(){
   char* version = getFirmwareVersion();
   // struct mallinfo minfo = mallinfo();
   // int used = minfo.uordblks;
-  uint8_t len = strlen(version);  
-  char buffer[len+32];
+  // uint8_t len = strlen(version);  
+  // char buffer[len+32];
+  char buffer[64];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
+  char* p = &buffer[1];
+  p = stpcpy(p, getFirmwareVersion());
+  p = stpcpy(p, (const char*)" (");
+  p = stpcpy(p, itoa(getSharedMemory()->cycles_per_block/settings.audio_blocksize, 10));
+  p = stpcpy(p, (const char*)" | ");
+  p = stpcpy(p, itoa(getSharedMemory()->heap_bytes_used, 10));
+  p = stpcpy(p, (const char*)")");
 
-  memcpy(buffer+1, version, len);
-  sendSysEx((uint8_t*)buffer, len+3);
+  sendSysEx((uint8_t*)buffer, p-buffer);
 
   // uint32_t cycles = getSharedMemory()->cycles_per_block/settings.audio_blocksize;
   // todo: remove sprintf to remove malloc dependency

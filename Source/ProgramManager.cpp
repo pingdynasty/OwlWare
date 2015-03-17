@@ -14,6 +14,8 @@
 
 ProgramManager program;
 
+extern void setup(); // main OWL setup
+
 TaskHandle_t xProgramHandle = NULL;
 TaskHandle_t xManagerHandle = NULL;
 SemaphoreHandle_t xSemaphore = NULL;
@@ -24,7 +26,7 @@ uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 #define STOP_PROGRAM_NOTIFICATION   0x02
 
 #define MANAGER_STACK_SIZE          (8*1024/sizeof(portSTACK_TYPE))
-#define PROGRAM_STACK_SIZE          (16*1024/sizeof(portSTACK_TYPE))
+#define PROGRAM_STACK_SIZE          (36*1024/sizeof(portSTACK_TYPE))
 
 #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -50,6 +52,7 @@ extern "C" {
     // program.runProgram();
   }
   void runManagerTask(void* p){
+    setup(); // call main OWL setup
     program.runManager();
   }
 }
@@ -205,8 +208,8 @@ bool ProgramManager::verify(){
 
 void ProgramManager::runManager(){
   uint32_t ulNotifiedValue = 0;
-  TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5000 );
-  // TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
+  // TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5000 );
+  TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
   setLed(GREEN);
   for(;;){
 
@@ -273,6 +276,7 @@ bool ProgramManager::saveProgram(uint8_t sector){
   // assumes program is loaded to PATCHRAM
   eeprom_write_block(addr, (uint8_t*)PATCHRAM, programLength);
   eeprom_lock();
+  return true;
 }
 
 bool ProgramManager::loadProgram(uint8_t sector){

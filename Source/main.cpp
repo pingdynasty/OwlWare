@@ -5,21 +5,11 @@
 
 #include "ProgramManager.h"
 
-extern void setup();
-extern void run();
-
 extern "C" {
-
-  // void runManagerTask(void* p){
-  //   program.runManager();
-  // }
-
   // void dumpTaskStats(){
   //   char buf[5*40]; // 40 bytes per task
   //   vTaskGetRunTimeStats(buf);
   // }
-		     
-
   void vApplicationMallocFailedHook(void) {
     taskDISABLE_INTERRUPTS();
     for(;;);
@@ -43,17 +33,10 @@ int main(void){
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
   // NVIC_SetPriorityGrouping(0);
 
-  // uint32t *ACTLR = (uint32_t *)0xE000E008;
-  // *ACTLR |= 2;
   // DISDEFWBUF : disable write buffer (to track down BusFault IMPRECISERR faults)
-  SCnSCB->ACTLR |= 2; 
+  // SCnSCB->ACTLR |= 2; 
 
-  setup();	
-
-  // program.start(); // schedules first program task
-  program.startManager();
-
+  program.startManager(); // start the program manager task
   vTaskStartScheduler();  // should never return
-
   for (;;);
 }
