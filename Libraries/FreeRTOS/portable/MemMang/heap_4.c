@@ -303,8 +303,8 @@ void vPortFree( void *pv )
 uint8_t *puc = ( uint8_t * ) pv;
 BlockLink_t *pxLink;
 
- /* if( pv != NULL && pv > ucHeap && pv <= (ucHeap +configTOTAL_HEAP_SIZE)) */
-     if( pv != NULL)
+ if( pv != NULL && pv > ucHeap && pv <= (ucHeap +configTOTAL_HEAP_SIZE))
+     /* if( pv != NULL) */
 	{
 		/* The memory being freed will have an BlockLink_t structure immediately
 		before it. */

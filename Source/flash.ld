@@ -4,8 +4,8 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-/* _estack = 0x20008000;    /\* end of loader RAM *\/ */
-_estack = 0x10010000;    /* end of CCM RAM */
+_estack = 0x20008000;    /* end of loader RAM */
+/* _estack = 0x10010000;    /\* end of CCM RAM *\/ */
 
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x100;      /* required amount of heap  */

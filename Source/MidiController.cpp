@@ -10,6 +10,7 @@
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
 #include "SharedMemory.h"
+#include "ProgramManager.h"
 
 uint32_t log2(uint32_t x){ 
   return x == 0 ? 0 : 31 - __builtin_clz (x); /* clz returns the number of leading 0's */
@@ -88,6 +89,7 @@ void MidiController::sendPatchName(uint8_t index){
 
 void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
+  sendDeviceStats();
 }
 
 // #include <stdio.h>
@@ -101,20 +103,26 @@ void MidiController::sendDeviceInfo(){
 //   return &buf[i+1];	
 // }
 char* itoa(int val, int base){
-  static char buf[10] = {0};
-  int i=8;
+  static char buf[12] = {0};
+  int i=10;
   for(; val && i ; --i, val /= base)
     buf[i] = "0123456789abcdef"[val % base];
   return &buf[i+1];
 }
 #include <string.h>
 
+void MidiController::sendDeviceStats(){
+  char buffer[64];
+  buffer[0] = SYSEX_DEVICE_STATS;
+  char* p = &buffer[1];
+  p = stpcpy(p, (const char*)"Program stack: ");
+  p = stpcpy(p, itoa(program.getProgramStackSize(), 10));
+  p = stpcpy(p, (const char*)"/");
+  p = stpcpy(p, itoa(program.getProgramStackAllocation(), 10));
+  sendSysEx((uint8_t*)buffer, p-buffer);
+}
+
 void MidiController::sendFirmwareVersion(){
-  char* version = getFirmwareVersion();
-  // struct mallinfo minfo = mallinfo();
-  // int used = minfo.uordblks;
-  // uint8_t len = strlen(version);  
-  // char buffer[len+32];
   char buffer[64];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
   char* p = &buffer[1];
@@ -124,12 +132,14 @@ void MidiController::sendFirmwareVersion(){
   p = stpcpy(p, (const char*)" | ");
   p = stpcpy(p, itoa(getSharedMemory()->heap_bytes_used, 10));
   p = stpcpy(p, (const char*)")");
-
   sendSysEx((uint8_t*)buffer, p-buffer);
 
+  // char* version = getFirmwareVersion();
+  // struct mallinfo minfo = mallinfo();
+  // int used = minfo.uordblks;
+  // uint8_t len = strlen(version);  
+  // char buffer[len+32];
   // uint32_t cycles = getSharedMemory()->cycles_per_block/settings.audio_blocksize;
-  // todo: remove sprintf to remove malloc dependency
-
   // len = sprintf(buffer+1, "%s (%lu | %lu)", version, cycles, getSharedMemory()->heap_bytes_used);
 // #ifdef DEBUG_DWT
 //   uint32_t cycles = dwt_count/settings.audio_blocksize;

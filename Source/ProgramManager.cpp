@@ -87,6 +87,17 @@ void stats(){
     tH = high;
 }
 
+uint32_t ProgramManager::getProgramStackSize(){
+  if(xProgramHandle == NULL)
+    return 0;
+  pH = uxTaskGetStackHighWaterMark(xProgramHandle);
+  return pH*sizeof(portSTACK_TYPE);
+}
+
+uint32_t ProgramManager::getProgramStackAllocation(){
+  return programStackSize;
+}
+
 /* called by the audio interrupt when a block should be processed */
 void ProgramManager::audioReady(){
 #ifdef DEBUG_DWT
@@ -182,9 +193,11 @@ void ProgramManager::load(void* address, uint32_t length){
   uint32_t jumpAddress = *(programAddress+1); // main pointer
   uint32_t link = *(programAddress+2); // link base address
   /* copy program to ram */
-  if(link == PATCHRAM && length < 80*1024){
+  if((link == PATCHRAM && programLength <= 80*1024) ||
+     (link == EXTRAM && programLength <= 1024*1024)){
     memcpy((void*)link, (void*)programAddress, programLength);
-    programFunction = (ProgramFunction)jumpAddress;    
+    programFunction = (ProgramFunction)jumpAddress;
+    programAddress = (uint32_t*)link;
   }else{
     programFunction = NULL;
   }
@@ -195,11 +208,11 @@ bool ProgramManager::verify(){
     return false;
   if(programFunction == NULL)
     return false;
-  if(programStackBase < (uint32_t*)PATCHRAM)
-    return false;
-  if(programStackBase > (uint32_t*)(PATCHRAM+80*1024))
-    return false;
-  return true;
+  if(((uint32_t)programStackBase >= PATCHRAM && (uint32_t)programStackBase+programStackSize <= (PATCHRAM+80*1024)) ||
+     ((uint32_t)programStackBase >= CCMRAM && (uint32_t)programStackBase+programStackSize <= (CCMRAM+64*1024)) ||
+     ((uint32_t)programStackBase >= EXTRAM && (uint32_t)programStackBase+programStackSize <= (EXTRAM+80*1024)))
+    return true;
+  return false;
 }
 
 void ProgramManager::runManager(){
@@ -251,8 +264,8 @@ void ProgramManager::runManager(){
 	xTaskCreateRestricted( &xTaskDefinition, &xProgramHandle );
 #else
       if(xProgramHandle == NULL)
-	// xTaskGenericCreate(runProgramTask, "Program", programStackSize/sizeof(portSTACK_TYPE), NULL, 2, &xProgramHandle, programStackBase, NULL);
-	xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
+	xTaskGenericCreate(runProgramTask, "Program", programStackSize/sizeof(portSTACK_TYPE), NULL, 2, &xProgramHandle, programStackBase, NULL);
+	// xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
 #endif /* USE_FREERTOS_MPU */
     }
   }

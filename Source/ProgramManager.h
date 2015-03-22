@@ -29,6 +29,9 @@ public:
   void programReady();
   void programStatus(int);
 
+  uint32_t getProgramStackSize();
+  uint32_t getProgramStackAllocation();
+
   bool saveProgram(uint8_t sector);
   bool loadProgram(uint8_t sector);
 };
