@@ -5,7 +5,7 @@ ifndef CONFIG
 endif
 
 ifeq ($(CONFIG),Debug)
-CFLAGS   = -g -Wall -Wcpp -Wunused-function
+CFLAGS   = -g -Wall -Wcpp -Wunused-function -DDEBUG -DUSE_FULL_ASSERT
 ASFLAGS  = -g
 endif
 
@@ -14,7 +14,7 @@ CFLAGS   = -O2
 endif
 
 CFLAGS  += --specs=nano.specs
-CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1 -DUSE_FULL_ASSERT
+CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1
 CFLAGS  += -DEXTERNAL_SRAM 
 CFLAGS  += -fdata-sections -ffunction-sections -fno-omit-frame-pointer
 CFLAGS  += -fno-builtin
