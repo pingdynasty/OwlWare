@@ -10,15 +10,18 @@
   * @retval None
   */
 void assert_failed(uint8_t* file, uint32_t line){ 
+#ifdef DEBUG
   volatile uint32_t delayCounter;
-  /* Blink LEDs */
+  /* Blink LED */
   setLed(RED);
   for(delayCounter = 0; delayCounter < 4000000; delayCounter++);
   setLed(NONE);
   for(delayCounter = 0; delayCounter < 4000000; delayCounter++);
   setLed(RED);
   for(;;);
-  /* NVIC_SystemReset(); */
+#else
+  NVIC_SystemReset();
+#endif
 }
 
 /* exception handlers - so we know what's failing */
@@ -139,12 +142,14 @@ see
 https://blog.feabhas.com/2013/02/developing-a-generic-hard-fault-handler-for-arm-cortex-m3cortex-m4/
 */
 void HardFault_Handler(void){
+#ifdef DEBUG
   volatile unsigned int hfsr = SCB->HFSR;
   volatile unsigned int cfsr = SCB->CFSR;
   volatile unsigned int msp = __get_MSP();
   volatile unsigned int psp = __get_PSP();
   __asm__("BKPT");
   /* __builtin_trap(); */
+#endif
   assert_failed(0, 0);
 }
 
@@ -158,6 +163,7 @@ void PendSV_Handler(void){
 }
 */
 
+/*
 void FPU_IRQHandler(void){
   for(;;);
 }
@@ -183,12 +189,15 @@ void USART2_IRQHandler(void){
 void USART1_IRQHandler(void){
   for(;;);
 } 
+*/
+
 /* void WWDG_IRQHandler(void){ */
 /*   for(;;); */
 /* }  */
 /* void PVD_IRQHandler(void){ */
 /*   for(;;); */
 /* }  */
+/*
 void FLASH_IRQHandler(void){
   for(;;);
 }
@@ -204,3 +213,4 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void){
 void TIM8_CC_IRQHandler(void){
   for(;;);
 }
+*/
