@@ -20,13 +20,16 @@ TaskHandle_t xProgramHandle = NULL;
 TaskHandle_t xManagerHandle = NULL;
 SemaphoreHandle_t xSemaphore = NULL;
 
+#define MANAGER_STACK_SIZE          (8*1024/sizeof(portSTACK_TYPE))
+// #define PROGRAM_STACK_SIZE          (46*1024/sizeof(portSTACK_TYPE))
+#define STATIC_PROGRAM_STACK_SIZE   (32*1024)
+
+uint8_t spHeap[ STATIC_PROGRAM_STACK_SIZE ] CCM;
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
 
-#define MANAGER_STACK_SIZE          (8*1024/sizeof(portSTACK_TYPE))
-#define PROGRAM_STACK_SIZE          (46*1024/sizeof(portSTACK_TYPE))
 
 #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -45,11 +48,6 @@ extern "C" {
       programFunction();
     }
     for(;;);
-    // uint32_t address = *(PATCHRAM);
-    // void (*fptr)(void) = (void (*)(void))address;
-    // fptr();
-    // if(p != NULL)
-    // program.runProgram();
   }
   void runManagerTask(void* p){
     setup(); // call main OWL setup
@@ -184,7 +182,31 @@ void ProgramManager::reset(){
   portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-void ProgramManager::load(void* address, uint32_t length){
+extern "C" void program_setup(uint8_t pid);
+extern "C" void program_run();
+// void runStaticProgramTask(void* p){
+//   program_run();
+//   for(;;);
+// }
+
+#include "sramalloc.h"
+/* assumes program is stopped */
+void ProgramManager::loadStaticProgram(uint8_t pid){
+  programAddress = NULL;
+  programFunction = NULL;
+  InitMem((char*)EXTRAM, 1024*1024);
+  program_setup(pid);
+  programFunction = program_run;
+  programStackSize = STATIC_PROGRAM_STACK_SIZE;
+  programStackBase = (uint32_t*)spHeap;
+  // programStackSize = 1024*1024;
+  // programStackSize = 255*1024; // usStackDepth is uint16_t, heap must be < 256kb
+  // programStackBase = (uint32_t*)EXTRAM;
+  // xTaskGenericCreate(runStaticProgramTask, "Static Program", programStackSize/sizeof(portSTACK_TYPE), NULL, 2, &xProgramHandle, programStackBase, NULL);
+}
+
+/* assumes program is stopped */
+void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   programAddress = (uint32_t*)address;
   programLength = length;
   programStackBase = (uint32_t*)*(programAddress+3); // stack base pointer (low end of heap/stack)
@@ -204,9 +226,11 @@ void ProgramManager::load(void* address, uint32_t length){
 }
 
 bool ProgramManager::verify(){
-  if(*(uint32_t*)programAddress != 0xDADAC0DE)
-    return false;
   if(programFunction == NULL)
+    return false;
+  if(programFunction == program_run)
+    return true;
+  if(*(uint32_t*)programAddress != 0xDADAC0DE)
     return false;
   if(((uint32_t)programStackBase >= PATCHRAM && (uint32_t)programStackBase+programStackSize <= (PATCHRAM+80*1024)) ||
      ((uint32_t)programStackBase >= CCMRAM && (uint32_t)programStackBase+programStackSize <= (CCMRAM+64*1024)) ||
@@ -221,9 +245,7 @@ void ProgramManager::runManager(){
   TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
   setLed(GREEN);
   for(;;){
-
     stats();    
-
     /* Block indefinitely (without a timeout, so no need to check the function's
        return value) to wait for a notification.
        Bits in this RTOS task's notification value are set by the notifying
@@ -232,9 +254,7 @@ void ProgramManager::runManager(){
 		    UINT32_MAX, /* Reset the notification value to 0 on exit. */
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
 		    xMaxBlockTime ); 
-
-    stats();    
-
+    stats();
     if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){ // stop      
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
@@ -242,31 +262,10 @@ void ProgramManager::runManager(){
 	// running = false;
       }
     }
-    if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start      
-#ifdef USE_FREERTOS_MPU
-      static portSTACK_TYPE xTaskStack[512] __attribute__((aligned(512*4))) CCM;
-      static const TaskParameters_t xTaskDefinition = {
-	runProgramTask,  /* pvTaskCode */
-	"Program",        /* pcName */
-	512,             /* usStackDepth - defined in words, not bytes. */
-	NULL,            /* pvParameters */
-	2,               /* uxPriority - priority 1, start in User mode. */
-	xTaskStack,      /* puxStackBuffer - the array to use as the task stack. */
-	/* xRegions */
-	{
-	  /* Base address   Length                    Parameters */
-	  { PATCHRAM,       80*1024,                  portMPU_REGION_READ_WRITE },
-	  { EXTRAM,	    1024*1024,                portMPU_REGION_READ_WRITE },
-	  { 0,	            0,                        0                         },
-	}
-      };
-      if(xProgramHandle == NULL)
-	xTaskCreateRestricted( &xTaskDefinition, &xProgramHandle );
-#else
+    if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       if(xProgramHandle == NULL)
 	xTaskGenericCreate(runProgramTask, "Program", programStackSize/sizeof(portSTACK_TYPE), NULL, 2, &xProgramHandle, programStackBase, NULL);
 	// xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
-#endif /* USE_FREERTOS_MPU */
     }
   }
 }
@@ -294,7 +293,7 @@ bool ProgramManager::loadProgram(uint8_t sector){
   uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
   addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000  
   uint32_t size = 80*1024; // todo: read program size (and name) from first few bytes
-  load((void*)addr, size);
+  loadDynamicProgram((void*)addr, size);
   return true;
 }
 

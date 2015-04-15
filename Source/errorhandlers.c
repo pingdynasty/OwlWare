@@ -30,14 +30,37 @@ void NMI_Handler(void){
 }
 
 void MemManage_Handler(void){ 
+#ifdef DEBUG
+  volatile unsigned int hfsr = SCB->MMFAR;
+  volatile unsigned int cfsr = SCB->CFSR;
+  volatile unsigned int msp = __get_MSP();
+  volatile unsigned int psp = __get_PSP();
+  __asm__("BKPT");
+  /* __builtin_trap(); */
+#endif
   assert_failed(0, 0);
 }
 
 void BusFault_Handler(void){ 
+#ifdef DEBUG
+  volatile unsigned int hfsr = SCB->BFAR;
+  volatile unsigned int cfsr = SCB->CFSR;
+  volatile unsigned int msp = __get_MSP();
+  volatile unsigned int psp = __get_PSP();
+  __asm__("BKPT");
+  /* __builtin_trap(); */
+#endif
   assert_failed(0, 0);
 }
 
 void UsageFault_Handler(void){ 
+#ifdef DEBUG
+  volatile unsigned int cfsr = SCB->CFSR;
+  volatile unsigned int msp = __get_MSP();
+  volatile unsigned int psp = __get_PSP();
+  __asm__("BKPT");
+  /* __builtin_trap(); */
+#endif
   for(;;);
 }
 

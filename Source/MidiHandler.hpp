@@ -24,15 +24,19 @@ public:
     memset(midi_values, 0, sizeof(midi_values));
   }
 
-  // void handleProgramChange(uint8_t status, uint8_t program){
-  //   if(program < MAX_FACTORY_PROGRAM)
-  //     loadFactoryPatch(program);
-  //   else
-  //     // time to erase 128kB flash sector, typ 875ms
-  //     // Program/erase parallelism
-  //     // (PSIZE) = x 32 : 1-2s
-  //     loadProgram(program);
-  // }
+  void handleProgramChange(uint8_t status, uint8_t pid){
+    if(pid < MAX_FACTORY_PROGRAM){
+      program.loadStaticProgram(pid);
+      program.reset();
+    }
+    // if(pid < MAX_FACTORY_PROGRAM)
+    //   loadFactoryPatch(pid);
+    // else
+    //   // time to erase 128kB flash sector, typ 875ms
+    //   // Program/erase parallelism
+    //   // (PSIZE) = x 32 : 1-2s
+    //   loadProgram(pid);
+  }
 
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){
@@ -269,7 +273,7 @@ public:
 	// firmware upload complete
 	// midi.sendCc(DEVICE_STATUS, 0x7f);
 	setLed(NONE);
-	program.load(loader.getData(), loader.getSize());
+	program.loadDynamicProgram(loader.getData(), loader.getSize());
 	if(program.verify())
 	  program.startProgram();
 	loader.clear();

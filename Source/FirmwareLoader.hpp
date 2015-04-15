@@ -1,7 +1,6 @@
 #ifndef __FirmwareLoader_H__
 #define __FirmwareLoader_H__
 
-// #include <malloc.h>
 #include <math.h>
 #include "crc32.h"
 #include "sysex.h"
@@ -72,9 +71,6 @@ public:
       if(size > MAX_SYSEX_FIRMWARE_SIZE)
 	return error(-2);
       buffer = (uint8_t*)EXTRAM;
-      // buffer = (uint8_t*)malloc(size);
-      // if(buffer == NULL)
-      // 	return error(-6);
       return 0;
     }
     if(++packageIndex != idx)

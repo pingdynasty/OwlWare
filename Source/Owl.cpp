@@ -249,6 +249,11 @@ void setup(){
   setParameter(RED_PATCH_PARAMETER_ID, settings.patch_red);
 
   codec.start();
+
+  registerPatch("Some patch", 2, 2);
+  registerPatch("Other patch", 2, 2);
+  // program.loadStaticProgram();
+  // program.startProgram();
 }
 
 #ifdef __cplusplus

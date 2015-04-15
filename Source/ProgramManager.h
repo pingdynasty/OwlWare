@@ -16,7 +16,8 @@ public:
   /* bool isRunning(){ */
   /*   return running; */
   /* } */
-  void load(void* address, uint32_t length);
+  void loadStaticProgram(uint8_t pid);
+  void loadDynamicProgram(void* address, uint32_t length);
   bool verify();
   void startProgram();
   void startManager();

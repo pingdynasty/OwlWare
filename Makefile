@@ -24,10 +24,10 @@ CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS)
 CFLAGS  += -std=gnu99
 # LDFLAGS = -flto -Wl,--gc-sections
 
-# LDLIBS   = -lm
+# LDLIBS   = -L$(BUILD) -lowl 
 LDSCRIPT = Source/flash.ld
 
-C_SRC  = codec.c i2s.c errorhandlers.c main.c basicmaths.c crc32.c # fsmc_sram.c 
+C_SRC  = codec.c i2s.c errorhandlers.c crc32.c # fsmc_sram.c 
 # C_SRC += usb_dcd_int.c
 C_SRC += system_hse.c
 C_SRC += usbd_desc.c usb_bsp.c usbd_usr.c
@@ -46,7 +46,8 @@ FREERTOS_SRC += event_groups.c
 FREERTOS_SRC += timers.c
 FREERTOS_SRC += heap_4.c
 
-CPP_SRC  = Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp
+CPP_SRC = main.cpp
+CPP_SRC += Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchRegistry.cpp ProgramManager.cpp
 
 OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o) $(FREERTOS_SRC:%.c=Build/%.o)
@@ -69,6 +70,13 @@ OBJS += libnosys_gnu.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_q31_to_float.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q15.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_q15_to_float.o
+
+vpath %.c $(TEMPLATEROOT)/ProgramSource
+vpath %.cpp $(TEMPLATEROOT)/ProgramSource
+CFLAGS += -I$(TEMPLATEROOT)/ProgramSource
+
+OBJS += $(BUILD)/basicmaths.o $(BUILD)/StompBox.o $(BUILD)/PatchProcessor.o $(BUILD)/OwlProgram.o
+OBJS += $(BUILD)/sramalloc.o
 
 # include common make file
 include $(TEMPLATEROOT)/Makefile.f4
