@@ -10,6 +10,7 @@
 #include "ApplicationSettings.h"
 #include "FirmwareLoader.hpp"
 #include "ProgramManager.h"
+#include "PatchRegistry.h"
 #include "SharedMemory.h"
 
 uint16_t midi_values[NOF_ADC_VALUES];
@@ -25,8 +26,9 @@ public:
   }
 
   void handleProgramChange(uint8_t status, uint8_t pid){
-    if(pid < MAX_FACTORY_PROGRAM){
-      program.loadStaticProgram(pid);
+    if(pid < registry.getNumberOfPatches()){
+      program.loadStaticProgram(registry.getPatchDefinition(pid));      
+      // program.loadStaticProgram(pid);
       program.reset();
     }
     // if(pid < MAX_FACTORY_PROGRAM)
@@ -273,9 +275,10 @@ public:
 	// firmware upload complete
 	// midi.sendCc(DEVICE_STATUS, 0x7f);
 	setLed(NONE);
+	// program.loadDynamicProgram(loader.getData(), loader.getSize());
 	program.loadDynamicProgram(loader.getData(), loader.getSize());
-	if(program.verify())
-	  program.startProgram();
+	// if(program.verify())
+	program.startProgram();
 	loader.clear();
       }else{
 	// midi.sendCc(DEVICE_STATUS, 0);

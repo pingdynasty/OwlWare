@@ -16,10 +16,12 @@ endif
 CFLAGS  += --specs=nano.specs
 CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1
 CFLAGS  += -DEXTERNAL_SRAM 
-CFLAGS  += -fdata-sections -ffunction-sections -fno-omit-frame-pointer
+# CFLAGS  += -fpic -fpie
+CFLAGS  += -fdata-sections
+# CFLAGS  += -ffunction-sections -fno-omit-frame-pointer
 CFLAGS  += -fno-builtin
-# CFLAGS  += -nostdlib -nostartfiles -ffreestanding
-# CFLAGS  += -mtune=cortex-m4
+CFLAGS  += -nostdlib -nostartfiles -ffreestanding
+CFLAGS  += -mtune=cortex-m4
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
 CFLAGS  += -std=gnu99
 # LDFLAGS = -flto -Wl,--gc-sections
@@ -49,6 +51,7 @@ FREERTOS_SRC += heap_4.c
 CPP_SRC = main.cpp
 CPP_SRC += Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchRegistry.cpp ProgramManager.cpp
+CPP_SRC += FactoryPatches.cpp
 
 OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o) $(FREERTOS_SRC:%.c=Build/%.o)
 vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/
@@ -74,8 +77,9 @@ OBJS += libnosys_gnu.o
 vpath %.c $(TEMPLATEROOT)/ProgramSource
 vpath %.cpp $(TEMPLATEROOT)/ProgramSource
 CFLAGS += -I$(TEMPLATEROOT)/ProgramSource
+CFLAGS += -I$(TEMPLATEROOT)/Libraries/OwlPatches
 
-OBJS += $(BUILD)/basicmaths.o $(BUILD)/StompBox.o $(BUILD)/PatchProcessor.o $(BUILD)/OwlProgram.o
+OBJS += $(BUILD)/basicmaths.o $(BUILD)/StompBox.o $(BUILD)/PatchProcessor.o # $(BUILD)/OwlProgram.o
 OBJS += $(BUILD)/sramalloc.o
 
 # include common make file

@@ -7,6 +7,7 @@
 #endif /* DEBUG_MEM */
 
 extern "C" {
+  void program_register();
   void program_setup(uint8_t pid);
   void program_processBlock();
   void program_run(void);
@@ -15,37 +16,9 @@ extern "C" {
 void program_run(void){
   for(;;){
     getSharedMemory()->programReady();
-    // if(getSharedMemory()->status == AUDIO_READY_STATUS){
-      program_processBlock();
+    program_processBlock();
   }
 }
-
-// void program_run(void){
-//   if(getSharedMemory()->checksum != sizeof(SharedMemory)){
-//     // problem!
-//     // getSharedMemory()->status = AUDIO_ERROR_STATUS;
-//     getSharedMemory()->error = CHECKSUM_ERROR_STATUS;
-//     getSharedMemory()->programStatus(AUDIO_ERROR_STATUS);
-//     // getSharedMemory()->exitProgram();
-//     // return -1;
-//   }
-
-//   program_setup();
-// #ifdef DEBUG_MEM
-//   struct mallinfo minfo = mallinfo(); // never returns when -O1 or -O2 ?
-//   /* ^ may cause OwlWare.sysex to trip to:
-//    USART6_IRQHandler () at ./Source/startup.s:142
-//    142	  b  Infinite_Loop */
-//   // getSharedMemory()->heap_bytes_used = minfo.uordblks;
-//   getSharedMemory()->heap_bytes_used = minfo.arena;
-// #endif /* DEBUG_MEM */
-
-//   for(;;){
-//     getSharedMemory()->programReady();
-//     // if(getSharedMemory()->status == AUDIO_READY_STATUS){
-//       program_processBlock();
-//   }
-// }
 
 #include "SharedMemory.h"
 #include "SampleBuffer.hpp"
@@ -54,8 +27,11 @@ void program_run(void){
 #include "solopatch.h"
 #include "owlcontrol.h"
 
-PatchProcessor processor;
+typedef Patch* (*PatchCreator)(); // function pointer to create Patch
 
+PatchCreator* creators[32];
+
+PatchProcessor processor;
 PatchProcessor* getInitialisingPatchProcessor(){
   return &processor;
 }
@@ -73,7 +49,6 @@ void program_setup(uint8_t pid){
 }
 
 SampleBuffer buffer;
-
 void program_processBlock(){
   buffer.split(getSharedMemory()->audio_input, getSharedMemory()->audio_blocksize);
   processor.setParameterValues(getSharedMemory()->parameters);

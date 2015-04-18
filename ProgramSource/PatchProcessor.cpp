@@ -14,13 +14,25 @@ PatchProcessor::~PatchProcessor(){
   clear();
 }
 
+void PatchProcessor::run(){
+  if(patch == NULL)
+    return;
+  for(;;){
+    getSharedMemory()->programReady();
+    buffer.split(getSharedMemory()->audio_input, getSharedMemory()->audio_blocksize);
+    setParameterValues(getSharedMemory()->parameters);
+    patch->processAudio(buffer);
+    buffer.comb(getSharedMemory()->audio_output);
+  }
+}
+
 void PatchProcessor::clear(){
   for(int i=0; i<bufferCount; ++i)
     delete buffers[i];
   bufferCount = 0;
   delete patch;
   patch = NULL;
-  index = -1;
+  // index = -1;
   // memset(parameterNames, 0, sizeof(parameterNames));
 }
 

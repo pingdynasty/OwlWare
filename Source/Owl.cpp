@@ -120,7 +120,8 @@ int errors = 0;
 #endif
 
    void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
-     registry.registerPatch(name, inputChannels, outputChannels);
+     // todo!?
+     // registry.registerPatch(name, inputChannels, outputChannels);
    }
 
    void registerPatchParameter(uint8_t id, const char* name){
@@ -250,8 +251,9 @@ void setup(){
 
   codec.start();
 
-  registerPatch("Some patch", 2, 2);
-  registerPatch("Other patch", 2, 2);
+  // registerPatch("Some patch", 2, 2);
+  // registerPatch("Other patch", 2, 2);
+
   // program.loadStaticProgram();
   // program.startProgram();
 }

@@ -2,23 +2,25 @@
 #define __ProgramManager_H__
 
 #include <inttypes.h>
+#include "PatchDefinition.hpp"
 
 class ProgramManager {
 private:
   /* bool running = false; */
-  uint32_t* programAddress;
-  uint32_t programLength;
-  uint32_t* programStackBase;
-  uint32_t programStackSize;
-  char programName[16];
+  // uint32_t* programAddress;
+  // uint32_t programLength;
+  // uint32_t* programStackBase;
+  // uint32_t programStackSize;
+  // char programName[16];
 public:
   ProgramManager();
   /* bool isRunning(){ */
   /*   return running; */
   /* } */
-  void loadStaticProgram(uint8_t pid);
+  // void load(PatchDefinition* def);
+  void loadStaticProgram(PatchDefinition* def);
   void loadDynamicProgram(void* address, uint32_t length);
-  bool verify();
+  /* bool verify(); */
   void startProgram();
   void startManager();
   void runManager();

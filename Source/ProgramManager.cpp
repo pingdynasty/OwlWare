@@ -10,7 +10,68 @@
 #include "task.h"
 #include "semphr.h"
 
-#define JUMPTO(address) ((void (*)(void))address)();
+class DynamicPatchDefinition : public PatchDefinition {
+  typedef void (*ProgramFunction)(void);
+public:
+  DynamicPatchDefinition() :
+    PatchDefinition(programName, 2, 2) {}
+  DynamicPatchDefinition(void* addr, uint32_t sz) :
+    PatchDefinition(programName, 2, 2) {
+    load(addr, sz);
+  }
+  void load(void* addr, uint32_t sz){
+    programAddress = (uint32_t*)addr;
+    programSize = sz;
+    stackBase = (uint32_t*)*(programAddress+3); // stack base pointer (low end of heap/stack)
+    stackSize = *(programAddress+4) - *(programAddress+3);
+    strncpy(programName, (char*)(programAddress+5), sizeof(programName));
+    jumpAddress = (uint32_t*)*(programAddress+1); // main pointer
+    linkAddress = (uint32_t*)*(programAddress+2); // link base address
+    programFunction = NULL;
+  }
+  void copy(){
+    /* copy program to ram */
+    if((linkAddress == (uint32_t*)PATCHRAM && programSize <= 80*1024) ||
+       (linkAddress == (uint32_t*)EXTRAM && programSize <= 1024*1024)){
+      memcpy((void*)linkAddress, (void*)programAddress, programSize);
+      programFunction = (ProgramFunction)jumpAddress;
+      programAddress = linkAddress;
+    }else{
+      programFunction = NULL;
+    }
+  }
+  bool verify(){
+    // check we've got an entry function
+    if(programFunction == NULL)
+      return false;
+    // check magic
+    if(*(uint32_t*)programAddress != 0xDADAC0DE)
+      return false;
+    // sanity-check stack base address and size
+    uint32_t sb = (uint32_t)stackBase;
+    if((sb >= PATCHRAM && sb+stackSize <= (PATCHRAM+80*1024)) ||
+       (sb >= CCMRAM && sb+stackSize <= (CCMRAM+64*1024)) ||
+       (sb >= EXTRAM && sb+stackSize <= (EXTRAM+80*1024)))
+      return true;
+    return false;
+  }
+  void run(){
+    if(linkAddress != programAddress)
+      copy();
+    if(verify())
+      programFunction();
+  }
+private:
+  char programName[16];
+  ProgramFunction programFunction;
+  uint32_t* linkAddress;
+  uint32_t* jumpAddress;
+  uint32_t* programAddress;
+  uint32_t programSize;
+};
+
+DynamicPatchDefinition dynamo;
+// #define JUMPTO(address) ((void (*)(void))address)();
 
 ProgramManager program;
 
@@ -22,14 +83,11 @@ SemaphoreHandle_t xSemaphore = NULL;
 
 #define MANAGER_STACK_SIZE          (8*1024/sizeof(portSTACK_TYPE))
 // #define PROGRAM_STACK_SIZE          (46*1024/sizeof(portSTACK_TYPE))
-#define STATIC_PROGRAM_STACK_SIZE   (32*1024)
 
-uint8_t spHeap[ STATIC_PROGRAM_STACK_SIZE ] CCM;
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
-
 
 #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -37,16 +95,17 @@ uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 // #define AUDIO_TASK_YIELD
 /* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
 
+PatchDefinition* patchdef = NULL;
+
 extern "C" {
   typedef void (*ProgramFunction)(void);
   ProgramFunction programFunction = NULL;
   void runProgramTask(void* p){
-    if(programFunction == NULL){
-      setLed(RED);
-    }else{
+    if(patchdef != NULL){
       setLed(GREEN);
-      programFunction();
+      patchdef->run();
     }
+    setLed(RED);
     for(;;);
   }
   void runManagerTask(void* p){
@@ -58,7 +117,7 @@ extern "C" {
 #ifdef DEBUG_DWT
 volatile uint32_t *DWT_CYCCNT = (volatile uint32_t *)0xE0001004; //address of the register
 #endif /* DEBUG_DWT */
-ProgramManager::ProgramManager(){
+ProgramManager::ProgramManager() { //: patchdef(NULL) {
 #ifdef DEBUG_DWT
   // initialise DWT cycle counter
   volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
@@ -83,17 +142,6 @@ void stats(){
   high = uxTaskGetNumberOfTasks();
   if(high > tH)
     tH = high;
-}
-
-uint32_t ProgramManager::getProgramStackSize(){
-  if(xProgramHandle == NULL)
-    return 0;
-  pH = uxTaskGetStackHighWaterMark(xProgramHandle);
-  return pH*sizeof(portSTACK_TYPE);
-}
-
-uint32_t ProgramManager::getProgramStackAllocation(){
-  return programStackSize;
 }
 
 /* called by the audio interrupt when a block should be processed */
@@ -137,6 +185,7 @@ void ProgramManager::programReady(){
 
 /* called by the program when an error or anomaly has occured */
 void ProgramManager::programStatus(int){
+  setLed(RED);
   for(;;);
 }
 
@@ -182,19 +231,41 @@ void ProgramManager::reset(){
   portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-extern "C" void program_setup(uint8_t pid);
-extern "C" void program_run();
+// extern "C" void program_setup(uint8_t pid);
+// extern "C" void program_run();
 // void runStaticProgramTask(void* p){
 //   program_run();
 //   for(;;);
 // }
 
-#include "sramalloc.h"
+void ProgramManager::loadStaticProgram(PatchDefinition* def){
+  patchdef = def;
+}
+
+void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
+  dynamo.load(address, length);
+  patchdef = &dynamo;
+}
+
+uint32_t ProgramManager::getProgramStackSize(){
+  if(xProgramHandle == NULL)
+    return 0;
+  pH = uxTaskGetStackHighWaterMark(xProgramHandle);
+  return pH*sizeof(portSTACK_TYPE);
+}
+
+uint32_t ProgramManager::getProgramStackAllocation(){
+  if(patchdef != NULL)
+    return patchdef->getStackSize();
+  return 0;
+}
+
+#if 0
+
 /* assumes program is stopped */
 void ProgramManager::loadStaticProgram(uint8_t pid){
   programAddress = NULL;
   programFunction = NULL;
-  InitMem((char*)EXTRAM, 1024*1024);
   program_setup(pid);
   programFunction = program_run;
   programStackSize = STATIC_PROGRAM_STACK_SIZE;
@@ -207,22 +278,23 @@ void ProgramManager::loadStaticProgram(uint8_t pid){
 
 /* assumes program is stopped */
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
-  programAddress = (uint32_t*)address;
-  programLength = length;
-  programStackBase = (uint32_t*)*(programAddress+3); // stack base pointer (low end of heap/stack)
-  programStackSize = *(programAddress+4) - *(programAddress+3);
-  strncpy(programName, (char*)(programAddress+5), sizeof(programName));
-  uint32_t jumpAddress = *(programAddress+1); // main pointer
-  uint32_t link = *(programAddress+2); // link base address
-  /* copy program to ram */
-  if((link == PATCHRAM && programLength <= 80*1024) ||
-     (link == EXTRAM && programLength <= 1024*1024)){
-    memcpy((void*)link, (void*)programAddress, programLength);
-    programFunction = (ProgramFunction)jumpAddress;
-    programAddress = (uint32_t*)link;
-  }else{
-    programFunction = NULL;
-  }
+  dynamo.load(address, length);
+  // programAddress = (uint32_t*)address;
+  // programLength = length;
+  // programStackBase = (uint32_t*)*(programAddress+3); // stack base pointer (low end of heap/stack)
+  // programStackSize = *(programAddress+4) - *(programAddress+3);
+  // strncpy(programName, (char*)(programAddress+5), sizeof(programName));
+  // uint32_t jumpAddress = *(programAddress+1); // main pointer
+  // uint32_t link = *(programAddress+2); // link base address
+  // /* copy program to ram */
+  // if((link == PATCHRAM && programLength <= 80*1024) ||
+  //    (link == EXTRAM && programLength <= 1024*1024)){
+  //   memcpy((void*)link, (void*)programAddress, programLength);
+  //   programFunction = (ProgramFunction)jumpAddress;
+  //   programAddress = (uint32_t*)link;
+  // }else{
+  //   programFunction = NULL;
+  // }
 }
 
 bool ProgramManager::verify(){
@@ -238,6 +310,7 @@ bool ProgramManager::verify(){
     return true;
   return false;
 }
+#endif 
 
 void ProgramManager::runManager(){
   uint32_t ulNotifiedValue = 0;
@@ -263,13 +336,17 @@ void ProgramManager::runManager(){
       }
     }
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
-      if(xProgramHandle == NULL)
-	xTaskGenericCreate(runProgramTask, "Program", programStackSize/sizeof(portSTACK_TYPE), NULL, 2, &xProgramHandle, programStackBase, NULL);
+      if(xProgramHandle == NULL && patchdef != NULL)
+	xTaskGenericCreate(runProgramTask, "Program", 
+			   patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
+			   NULL, 2, &xProgramHandle, 
+			   patchdef->getStackBase(), NULL);
 	// xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
     }
   }
 }
 
+#if 0
 bool ProgramManager::saveProgram(uint8_t sector){
   if(sector > 4)
     return false;
@@ -296,6 +373,7 @@ bool ProgramManager::loadProgram(uint8_t sector){
   loadDynamicProgram((void*)addr, size);
   return true;
 }
+#endif // 0
 
 /*
   __set_CONTROL(0x3); // Switch to use Process Stack, unprivilegedstate
