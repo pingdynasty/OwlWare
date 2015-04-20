@@ -16,7 +16,8 @@ MEMORY
 {
   BOOTLOADER (rw)  : ORIGIN = 0x08000000, LENGTH = 16K    /* Sector 0 */
   EEPROM (rw)      : ORIGIN = 0x08004000, LENGTH = 16K    /* Sector 1 */
-  FLASH    (rx)    : ORIGIN = 0x08008000, LENGTH = 224K   /* Sector 2 */
+  /* FLASH    (rx)    : ORIGIN = 0x08008000, LENGTH = 224K   /\* Sector 2 *\/ */
+  FLASH    (rx)    : ORIGIN = 0x08008000, LENGTH = 352K   /* Sector 2 */
   PATCHFLASH (rx)  : ORIGIN = 0x08040000, LENGTH = 128K   /* Sector 6 */ /* total Flash memory is 1Mb */
   CCMRAM (rwx)     : ORIGIN = 0x10000000, LENGTH = 64K    /* Closely Coupled Memory */
   RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 32K    /* 32k for the main firmware */

@@ -52,12 +52,12 @@ void PatchProcessor::setPatch(Patch* p){
 //   patch = registry.create(index);
 // }
 
-// void PatchProcessor::registerParameter(PatchParameterId pid, const char* name){
-//   if(getSharedMemory()->registerPatchParameter != NULL)
-//     getSharedMemory()->registerPatchParameter(pid, name);
+void PatchProcessor::registerParameter(PatchParameterId pid, const char* name){
+  if(getSharedMemory()->registerPatchParameter != NULL)
+    getSharedMemory()->registerPatchParameter(pid, name);
   // if(pid < NOF_ADC_VALUES)
   //   parameterNames[pid] = name;
-// }
+}
 
 // const char* PatchProcessor::getParameterName(PatchParameterId pid){
 //   if(pid < NOF_ADC_VALUES)

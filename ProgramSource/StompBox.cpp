@@ -5,7 +5,7 @@
 #include "device.h"
 #include "SharedMemory.h"
 #include "PatchProcessor.h"
-#include "PatchController.h"
+// #include "PatchController.h"
 
 AudioBuffer::~AudioBuffer(){}
 

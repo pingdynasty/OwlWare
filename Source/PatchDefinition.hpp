@@ -9,6 +9,9 @@ public:
   PatchDefinition(char* nm, uint8_t ins, uint8_t outs) :
     name(nm), inputs(ins), outputs(outs) {
   }
+  PatchDefinition()
+  { // : name(NULL), inputs(0), outputs(0) {
+  }
   virtual ~PatchDefinition(){}
   // ProgramFunction getProgramFunction(){
   //   return function;

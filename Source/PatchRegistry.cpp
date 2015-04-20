@@ -1,8 +1,10 @@
 #include "PatchRegistry.h"
+#include "FactoryPatches.h"
 
 // #define REGISTER_PATCH(T, STR, UNUSED, UNUSED2) registerPatch(STR, Register<T>::construct)
 
 PatchRegistry::PatchRegistry() : nofPatches(0) {
+  FactoryPatchDefinition::init();
 }
 
 void PatchRegistry::reset(){

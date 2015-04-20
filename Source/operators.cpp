@@ -16,6 +16,8 @@ void * operator new[](size_t size) { return myalloc(size); }
 void operator delete(void* ptr) { myfree(ptr); }
 void operator delete[](void * ptr) { myfree(ptr); }
 
+int __errno;
+
 // void * operator new(size_t size) { return pvPortMalloc(size); }
 // void * operator new (size_t, void * p) { return p ; }
 // void * operator new[](size_t size) { return pvPortMalloc(size); }

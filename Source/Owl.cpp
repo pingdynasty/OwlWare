@@ -97,7 +97,7 @@ void exitProgram(){
   // disable audio processing
   // codec.stop(); // codec.start() doesn't recover well
   program.exit();
-  registry.reset();
+  // registry.reset();
   codec.clear();
   setLed(RED);
 }

@@ -27,7 +27,7 @@ public:
 
   void handleProgramChange(uint8_t status, uint8_t pid){
     if(pid < registry.getNumberOfPatches()){
-      program.loadStaticProgram(registry.getPatchDefinition(pid));      
+      program.loadStaticProgram(registry.getPatchDefinition(pid));
       // program.loadStaticProgram(pid);
       program.reset();
     }

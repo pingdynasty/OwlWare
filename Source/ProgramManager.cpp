@@ -5,70 +5,10 @@
 #include "owlcontrol.h"
 #include "eepromcontrol.h"
 #include "device.h"
-
+#include "DynamicPatchDefinition.hpp"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
-
-class DynamicPatchDefinition : public PatchDefinition {
-  typedef void (*ProgramFunction)(void);
-public:
-  DynamicPatchDefinition() :
-    PatchDefinition(programName, 2, 2) {}
-  DynamicPatchDefinition(void* addr, uint32_t sz) :
-    PatchDefinition(programName, 2, 2) {
-    load(addr, sz);
-  }
-  void load(void* addr, uint32_t sz){
-    programAddress = (uint32_t*)addr;
-    programSize = sz;
-    stackBase = (uint32_t*)*(programAddress+3); // stack base pointer (low end of heap/stack)
-    stackSize = *(programAddress+4) - *(programAddress+3);
-    strncpy(programName, (char*)(programAddress+5), sizeof(programName));
-    jumpAddress = (uint32_t*)*(programAddress+1); // main pointer
-    linkAddress = (uint32_t*)*(programAddress+2); // link base address
-    programFunction = NULL;
-  }
-  void copy(){
-    /* copy program to ram */
-    if((linkAddress == (uint32_t*)PATCHRAM && programSize <= 80*1024) ||
-       (linkAddress == (uint32_t*)EXTRAM && programSize <= 1024*1024)){
-      memcpy((void*)linkAddress, (void*)programAddress, programSize);
-      programFunction = (ProgramFunction)jumpAddress;
-      programAddress = linkAddress;
-    }else{
-      programFunction = NULL;
-    }
-  }
-  bool verify(){
-    // check we've got an entry function
-    if(programFunction == NULL)
-      return false;
-    // check magic
-    if(*(uint32_t*)programAddress != 0xDADAC0DE)
-      return false;
-    // sanity-check stack base address and size
-    uint32_t sb = (uint32_t)stackBase;
-    if((sb >= PATCHRAM && sb+stackSize <= (PATCHRAM+80*1024)) ||
-       (sb >= CCMRAM && sb+stackSize <= (CCMRAM+64*1024)) ||
-       (sb >= EXTRAM && sb+stackSize <= (EXTRAM+80*1024)))
-      return true;
-    return false;
-  }
-  void run(){
-    if(linkAddress != programAddress)
-      copy();
-    if(verify())
-      programFunction();
-  }
-private:
-  char programName[16];
-  ProgramFunction programFunction;
-  uint32_t* linkAddress;
-  uint32_t* jumpAddress;
-  uint32_t* programAddress;
-  uint32_t programSize;
-};
 
 DynamicPatchDefinition dynamo;
 // #define JUMPTO(address) ((void (*)(void))address)();
@@ -323,8 +263,8 @@ void ProgramManager::runManager(){
        return value) to wait for a notification.
        Bits in this RTOS task's notification value are set by the notifying
        tasks and interrupts to indicate which events have occurred. */
-    xTaskNotifyWait(pdFALSE,      /* Don't clear any notification bits on entry. */
-		    UINT32_MAX, /* Reset the notification value to 0 on exit. */
+    xTaskNotifyWait(pdFALSE,          /* Don't clear any notification bits on entry. */
+		    UINT32_MAX,       /* Reset the notification value to 0 on exit. */
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
 		    xMaxBlockTime ); 
     stats();

@@ -5,6 +5,7 @@
 #include "owlcontrol.h"
 #include "StompBox.h"
 #include "PatchProcessor.h"
+#include "SharedMemory.h"
 
 class PatchController;
 extern PatchController patches;

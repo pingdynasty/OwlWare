@@ -13,7 +13,7 @@ public:
   void clear();
   void setPatch(Patch* patch);
   void run();
-  /* void registerParameter(PatchParameterId pid, const char* name); */
+  void registerParameter(PatchParameterId pid, const char* name);
   /* const char* getParameterName(PatchParameterId pid); */
   float getParameterValue(PatchParameterId pid);
   int getBlockSize();
