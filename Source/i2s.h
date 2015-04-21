@@ -13,7 +13,7 @@
    void I2S_Pause();
    void I2S_Resume();
    void I2S_Disable();
-   extern void audioCallback(int16_t *src, int16_t *dst, uint16_t sz);
+   extern void audioCallback(int16_t *src, int16_t *dst);
 
 #ifdef __cplusplus
 }

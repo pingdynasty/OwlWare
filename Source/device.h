@@ -24,7 +24,7 @@
 #define AUDIO_BITDEPTH               16    /* bits per sample */
 #define AUDIO_SAMPLINGRATE           48000
 #define AUDIO_BLOCK_SIZE             128   /* size in samples of a single channel audio block */
-#define AUDIO_MAX_BLOCK_SIZE         512  /* size in samples of a single channel audio block */
+#define AUDIO_MAX_BLOCK_SIZE         1024  /* size in samples of a single channel audio block */
 
 #define CCMRAM                      ((uint32_t)0x10000000)
 #define PATCHRAM                    ((uint32_t)0x20008000)

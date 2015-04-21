@@ -132,15 +132,15 @@ __attribute__ ((section (".coderam")))
 void DMA1_Stream3_IRQHandler(void){ 
   if(DMA_GetFlagStatus(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_TC) != RESET) {
     /* Transfer complete interrupt */
-    /* Handle 2nd half */  
-    audioCallback(rxbuf + szbuf, txbuf + szbuf, szbuf);    
+    /* Handle 2nd half */
+    audioCallback(rxbuf + szbuf, txbuf + szbuf);
     /* Clear the Interrupt flag */
     DMA_ClearFlag(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_TC);
   }else if (DMA_GetFlagStatus(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_HT) != RESET) {
     /* Half Transfer complete interrupt */
-    /* Handle 1st half */  
-    audioCallback(rxbuf, txbuf, szbuf);    
+    /* Handle 1st half */
+    audioCallback(rxbuf, txbuf);
     /* Clear the Interrupt flag */
-    DMA_ClearFlag(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_HT);    
+    DMA_ClearFlag(AUDIO_I2S_EXT_DMA_STREAM, AUDIO_I2S_EXT_DMA_FLAG_HT);
   }
 }

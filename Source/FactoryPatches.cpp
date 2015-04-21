@@ -5,10 +5,15 @@
 #include "device.h"
 #include "basicmaths.h"
 
+// #define PROGRAM_STACK_SIZE          (32*1024/sizeof(portSTACK_TYPE))
+#define PROGRAM_STACK_SIZE          (16*1024)
+// extern uint8_t* ucHeap;
+
 PatchProcessor *processor;
 PatchProcessor* getInitialisingPatchProcessor(){
   return processor;
 }
+
 
 void FactoryPatchDefinition::run(){
   InitMem((char*)EXTRAM, 1024*1024);
@@ -20,8 +25,8 @@ void FactoryPatchDefinition::run(){
 
 #include "includes.h"
 
-#define STATIC_PROGRAM_STACK_SIZE   (32*1024)
-uint8_t spHeap[ STATIC_PROGRAM_STACK_SIZE ] CCM;
+// #define STATIC_PROGRAM_STACK_SIZE   (32*1024)
+// uint8_t spHeap[ STATIC_PROGRAM_STACK_SIZE ] CCM;
 
 template<class T> struct Register {
   static Patch* construct() {
@@ -49,14 +54,16 @@ void FactoryPatchDefinition::init(){
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition() {
-  stackBase = (uint32_t*)spHeap;
-  stackSize = STATIC_PROGRAM_STACK_SIZE;
+  // stackBase = (uint32_t*)ucHeap;
+  stackBase = NULL;
+  stackSize = PROGRAM_STACK_SIZE;
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition(char* name, uint8_t inputs, uint8_t outputs, PatchCreator c) :
   PatchDefinition(name, inputs, outputs), creator(c) {
-  stackBase = (uint32_t*)spHeap;
-  stackSize = STATIC_PROGRAM_STACK_SIZE;
+  // stackBase = (uint32_t*)ucHeap;
+  stackBase = NULL;
+  stackSize = PROGRAM_STACK_SIZE;
 }
 
 void FactoryPatchDefinition::setup(char* nm, uint8_t ins, uint8_t outs, PatchCreator c){

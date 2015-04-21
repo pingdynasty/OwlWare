@@ -42,7 +42,6 @@ void PatchProcessor::setPatch(Patch* p){
   patch = p;
 }
 
-
 // void PatchProcessor::setPatch(uint8_t patchIndex){
 //   clear();
 //   if(patchIndex < registry.getNumberOfPatches())

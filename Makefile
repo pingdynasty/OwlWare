@@ -11,6 +11,7 @@ endif
 
 ifeq ($(CONFIG),Release)
 CFLAGS   = -O2
+LDFLAGS  = -flto -Wl,--gc-sections
 endif
 
 CFLAGS  += --specs=nano.specs
@@ -24,7 +25,6 @@ CFLAGS  += -nostdlib -nostartfiles -ffreestanding
 CFLAGS  += -mtune=cortex-m4
 CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
 CFLAGS  += -std=gnu99
-# LDFLAGS = -flto -Wl,--gc-sections
 
 # LDLIBS   = -L$(BUILD) -lowl 
 LDSCRIPT = Source/flash.ld

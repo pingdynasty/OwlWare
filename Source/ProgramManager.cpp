@@ -17,23 +17,26 @@ ProgramManager program;
 
 extern void setup(); // main OWL setup
 
+// #define AUDIO_TASK_SUSPEND
+// #define AUDIO_TASK_SEMAPHORE
+#define AUDIO_TASK_DIRECT
+// #define AUDIO_TASK_YIELD
+/* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
+
 TaskHandle_t xProgramHandle = NULL;
 TaskHandle_t xManagerHandle = NULL;
+#if defined AUDIO_TASK_SEMAPHORE
 SemaphoreHandle_t xSemaphore = NULL;
+#endif // AUDIO_TASK_SEMAPHORE
 
-#define MANAGER_STACK_SIZE          (8*1024/sizeof(portSTACK_TYPE))
+#define MANAGER_STACK_SIZE          (6*1024/sizeof(portSTACK_TYPE))
 // #define PROGRAM_STACK_SIZE          (46*1024/sizeof(portSTACK_TYPE))
 
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
-
-#define AUDIO_TASK_SUSPEND
-// #define AUDIO_TASK_SEMAPHORE
-// #define AUDIO_TASK_DIRECT
-// #define AUDIO_TASK_YIELD
-/* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
+#define RESET_PROGRAM_NOTIFICATION  0x03
 
 PatchDefinition* patchdef = NULL;
 
@@ -52,6 +55,22 @@ extern "C" {
     setup(); // call main OWL setup
     program.runManager();
   }
+
+  // void restartProgramTask(void* p){
+  //   if(xProgramHandle != NULL){
+  //     vTaskDelete(xProgramHandle);    
+  //     xProgramHandle = NULL;
+  //   }
+  //   taskYIELD();
+  //   if(xProgramHandle == NULL && patchdef != NULL)
+  //     xTaskGenericCreate(runProgramTask, "Program", 
+  // 			 patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
+  // 			 NULL, 2, &xProgramHandle, 
+  // 			 patchdef->getStackBase(), NULL);
+  //   vTaskDelete(NULL);
+  //   taskYIELD();
+  //   for(;;);
+  // }
 }
 
 #ifdef DEBUG_DWT
@@ -84,11 +103,16 @@ void stats(){
     tH = high;
 }
 
+#if defined AUDIO_TASK_DIRECT
+volatile SharedMemoryAudioStatus audioStatus = AUDIO_IDLE_STATUS;
+#endif /* AUDIO_TASK_DIRECT */
+
 /* called by the audio interrupt when a block should be processed */
+__attribute__ ((section (".coderam")))
 void ProgramManager::audioReady(){
-#ifdef DEBUG_DWT
-  *DWT_CYCCNT = 0; // reset the performance counter
-#endif /* DEBUG_DWT */
+// #ifdef DEBUG_DWT
+//   *DWT_CYCCNT = 0; // reset the performance counter
+// #endif /* DEBUG_DWT */
 #if defined AUDIO_TASK_SUSPEND || defined AUDIO_TASK_YIELD
   if(xProgramHandle != NULL){
     BaseType_t xHigherPriorityTaskWoken = 0; 
@@ -102,11 +126,13 @@ void ProgramManager::audioReady(){
   // xSemaphoreGiveFromISR(xSemaphore, NULL);
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 #else /* AUDIO_TASK_DIRECT */
-  getSharedMemory()->status = AUDIO_READY_STATUS;
+  audioStatus = AUDIO_READY_STATUS;
+  // getSharedMemory()->status = AUDIO_READY_STATUS;
 #endif
 }
 
 /* called by the program when a block has been processed */
+__attribute__ ((section (".coderam")))
 void ProgramManager::programReady(){
 #ifdef DEBUG_DWT
   getSharedMemory()->cycles_per_block = *DWT_CYCCNT;
@@ -116,11 +142,16 @@ void ProgramManager::programReady(){
 #elif defined AUDIO_TASK_SEMAPHORE
   xSemaphoreTake(xSemaphore, 0);
 #elif defined AUDIO_TASK_YIELD
-  taskYIELD();
+  taskYIELD(); // this will only suspend the task if another is ready to run
 #else /* AUDIO_TASK_DIRECT */
-  while(getSharedMemory()->status != AUDIO_READY_STATUS);
-  getSharedMemory()->status = AUDIO_PROCESSED_STATUS;
+  // while(getSharedMemory()->status != AUDIO_READY_STATUS);
+  // getSharedMemory()->status = AUDIO_PROCESSED_STATUS;
+  while(audioStatus != AUDIO_READY_STATUS);
+  audioStatus = AUDIO_PROCESSED_STATUS;
 #endif
+#ifdef DEBUG_DWT
+  *DWT_CYCCNT = 0; // reset the performance counter
+#endif /* DEBUG_DWT */
 }
 
 /* called by the program when an error or anomaly has occured */
@@ -131,9 +162,11 @@ void ProgramManager::programStatus(int){
 
 void ProgramManager::startManager(){
   if(xManagerHandle == NULL)
-    xTaskCreate(runManagerTask, "Manager", MANAGER_STACK_SIZE, NULL, 4, &xManagerHandle);
+    xTaskCreate(runManagerTask, "Manager", configMINIMAL_STACK_SIZE, NULL, 4, &xManagerHandle);
+#if defined AUDIO_TASK_SEMAPHORE
   if(xSemaphore == NULL)
     xSemaphore = xSemaphoreCreateBinary();
+#endif // AUDIO_TASK_SEMAPHORE
 }
 
 void ProgramManager::startProgram(){
@@ -164,6 +197,8 @@ void ProgramManager::exit(){
 
 /* exit and restart program */
 void ProgramManager::reset(){
+  // TaskHandle_t xResetHandle = NULL;
+  // xTaskCreate(restartProgramTask, "Reset", configMINIMAL_STACK_SIZE, NULL, 2, &xResetHandle);
   uint32_t ulValue = STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
@@ -268,6 +303,9 @@ void ProgramManager::runManager(){
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
 		    xMaxBlockTime ); 
     stats();
+    // if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // reset
+
+    // }else 
     if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){ // stop      
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
@@ -275,13 +313,20 @@ void ProgramManager::runManager(){
 	// running = false;
       }
     }
+    // taskYIELD(); 
+    // doesn't trigger call to idle
+    // prvIdleTask();
+    // prvCheckTasksWaitingTermination();
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
+      // allow idle task to garbage collect if necessary
+      // vTaskDelay(100/portTICK_PERIOD_MS);
+      vTaskDelay(20);
       if(xProgramHandle == NULL && patchdef != NULL)
 	xTaskGenericCreate(runProgramTask, "Program", 
 			   patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
 			   NULL, 2, &xProgramHandle, 
 			   patchdef->getStackBase(), NULL);
-	// xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
+      // xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
     }
   }
 }

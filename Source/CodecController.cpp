@@ -7,6 +7,7 @@
 #include "gpio.h"
 #include "device.h"
 #include "Owl.h"
+#include "SharedMemory.h"
 
 #if AUDIO_BITDEPTH == 16
  /* size in half-words of the stereo audio buffers */
@@ -20,20 +21,20 @@ int16_t tx_buffer[AUDIO_BUFFER_SIZE];
 int16_t rx_buffer[AUDIO_BUFFER_SIZE];
 
 const uint16_t wm8731_init_data[] = {
-	WM8731_INVOL_P6DB,                   			  // Reg 0x00: Left Line In
-	WM8731_INVOL_P6DB,			                  // Reg 0x01: Right Line In
-	WM8731_HPVOL_M6DB,			                  // Reg 0x02: Left Headphone out
-	WM8731_HPVOL_M6DB,	                                  // Reg 0x03: Right Headphone out
-	WM8731_MUTEMIC|WM8731_DACSEL,                             // Reg 0x04: Analog Audio Path Control
+  WM8731_INVOL_P6DB,                   			  // Reg 0x00: Left Line In
+  WM8731_INVOL_P6DB,			                  // Reg 0x01: Right Line In
+  WM8731_HPVOL_M6DB,			                  // Reg 0x02: Left Headphone out
+  WM8731_HPVOL_M6DB,	                                  // Reg 0x03: Right Headphone out
+  WM8731_MUTEMIC|WM8731_DACSEL,                             // Reg 0x04: Analog Audio Path Control
 #ifdef OWLMODULAR
-	WM8731_ADCHPD|WM8731_DEEMP_NONE,                          // Reg 0x05: Digital Audio Path Control
+  WM8731_ADCHPD|WM8731_DEEMP_NONE,                          // Reg 0x05: Digital Audio Path Control
 #else
-	WM8731_DEEMP_NONE,                                        // Reg 0x05: Digital Audio Path Control
+  WM8731_DEEMP_NONE,                                        // Reg 0x05: Digital Audio Path Control
 #endif
-	WM8731_MICPD|WM8731_OSCPD|WM8731_OUTPD|WM8731_CLKOUTPD,   // Reg 0x06: Power Down Control
-	WM8731_FORMAT_I2S|WM8731_IWL_16BIT,                       // Reg 0x07: Digital Audio Interface Format
-	WM8731_MODE_NORMAL|WM8731_SR_48_48,                       // Reg 0x08: Sampling Control
-	WM8731_NOT_ACTIVE                    			  // Reg 0x09: Active Control
+  WM8731_MICPD|WM8731_OSCPD|WM8731_OUTPD|WM8731_CLKOUTPD,   // Reg 0x06: Power Down Control
+  WM8731_FORMAT_I2S|WM8731_IWL_16BIT,                       // Reg 0x07: Digital Audio Interface Format
+  WM8731_MODE_NORMAL|WM8731_SR_48_48,                       // Reg 0x08: Sampling Control
+  WM8731_NOT_ACTIVE                    			  // Reg 0x09: Active Control
 /*      0x017,                  // Reg 00: Left Line In (0dB, mute off) */
 /*      0x017,                  // Reg 01: Right Line In (0dB, mute off) */
 /*      0x079,                  // Reg 02: Left Headphone out (0dB) */
@@ -71,8 +72,6 @@ void CodecController::setup(){
 //   configureDigitalOutput(GPIOA, GPIO_Pin_7); // DEBUG
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
 //   clearPin(GPIOA, GPIO_Pin_7); // DEBUG
-
-  
 }
 
 void CodecController::clear(){
@@ -82,7 +81,7 @@ void CodecController::clear(){
 
 void CodecController::init(ApplicationSettings& settings){
 //   setPin(GPIOA, GPIO_Pin_6); // DEBUG
-  setActive(false);
+  // setActive(false);
   clear();
 
   /* configure codec */
@@ -101,8 +100,13 @@ void CodecController::init(ApplicationSettings& settings){
   setOutputGainRight(settings.outputGainRight);
 
   I2S_Block_Init(tx_buffer, rx_buffer, settings.audio_blocksize);
+  // setActive(true);
 
-  setActive(true);
+#if AUDIO_BITDEPTH == 16
+  getSharedMemory()->audio_blocksize = settings.audio_blocksize*AUDIO_CHANNELS;
+#else
+  getSharedMemory()->audio_blocksize = settings.audio_blocksize*AUDIO_CHANNELS*2;
+#endif
 
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
 }
@@ -122,7 +126,6 @@ I2SFormat CodecController::getFormat(){
 bool CodecController::isMaster(){
   return settings.audio_codec_master;
 }
-
 
 void CodecController::setActive(bool active){
   /* It is recommended that between changing any content of Digital Audio Interface or Sampling Control Register that the active bit is reset then set. */

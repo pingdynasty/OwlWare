@@ -215,10 +215,6 @@ void setup(){
   configureDigitalOutput(GPIOB, GPIO_Pin_7);  // PB7 OWL Modular digital output
   setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
 #endif
-
-  codec.setup();
-  codec.init(settings);
-
   // printString("startup\n");
   updateBypassMode();
 
@@ -249,40 +245,32 @@ void setup(){
   setParameter(GREEN_PATCH_PARAMETER_ID, settings.patch_green);
   setParameter(RED_PATCH_PARAMETER_ID, settings.patch_red);
 
+  codec.setup();
+  codec.init(settings);
   codec.start();
 
-  // registerPatch("Some patch", 2, 2);
-  // registerPatch("Other patch", 2, 2);
-
-  // program.loadStaticProgram();
-  // program.startProgram();
+  program.loadStaticProgram(registry.getPatchDefinition(settings.patch_green));
+  program.startProgram();
 }
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
+   extern volatile SharedMemoryAudioStatus audioStatus;
+
 __attribute__ ((section (".coderam")))
-void audioCallback(int16_t *src, int16_t *dst, uint16_t sz){
+void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  switch(getSharedMemory()->status){
-  case AUDIO_ERROR_STATUS:
-    errors++;
-  case AUDIO_EXIT_STATUS:
-    break;
-  case AUDIO_PROCESSED_STATUS:
-    // oops
-    collisions++;
-  default:
     getSharedMemory()->audio_input = src;
     getSharedMemory()->audio_output = dst;
-    getSharedMemory()->audio_blocksize = sz;
-    program.audioReady();
-    // the blocksize here is the number of halfwords,
-    // ie 16bit ints, for both channels, regardless of 32, 24 or 16 bit sample width
-  }
+    // getSharedMemory()->audio_blocksize = sz;
+  audioStatus = AUDIO_READY_STATUS;
+
+    // program.audioReady();
+
 }
 
 #ifdef __cplusplus

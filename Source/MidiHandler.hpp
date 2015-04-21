@@ -142,7 +142,9 @@ public:
       }
       if(frequency != settings.audio_samplingrate){
 	settings.audio_samplingrate = frequency;
+	codec.stop();
 	codec.init(settings);
+	codec.start();
 	program.reset(); // changing sampling rate may require re-initialisation of patches
       }
       break;
@@ -186,7 +188,9 @@ public:
       uint32_t blocksize = 1L << value;
       if(settings.audio_blocksize != blocksize && blocksize <= AUDIO_MAX_BLOCK_SIZE){
 	settings.audio_blocksize = blocksize;
+	codec.stop();
 	codec.init(settings);
+	codec.start();
 	program.reset(); // changing blocksize may require re-initialisation of patches
       }
       break;
