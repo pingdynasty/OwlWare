@@ -160,7 +160,7 @@ Hardware Configuration defines parameters
 /* Register 0x08: Sampling Control */
 #define WM8731_MODE_NORMAL    0x00
 #define WM8731_MODE_USB       0x01
-#define WM8731_BOSR          (1<<1)
+#define WM8731_BOSR          (1<<1)     /* Base Oversampling Rate: 0=256fs, 1=384fs */
 #define WM8731_SR_48_48      (0x00<<2)  /* Normal mode rates, MCLK = 12.288MHz, 256fs  */
 #define WM8731_SR_48_08      (0x01<<2)
 #define WM8731_SR_08_48      (0x02<<2)

@@ -106,6 +106,7 @@ void CodecController::init(ApplicationSettings& settings){
   getSharedMemory()->audio_bitdepth = settings.audio_bitdepth;
   getSharedMemory()->audio_samplingrate = settings.audio_samplingrate;
   getSharedMemory()->audio_blocksize = settings.audio_blocksize;
+
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
 }
 
@@ -170,6 +171,11 @@ void CodecController::setCodecProtocol(I2SProtocol protocol){
     writeRegister(DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER, 
 		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & 0x1fc)
 		  | WM8731_FORMAT_I2S);
+
+    // todo: this is a hack to test halving the sampling rate
+    // /why/ is this necessary?
+    setRegister(SAMPLING_CONTROL_REGISTER, WM8731_CLKIDIV2);
+
   }else{
     writeRegister(DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER, 
 		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & 0x1fc)

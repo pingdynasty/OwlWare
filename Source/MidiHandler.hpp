@@ -159,16 +159,17 @@ public:
       }      
       if(format != settings.audio_codec_format){
 	// todo! remove?
-	// settings.audio_codec_format = format;
-	// codec.stop();
-	// codec.init(settings);
-	// codec.start();
-	// program.reset();
+	settings.audio_codec_format = format;
+	codec.stop();
+	codec.init(settings);
+	codec.start();
+	program.reset();
       }
       break;
     }
     case CODEC_MASTER: {
       bool master = value > 63;
+      /* Codec slave mode must be enabled on solder jumper MCLK on digital OWL board */
       if(master != settings.audio_codec_master){
 	settings.audio_codec_master = master;
 	codec.stop();
