@@ -27,6 +27,7 @@ public:
   void setup();
   void clear();
   void init(ApplicationSettings& settings);
+  void setSamplingRate(uint32_t rate);
   uint32_t getSamplingRate();
   I2SProtocol getProtocol();
   I2SFormat getFormat();

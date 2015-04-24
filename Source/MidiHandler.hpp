@@ -158,8 +158,12 @@ public:
 	format = I2S_FORMAT_32bit;
       }      
       if(format != settings.audio_codec_format){
-	settings.audio_codec_format = format;
-	codec.init(settings);
+	// todo! remove?
+	// settings.audio_codec_format = format;
+	// codec.stop();
+	// codec.init(settings);
+	// codec.start();
+	// program.reset();
       }
       break;
     }
@@ -167,7 +171,10 @@ public:
       bool master = value > 63;
       if(master != settings.audio_codec_master){
 	settings.audio_codec_master = master;
+	codec.stop();
 	codec.init(settings);
+	codec.start();
+	program.reset();
       }
       break;
     }
@@ -180,7 +187,10 @@ public:
       }
       if(protocol != settings.audio_codec_protocol){
 	settings.audio_codec_protocol = protocol;
+	codec.stop();
 	codec.init(settings);
+	codec.start();
+	program.reset();
       }
       break;
     }

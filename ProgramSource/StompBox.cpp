@@ -26,8 +26,7 @@ double Patch::getSampleRate(){
 }
 
 int Patch::getBlockSize(){
-  // audio_blocksize is for both channels
-  return getSharedMemory()->audio_blocksize/2;
+  return getSharedMemory()->audio_blocksize;
 }
 
 float Patch::getParameterValue(PatchParameterId pid){

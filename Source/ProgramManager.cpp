@@ -137,6 +137,9 @@ void ProgramManager::programReady(){
 #ifdef DEBUG_DWT
   getSharedMemory()->cycles_per_block = *DWT_CYCCNT;
 #endif /* DEBUG_DWT */
+#ifdef DEBUG_AUDIO
+  clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+#endif
 #ifdef AUDIO_TASK_SUSPEND
   vTaskSuspend(xProgramHandle);
 #elif defined AUDIO_TASK_SEMAPHORE
@@ -152,6 +155,9 @@ void ProgramManager::programReady(){
 #ifdef DEBUG_DWT
   *DWT_CYCCNT = 0; // reset the performance counter
 #endif /* DEBUG_DWT */
+#ifdef DEBUG_AUDIO
+  setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+#endif
 }
 
 /* called by the program when an error or anomaly has occured */

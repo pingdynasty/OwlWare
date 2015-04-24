@@ -40,10 +40,6 @@ Hardware Configuration defines parameters
 #define CODEC_I2S_MCK_GPIO             GPIOC
 #define AUDIO_I2S_IRQHandler           SPI2_IRQHandler
 
-
-#define AUDIO_DMA_PERIPH_DATA_SIZE     DMA_PeripheralDataSize_HalfWord
-#define AUDIO_DMA_MEM_DATA_SIZE        DMA_MemoryDataSize_HalfWord
-
 /* I2S DMA Stream definitions */
 #define AUDIO_I2S_DMA_CLOCK            RCC_AHB1Periph_DMA1
 #define AUDIO_I2S_DMA_STREAM           DMA1_Stream4

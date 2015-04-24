@@ -264,13 +264,11 @@ void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-    getSharedMemory()->audio_input = src;
-    getSharedMemory()->audio_output = dst;
-    // getSharedMemory()->audio_blocksize = sz;
+  getSharedMemory()->audio_input = src;
+  getSharedMemory()->audio_output = dst;
+  // getSharedMemory()->audio_blocksize = sz;
   audioStatus = AUDIO_READY_STATUS;
-
-    // program.audioReady();
-
+  // program.audioReady();
 }
 
 #ifdef __cplusplus

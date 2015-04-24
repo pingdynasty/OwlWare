@@ -8,7 +8,9 @@
 // #include "OpenWareMidiControl.h"
 
 PatchProcessor::PatchProcessor() 
-  : patch(NULL), bufferCount(0) {}
+  : patch(NULL), bufferCount(0) {
+ // todo: initialise suitable SampleBuffer: 16/24 bit, max size
+}
 
 PatchProcessor::~PatchProcessor(){
   clear();
@@ -20,6 +22,11 @@ void PatchProcessor::run(){
   for(;;){
     getSharedMemory()->programReady();
     buffer.split(getSharedMemory()->audio_input, getSharedMemory()->audio_blocksize);
+// #if AUDIO_BITDEPTH == 16
+//     buffer.split(getSharedMemory()->audio_input, getSharedMemory()->audio_blocksize*2);
+// #else
+//     buffer.split(getSharedMemory()->audio_input, getSharedMemory()->audio_blocksize*4);
+// #endif /* AUDIO_BITDEPTH != 16 */
     setParameterValues(getSharedMemory()->parameters);
     patch->processAudio(buffer);
     buffer.comb(getSharedMemory()->audio_output);

@@ -53,18 +53,18 @@ void I2S_Block_Init(int16_t *tx, int16_t *rx, uint16_t blocksize){
   DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
   DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
   DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-  DMA_InitStructure.DMA_PeripheralDataSize = AUDIO_DMA_PERIPH_DATA_SIZE;
-  DMA_InitStructure.DMA_MemoryDataSize = AUDIO_DMA_MEM_DATA_SIZE; 
+  DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
+  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
   DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
   DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-  DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;         
+  DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
   DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
   DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-  DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;  
+  DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
   /* Configure the tx buffer address and size */
   DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)txbuf;
   DMA_InitStructure.DMA_BufferSize = (uint32_t)szbuf*2;
-  DMA_Init(AUDIO_I2S_DMA_STREAM, &DMA_InitStructure);  
+  DMA_Init(AUDIO_I2S_DMA_STREAM, &DMA_InitStructure);
 	
   /* Enable the I2S DMA request */
   SPI_I2S_DMACmd(CODEC_I2S, SPI_I2S_DMAReq_Tx, ENABLE);
@@ -75,27 +75,26 @@ void I2S_Block_Init(int16_t *tx, int16_t *rx, uint16_t blocksize){
   DMA_DeInit(AUDIO_I2S_EXT_DMA_STREAM);
 	
   /* Set the parameters to be configured */
-  DMA_InitStructure.DMA_Channel = AUDIO_I2S_EXT_DMA_CHANNEL;  
+  DMA_InitStructure.DMA_Channel = AUDIO_I2S_EXT_DMA_CHANNEL;
   DMA_InitStructure.DMA_PeripheralBaseAddr = AUDIO_I2S_EXT_DMA_DREG;
-  DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)0;      /* This field will be configured in play function */
   DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
-  DMA_InitStructure.DMA_BufferSize = (uint32_t)0xFFFE;      /* This field will be configured in play function */
   DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
   DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
   DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord; 
+  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
   DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
   DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-  DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;         
+  DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
   DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
   DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-  DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;  
+  DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
   /* Configure the rx buffer address and size */
   DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)rxbuf;
   DMA_InitStructure.DMA_BufferSize = (uint32_t)szbuf*2;
-  DMA_Init(AUDIO_I2S_EXT_DMA_STREAM, &DMA_InitStructure);  
-	
-  /* Enable the Half & Complete DMA interrupts  */
+  /* DMA_InitStructure.DMA_BufferSize = (uint32_t)szbuf*4; // DMA_BufferSize should be size in halfwords */
+  DMA_Init(AUDIO_I2S_EXT_DMA_STREAM, &DMA_InitStructure);
+
+  /* Enable the Half & Complete DMA interrupts */
   DMA_ITConfig(AUDIO_I2S_EXT_DMA_STREAM, DMA_IT_TC | DMA_IT_HT, ENABLE);
     
   /* I2S DMA IRQ Channel configuration */
@@ -107,8 +106,8 @@ void I2S_Block_Init(int16_t *tx, int16_t *rx, uint16_t blocksize){
 
 void I2S_Run(){
   /* Enable the I2S DMA Streams */
-  DMA_Cmd(AUDIO_I2S_DMA_STREAM, ENABLE);   
-  DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, ENABLE);   
+  DMA_Cmd(AUDIO_I2S_DMA_STREAM, ENABLE);
+  DMA_Cmd(AUDIO_I2S_EXT_DMA_STREAM, ENABLE);
 }
 
 void I2S_Disable(){

@@ -13,10 +13,9 @@ protected:
   float right[AUDIO_MAX_BLOCK_SIZE];
   uint16_t size;
 public:
-  void split(int16_t* input, uint16_t samples){
-    // samples is the number of halfwords, ie 16bit ints, for both channels.
+  void split(int16_t* input, uint16_t blocksize){
 #if AUDIO_BITDEPTH == 16
-    size = samples >> 1u;
+    size = blocksize;
     float* l = left;
     float* r = right;
     uint32_t blkCnt = size >> 1u;
@@ -27,8 +26,8 @@ public:
       *r++ = ((float)*input++) / 32768.0f;
       blkCnt--;
     }
-#else /* AUDIO_BITDEPTH == 16 */
-    size = samples >> 2u;
+#else /* AUDIO_BITDEPTH != 16 */
+    size = blocksize;
 #ifdef AUDIO_BIGEND
     float* l = left;
     float* r = right;
@@ -59,7 +58,7 @@ public:
       blkCnt--;
     }
 #endif /* AUDIO_BIGEND */
-#endif /* AUDIO_BITDEPTH == 16 */
+#endif /* AUDIO_BITDEPTH != 16 */
   }
   void comb(int16_t* output){
 #if AUDIO_BITDEPTH == 16
@@ -80,7 +79,7 @@ public:
 #endif
       blkCnt--;
     }
-#else /* AUDIO_BITDEPTH == 16 */
+#else /* AUDIO_BITDEPTH != 16 */
 #ifdef AUDIO_BIGEND
     float* l = left;
     float* r = right;
@@ -131,11 +130,11 @@ public:
   inline int getChannels(){
     return AUDIO_CHANNELS;
   }
-  void setSize(uint16_t sz){
-  // size is set by split()
-    if(sz <= AUDIO_MAX_BLOCK_SIZE)
-      size = sz;
-  }
+  // void setSize(uint16_t sz){
+  // // size is set by split()
+  //   if(sz <= AUDIO_MAX_BLOCK_SIZE)
+  //     size = sz;
+  // }
   inline int getSize(){
     return size;
   }

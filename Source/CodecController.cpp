@@ -13,7 +13,7 @@
  /* size in half-words of the stereo audio buffers */
 #define AUDIO_BUFFER_SIZE    (2*AUDIO_MAX_BLOCK_SIZE*AUDIO_CHANNELS)
 #else
-#define AUDIO_BUFFER_SIZE    (2*AUDIO_MAX_BLOCK_SIZE*AUDIO_CHANNELS*2)
+#define AUDIO_BUFFER_SIZE    (4*AUDIO_MAX_BLOCK_SIZE*AUDIO_CHANNELS)
 #endif
 
 /* DMA buffers for I2S */
@@ -25,15 +25,15 @@ const uint16_t wm8731_init_data[] = {
   WM8731_INVOL_P6DB,			                  // Reg 0x01: Right Line In
   WM8731_HPVOL_M6DB,			                  // Reg 0x02: Left Headphone out
   WM8731_HPVOL_M6DB,	                                  // Reg 0x03: Right Headphone out
-  WM8731_MUTEMIC|WM8731_DACSEL,                             // Reg 0x04: Analog Audio Path Control
+  WM8731_MUTEMIC|WM8731_DACSEL,                           // Reg 0x04: Analog Audio Path Control
 #ifdef OWLMODULAR
-  WM8731_ADCHPD|WM8731_DEEMP_NONE,                          // Reg 0x05: Digital Audio Path Control
+  WM8731_ADCHPD|WM8731_DEEMP_NONE,                        // Reg 0x05: Digital Audio Path Control
 #else
-  WM8731_DEEMP_NONE,                                        // Reg 0x05: Digital Audio Path Control
+  WM8731_DEEMP_NONE,                                      // Reg 0x05: Digital Audio Path Control
 #endif
-  WM8731_MICPD|WM8731_OSCPD|WM8731_OUTPD|WM8731_CLKOUTPD,   // Reg 0x06: Power Down Control
-  WM8731_FORMAT_I2S|WM8731_IWL_16BIT,                       // Reg 0x07: Digital Audio Interface Format
-  WM8731_MODE_NORMAL|WM8731_SR_48_48,                       // Reg 0x08: Sampling Control
+  WM8731_MICPD|WM8731_OSCPD|WM8731_OUTPD|WM8731_CLKOUTPD, // Reg 0x06: Power Down Control
+  WM8731_FORMAT_I2S|WM8731_IWL_16BIT,                     // Reg 0x07: Digital Audio Interface Format
+  WM8731_MODE_NORMAL|WM8731_SR_48_48,                     // Reg 0x08: Sampling Control
   WM8731_NOT_ACTIVE                    			  // Reg 0x09: Active Control
 /*      0x017,                  // Reg 00: Left Line In (0dB, mute off) */
 /*      0x017,                  // Reg 01: Right Line In (0dB, mute off) */
@@ -68,10 +68,10 @@ void CodecController::setup(){
     writeRegister(i, wm8731_init_data[i]);
 
 //   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // DEBUG
-//   configureDigitalOutput(GPIOA, GPIO_Pin_6); // DEBUG
-//   configureDigitalOutput(GPIOA, GPIO_Pin_7); // DEBUG
-//   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
-//   clearPin(GPIOA, GPIO_Pin_7); // DEBUG
+//   configureDigitalOutput(GPIOA, GPIO_Pin_6); // PA6 DEBUG
+//   configureDigitalOutput(GPIOA, GPIO_Pin_7); // PA7 DEBUG
+//   clearPin(GPIOA, GPIO_Pin_6); // PA6 DEBUG
+//   clearPin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 }
 
 void CodecController::clear(){
@@ -85,6 +85,7 @@ void CodecController::init(ApplicationSettings& settings){
   clear();
 
   /* configure codec */
+  setSamplingRate(settings.audio_samplingrate);
   setCodecMaster(settings.audio_codec_master);
   setCodecProtocol(settings.audio_codec_protocol);
   setCodecFormat(settings.audio_codec_format);
@@ -102,13 +103,28 @@ void CodecController::init(ApplicationSettings& settings){
   I2S_Block_Init(tx_buffer, rx_buffer, settings.audio_blocksize);
   // setActive(true);
 
-#if AUDIO_BITDEPTH == 16
-  getSharedMemory()->audio_blocksize = settings.audio_blocksize*AUDIO_CHANNELS;
-#else
-  getSharedMemory()->audio_blocksize = settings.audio_blocksize*AUDIO_CHANNELS*2;
-#endif
-
+  getSharedMemory()->audio_bitdepth = settings.audio_bitdepth;
+  getSharedMemory()->audio_samplingrate = settings.audio_samplingrate;
+  getSharedMemory()->audio_blocksize = settings.audio_blocksize;
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
+}
+
+void CodecController::setSamplingRate(uint32_t rate){
+    switch(rate){
+    case 8000:
+      writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_08_08);
+      break;
+    case 32000:
+      writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_32_32);
+      break;
+    case 48000:
+      writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_48_48);
+      break;
+    case 96000:
+      writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_96_96);
+      break;
+    }
+    // settings.audio_samplingrate = rate;
 }
 
 uint32_t CodecController::getSamplingRate(){
@@ -200,7 +216,7 @@ void CodecController::clearRegister(uint8_t addr, uint16_t value){
 }
 
 void CodecController::start(){
-//   setPin(GPIOA, GPIO_Pin_7); // DEBUG
+//   setPin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
   setActive(true);
   if(isMaster()){
     /* See STM32F405 Errata, I2S device limitations */
@@ -221,7 +237,7 @@ void CodecController::start(){
 
 void CodecController::stop(){
   I2S_Disable();
-//   clearPin(GPIOA, GPIO_Pin_7); // DEBUG
+//   clearPin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
   setActive(false);
 }
 
