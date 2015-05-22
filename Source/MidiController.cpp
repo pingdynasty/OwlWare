@@ -89,7 +89,7 @@ void MidiController::sendPatchName(uint8_t index){
 
 void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
-  sendDeviceStats();
+//  sendDeviceStats();
 }
 
 // #include <stdio.h>

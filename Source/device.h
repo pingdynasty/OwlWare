@@ -1,8 +1,8 @@
 #include <inttypes.h>
 
-/* #define OWLMODULAR */
-#define FIRMWARE_VERSION             "sysex-01"
-#define HARDWARE_VERSION             "OWL Rev05"
+// #define OWLMODULAR
+#define FIRMWARE_VERSION             "sysex-02"
+#define HARDWARE_VERSION             "OWL Pedal"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */

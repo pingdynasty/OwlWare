@@ -81,7 +81,7 @@ void footSwitchCallback(){
 void toggleActiveSlot(){
   if(getLed() == GREEN){
     setLed(RED);
-  }else if(getLed() == RED){
+  }else{ // if(getLed() == RED){
     setLed(GREEN);
   }
   updateButtons();
