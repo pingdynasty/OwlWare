@@ -28,15 +28,21 @@ ApplicationSettings settings;
 PatchRegistry registry;
 volatile bool bypass = false;
 
+SharedMemory* currentProgramVector = NULL;
+SharedMemory* getSharedMemory(){
+  return currentProgramVector;
+}
+
 bool getButton(PatchButtonId bid){
-  return getSharedMemory()->buttons & (1<<bid);
+  // return getSharedMemory()->buttons & (1<<bid);
+  return false;
 }
 
 void setButton(PatchButtonId bid, bool on){
-  if(on)
-    getSharedMemory()->buttons |= 1<<bid;
-  else
-    getSharedMemory()->buttons &= ~(1<<bid);
+  // if(on)
+  //   getSharedMemory()->buttons |= 1<<bid;
+  // else
+  //   getSharedMemory()->buttons &= ~(1<<bid);
 }
 
 void updateLed(){
@@ -140,31 +146,37 @@ __attribute__ ((section (".coderam")))
 
    void setParameter(int pid, uint16_t value){
      getAnalogValues()[pid] = value;
-}
-
-   void updateProgramVector(){
-     getSharedMemory()->checksum = sizeof(SharedMemory);
-     getSharedMemory()->status = AUDIO_IDLE_STATUS;
-     getSharedMemory()->audio_input = NULL;
-     getSharedMemory()->audio_output = NULL;
-     getSharedMemory()->audio_bitdepth = settings.audio_bitdepth;
-     getSharedMemory()->audio_blocksize = settings.audio_blocksize;
-     getSharedMemory()->audio_samplingrate = settings.audio_samplingrate;
-     getSharedMemory()->parameters = getAnalogValues();
-     getSharedMemory()->parameters_size = NOF_PARAMETERS;
-     getSharedMemory()->buttons = 0;
-     getSharedMemory()->error = 0;
-     getSharedMemory()->registerPatch = registerPatch;
-     getSharedMemory()->registerPatchParameter = registerPatchParameter;
-     getSharedMemory()->cycles_per_block = 0;
-     getSharedMemory()->heap_bytes_used = 0;
-     getSharedMemory()->programReady = programReady;
-     getSharedMemory()->programStatus = programStatus;;
    }
 
 #ifdef __cplusplus
 }
 #endif
+
+
+void updateProgramVector(SharedMemory* smem){
+  currentProgramVector = smem;
+  smem->checksum = sizeof(SharedMemory);
+  smem->status = AUDIO_IDLE_STATUS;
+  // smem->audio_input = NULL;
+  // smem->audio_output = NULL;
+  smem->audio_bitdepth = settings.audio_bitdepth;
+  smem->audio_blocksize = settings.audio_blocksize;
+  smem->audio_samplingrate = settings.audio_samplingrate;
+  smem->parameters = getAnalogValues();
+  smem->parameters_size = NOF_PARAMETERS;
+  // todo: pass real-time updates from MidiHandler
+  // smem->parameters[PATCH_MODE_PARAMETER_ID] = settings.patch_mode;
+  // smem->parameters[GREEN_PATCH_PARAMETER_ID] = value;
+  // smem->parameters[RED_PATCH_PARAMETER_ID] = value;
+  smem->buttons = 0;
+  smem->error = 0;
+  smem->registerPatch = registerPatch;
+  smem->registerPatchParameter = registerPatchParameter;
+  smem->cycles_per_block = 0;
+  smem->heap_bytes_used = 0;
+  smem->programReady = programReady;
+  smem->programStatus = programStatus;
+}
 
 void setup(){
 //   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0); // 0 bits for preemption, 4 bits for subpriority
@@ -240,8 +252,6 @@ void setup(){
   // printString("startup\n");
   updateBypassMode();
 
-  updateProgramVector();
-
   // set pointer to smem in the backup ram
   // uint32_t pointer = (uint32_t)&smem;
   // memcpy(BKPSRAM_GetMemoryAddress(), &pointer, 4);
@@ -273,8 +283,8 @@ void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  getSharedMemory()->audio_input = src;
-  getSharedMemory()->audio_output = dst;
+  currentProgramVector->audio_input = src;
+  currentProgramVector->audio_output = dst;
   // doProcessAudio = false;
   audioStatus = AUDIO_READY_STATUS;
   // program.audioReady();

@@ -128,9 +128,9 @@ void MidiController::sendFirmwareVersion(){
   char* p = &buffer[1];
   p = stpcpy(p, getFirmwareVersion());
   p = stpcpy(p, (const char*)" (");
-  p = stpcpy(p, itoa(getSharedMemory()->cycles_per_block/settings.audio_blocksize, 10));
+  p = stpcpy(p, itoa(program.getCyclesPerBlock()/settings.audio_blocksize, 10));
   p = stpcpy(p, (const char*)" | ");
-  p = stpcpy(p, itoa(getSharedMemory()->heap_bytes_used, 10));
+  p = stpcpy(p, itoa(program.getHeapMemoryUsed(), 10));
   p = stpcpy(p, (const char*)")");
   sendSysEx((uint8_t*)buffer, p-buffer);
 

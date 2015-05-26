@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include "PatchDefinition.hpp"
+#include "SharedMemory.h"
 
 class ProgramManager {
 private:
@@ -37,6 +38,11 @@ public:
 
   bool saveProgram(uint8_t sector);
   bool loadProgram(uint8_t sector);
+
+  uint32_t getCyclesPerBlock();
+  uint32_t getHeapMemoryUsed();
+
+  SharedMemory* currentProgramVector;
 };
 
 extern ProgramManager program;

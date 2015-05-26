@@ -42,8 +42,10 @@
 #define CHECKSUM_ERROR_STATUS      -10
 #define OUT_OF_MEMORY_ERROR_STATUS -20
 
-extern SharedMemory* ProgramVector;
-#define getSharedMemory() ProgramVector
+   SharedMemory* getSharedMemory();
+
+/* extern SharedMemory* ProgramVector; */
+/* #define getSharedMemory() ProgramVector */
 
 /* #define getSharedMemory() ((SharedMemory*)((uint32_t)0x40024000)) */
 

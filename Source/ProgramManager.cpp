@@ -15,7 +15,7 @@ DynamicPatchDefinition dynamo;
 
 ProgramManager program;
 SharedMemory vector;
-SharedMemory* ProgramVector = &vector;
+// SharedMemory* currentProgramVector = &vector;
 
 extern void setup(); // main OWL setup
 
@@ -126,7 +126,7 @@ void ProgramManager::audioReady(){
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 #else /* AUDIO_TASK_DIRECT */
   audioStatus = AUDIO_READY_STATUS;
-  // getSharedMemory()->status = AUDIO_READY_STATUS;
+  // currentProgramVector->status = AUDIO_READY_STATUS;
 #endif
 }
 
@@ -134,7 +134,7 @@ void ProgramManager::audioReady(){
 __attribute__ ((section (".coderam")))
 void ProgramManager::programReady(){
 #ifdef DEBUG_DWT
-  getSharedMemory()->cycles_per_block = *DWT_CYCCNT;
+  currentProgramVector->cycles_per_block = *DWT_CYCCNT;
 #endif /* DEBUG_DWT */
 #ifdef DEBUG_AUDIO
   clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
@@ -146,8 +146,8 @@ void ProgramManager::programReady(){
 #elif defined AUDIO_TASK_YIELD
   taskYIELD(); // this will only suspend the task if another is ready to run
 #else /* AUDIO_TASK_DIRECT */
-  // while(getSharedMemory()->status != AUDIO_READY_STATUS);
-  // getSharedMemory()->status = AUDIO_PROCESSED_STATUS;
+  // while(currentProgramVector->status != AUDIO_READY_STATUS);
+  // currentProgramVector->status = AUDIO_PROCESSED_STATUS;
   while(audioStatus != AUDIO_READY_STATUS);
   audioStatus = AUDIO_PROCESSED_STATUS;
 #endif
@@ -175,7 +175,7 @@ void ProgramManager::startManager(){
 }
 
 void ProgramManager::startProgram(){
-  getSharedMemory()->status = AUDIO_IDLE_STATUS;
+  currentProgramVector->status = AUDIO_IDLE_STATUS;
   uint32_t ulValue = START_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
@@ -188,7 +188,7 @@ void ProgramManager::startProgram(){
 }
 
 void ProgramManager::exit(){
-  getSharedMemory()->status = AUDIO_EXIT_STATUS; // request program exit
+  currentProgramVector->status = AUDIO_EXIT_STATUS; // request program exit
   uint32_t ulValue = STOP_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
@@ -218,17 +218,19 @@ void ProgramManager::reset(){
 //   for(;;);
 // }
 
+void updateProgramVector(SharedMemory*);
+
 void ProgramManager::loadStaticProgram(PatchDefinition* def){
   patchdef = def;
-  ProgramVector = &vector;
-  updateProgramVector();
+  currentProgramVector = &vector;
+  updateProgramVector(currentProgramVector);
 }
 
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   dynamo.load(address, length);
   patchdef = &dynamo;
-  ProgramVector = dynamo.getProgramVector();
-  updateProgramVector();
+  currentProgramVector = dynamo.getProgramVector();
+  updateProgramVector(currentProgramVector);
 }
 
 uint32_t ProgramManager::getProgramStackSize(){
@@ -242,6 +244,14 @@ uint32_t ProgramManager::getProgramStackAllocation(){
   if(patchdef != NULL)
     return patchdef->getStackSize();
   return 0;
+}
+
+uint32_t ProgramManager::getCyclesPerBlock(){
+  return currentProgramVector->cycles_per_block;
+}
+
+uint32_t ProgramManager::getHeapMemoryUsed(){
+  return currentProgramVector->heap_bytes_used;
 }
 
 void ProgramManager::runManager(){

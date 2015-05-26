@@ -103,9 +103,9 @@ void CodecController::init(ApplicationSettings& settings){
   I2S_Block_Init(tx_buffer, rx_buffer, settings.audio_blocksize);
   // setActive(true);
 
-  getSharedMemory()->audio_bitdepth = settings.audio_bitdepth;
-  getSharedMemory()->audio_samplingrate = settings.audio_samplingrate;
-  getSharedMemory()->audio_blocksize = settings.audio_blocksize;
+  // getSharedMemory()->audio_bitdepth = settings.audio_bitdepth;
+  // getSharedMemory()->audio_samplingrate = settings.audio_samplingrate;
+  // getSharedMemory()->audio_blocksize = settings.audio_blocksize;
 
 //   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
 }

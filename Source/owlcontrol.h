@@ -88,8 +88,6 @@
 
    void exitProgram();
 
-   void updateProgramVector();
-
 #ifdef __cplusplus
 }
 #endif
