@@ -10,17 +10,18 @@
   * @retval None
   */
 void assert_failed(uint8_t* file, uint32_t line){ 
-#ifdef DEBUG
-  volatile uint32_t delayCounter;
   /* Blink LED */
+  volatile uint32_t delayCounter;
   setLed(RED);
   for(delayCounter = 0; delayCounter < 4000000; delayCounter++);
   setLed(NONE);
   for(delayCounter = 0; delayCounter < 4000000; delayCounter++);
   setLed(RED);
+#ifdef DEBUG
   for(;;);
 #else
-  NVIC_SystemReset();
+    /* NVIC_SystemReset(); */
+  exitProgram();
 #endif
 }
 

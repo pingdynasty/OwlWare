@@ -14,6 +14,8 @@ DynamicPatchDefinition dynamo;
 // #define JUMPTO(address) ((void (*)(void))address)();
 
 ProgramManager program;
+SharedMemory vector;
+SharedMemory* ProgramVector = &vector;
 
 extern void setup(); // main OWL setup
 
@@ -110,9 +112,6 @@ volatile SharedMemoryAudioStatus audioStatus = AUDIO_IDLE_STATUS;
 /* called by the audio interrupt when a block should be processed */
 __attribute__ ((section (".coderam")))
 void ProgramManager::audioReady(){
-// #ifdef DEBUG_DWT
-//   *DWT_CYCCNT = 0; // reset the performance counter
-// #endif /* DEBUG_DWT */
 #if defined AUDIO_TASK_SUSPEND || defined AUDIO_TASK_YIELD
   if(xProgramHandle != NULL){
     BaseType_t xHigherPriorityTaskWoken = 0; 
@@ -221,11 +220,15 @@ void ProgramManager::reset(){
 
 void ProgramManager::loadStaticProgram(PatchDefinition* def){
   patchdef = def;
+  ProgramVector = &vector;
+  updateProgramVector();
 }
 
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   dynamo.load(address, length);
   patchdef = &dynamo;
+  ProgramVector = dynamo.getProgramVector();
+  updateProgramVector();
 }
 
 uint32_t ProgramManager::getProgramStackSize(){
@@ -240,58 +243,6 @@ uint32_t ProgramManager::getProgramStackAllocation(){
     return patchdef->getStackSize();
   return 0;
 }
-
-#if 0
-
-/* assumes program is stopped */
-void ProgramManager::loadStaticProgram(uint8_t pid){
-  programAddress = NULL;
-  programFunction = NULL;
-  program_setup(pid);
-  programFunction = program_run;
-  programStackSize = STATIC_PROGRAM_STACK_SIZE;
-  programStackBase = (uint32_t*)spHeap;
-  // programStackSize = 1024*1024;
-  // programStackSize = 255*1024; // usStackDepth is uint16_t, heap must be < 256kb
-  // programStackBase = (uint32_t*)EXTRAM;
-  // xTaskGenericCreate(runStaticProgramTask, "Static Program", programStackSize/sizeof(portSTACK_TYPE), NULL, 2, &xProgramHandle, programStackBase, NULL);
-}
-
-/* assumes program is stopped */
-void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
-  dynamo.load(address, length);
-  // programAddress = (uint32_t*)address;
-  // programLength = length;
-  // programStackBase = (uint32_t*)*(programAddress+3); // stack base pointer (low end of heap/stack)
-  // programStackSize = *(programAddress+4) - *(programAddress+3);
-  // strncpy(programName, (char*)(programAddress+5), sizeof(programName));
-  // uint32_t jumpAddress = *(programAddress+1); // main pointer
-  // uint32_t link = *(programAddress+2); // link base address
-  // /* copy program to ram */
-  // if((link == PATCHRAM && programLength <= 80*1024) ||
-  //    (link == EXTRAM && programLength <= 1024*1024)){
-  //   memcpy((void*)link, (void*)programAddress, programLength);
-  //   programFunction = (ProgramFunction)jumpAddress;
-  //   programAddress = (uint32_t*)link;
-  // }else{
-  //   programFunction = NULL;
-  // }
-}
-
-bool ProgramManager::verify(){
-  if(programFunction == NULL)
-    return false;
-  if(programFunction == program_run)
-    return true;
-  if(*(uint32_t*)programAddress != 0xDADAC0DE)
-    return false;
-  if(((uint32_t)programStackBase >= PATCHRAM && (uint32_t)programStackBase+programStackSize <= (PATCHRAM+80*1024)) ||
-     ((uint32_t)programStackBase >= CCMRAM && (uint32_t)programStackBase+programStackSize <= (CCMRAM+64*1024)) ||
-     ((uint32_t)programStackBase >= EXTRAM && (uint32_t)programStackBase+programStackSize <= (EXTRAM+80*1024)))
-    return true;
-  return false;
-}
-#endif 
 
 void ProgramManager::runManager(){
   uint32_t ulNotifiedValue = 0;
@@ -330,7 +281,8 @@ void ProgramManager::runManager(){
       if(xProgramHandle == NULL && patchdef != NULL)
 	xTaskGenericCreate(runProgramTask, "Program", 
 			   patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
-			   NULL, 2, &xProgramHandle, 
+			   NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle, 
+			   // NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle, 
 			   patchdef->getStackBase(), NULL);
       // xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
     }

@@ -12,13 +12,15 @@ void PatchRegistry::reset(){
 }
 
 const char* PatchRegistry::getName(unsigned int index){
-  if(index < getNumberOfPatches())
+  if(index < nofPatches)
     return defs[index]->getName();
+  if(index == nofPatches && dynamicPatchDefinition != NULL)
+    return dynamicPatchDefinition->getName();
   return "";
 }
 
 unsigned int PatchRegistry::getNumberOfPatches(){
-  return nofPatches;
+  return nofPatches + (dynamicPatchDefinition == NULL ? 0 : 1);
 }
 
 void PatchRegistry::registerPatch(PatchDefinition* def){

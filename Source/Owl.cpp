@@ -39,11 +39,6 @@ void setButton(PatchButtonId bid, bool on){
     getSharedMemory()->buttons &= ~(1<<bid);
 }
 
-void updateButtons(){
-  setButton(GREEN_BUTTON, getLed() == GREEN);
-  setButton(RED_BUTTON, getLed() == RED);
-}
-
 void updateLed(){
   if(getButton(GREEN_BUTTON))  
     setLed(GREEN);
@@ -65,10 +60,7 @@ void updateBypassMode(){
   }else{
     setButton(PUSHBUTTON, false);
     bypass = false;
-    if(getButton(GREEN_BUTTON))
-       setLed(GREEN);
-    else if(getButton(RED_BUTTON))
-       setLed(RED);
+    updateLed();
   }
 #endif
 }
@@ -81,10 +73,13 @@ void footSwitchCallback(){
 void toggleActiveSlot(){
   if(getLed() == GREEN){
     setLed(RED);
+    setButton(RED_BUTTON, true);
+    setButton(GREEN_BUTTON, false);
   }else{ // if(getLed() == RED){
     setLed(GREEN);
+    setButton(GREEN_BUTTON, true);
+    setButton(RED_BUTTON, false);
   }
-  updateButtons();
 }
 
 void pushButtonCallback(){
@@ -100,10 +95,12 @@ void exitProgram(){
   // registry.reset();
   codec.clear();
   setLed(RED);
+  registry.setDynamicPatchDefinition(NULL);
 }
 
 void resetProgram(){
   program.reset();
+  registry.setDynamicPatchDefinition(NULL);
 }
 
 // void run(){
@@ -112,23 +109,28 @@ void resetProgram(){
 //   // for(;;);
 // }
 
-int collisions = 0;
-int errors = 0;
-
 #ifdef __cplusplus
  extern "C" {
 #endif
 
+   PatchDefinition dynamicPatchDefinition;
    void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
-     // todo!?
-     // registry.registerPatch(name, inputChannels, outputChannels);
+     dynamicPatchDefinition.name = name;
+     dynamicPatchDefinition.inputs = inputChannels;
+     dynamicPatchDefinition.outputs = outputChannels;
+     registry.setDynamicPatchDefinition(&dynamicPatchDefinition);
+     settings.patch_green = registry.getNumberOfPatches()-1;
    }
 
    void registerPatchParameter(uint8_t id, const char* name){
      midi.sendPatchParameterName((PatchParameterId)id, name);
    }
 
+   // volatile bool doProcessAudio = false;
+__attribute__ ((section (".coderam")))
    void programReady(){
+     // doProcessAudio = false;
+     // audioStatus = AUDIO_READY_STATUS;
      program.programReady();
    }
 
@@ -139,6 +141,26 @@ int errors = 0;
    void setParameter(int pid, uint16_t value){
      getAnalogValues()[pid] = value;
 }
+
+   void updateProgramVector(){
+     getSharedMemory()->checksum = sizeof(SharedMemory);
+     getSharedMemory()->status = AUDIO_IDLE_STATUS;
+     getSharedMemory()->audio_input = NULL;
+     getSharedMemory()->audio_output = NULL;
+     getSharedMemory()->audio_bitdepth = settings.audio_bitdepth;
+     getSharedMemory()->audio_blocksize = settings.audio_blocksize;
+     getSharedMemory()->audio_samplingrate = settings.audio_samplingrate;
+     getSharedMemory()->parameters = getAnalogValues();
+     getSharedMemory()->parameters_size = NOF_PARAMETERS;
+     getSharedMemory()->buttons = 0;
+     getSharedMemory()->error = 0;
+     getSharedMemory()->registerPatch = registerPatch;
+     getSharedMemory()->registerPatchParameter = registerPatchParameter;
+     getSharedMemory()->cycles_per_block = 0;
+     getSharedMemory()->heap_bytes_used = 0;
+     getSharedMemory()->programReady = programReady;
+     getSharedMemory()->programStatus = programStatus;;
+   }
 
 #ifdef __cplusplus
 }
@@ -218,23 +240,8 @@ void setup(){
   // printString("startup\n");
   updateBypassMode();
 
-  getSharedMemory()->checksum = sizeof(SharedMemory);
-  getSharedMemory()->status = AUDIO_IDLE_STATUS;
-  getSharedMemory()->audio_input = NULL;
-  getSharedMemory()->audio_output = NULL;
-  getSharedMemory()->audio_bitdepth = settings.audio_bitdepth;
-  getSharedMemory()->audio_blocksize = 0;
-  getSharedMemory()->audio_samplingrate = settings.audio_samplingrate;
-  getSharedMemory()->parameters = getAnalogValues();
-  getSharedMemory()->parameters_size = NOF_PARAMETERS;
-  getSharedMemory()->buttons = 0;
-  getSharedMemory()->error = 0;
-  getSharedMemory()->registerPatch = registerPatch;
-  getSharedMemory()->registerPatchParameter = registerPatchParameter;
-  getSharedMemory()->cycles_per_block = 0;
-  getSharedMemory()->heap_bytes_used = 0;
-  getSharedMemory()->programReady = programReady;
-  getSharedMemory()->programStatus = programStatus;;
+  updateProgramVector();
+
   // set pointer to smem in the backup ram
   // uint32_t pointer = (uint32_t)&smem;
   // memcpy(BKPSRAM_GetMemoryAddress(), &pointer, 4);
@@ -244,6 +251,8 @@ void setup(){
   setParameter(PATCH_MODE_PARAMETER_ID, settings.patch_mode);
   setParameter(GREEN_PATCH_PARAMETER_ID, settings.patch_green);
   setParameter(RED_PATCH_PARAMETER_ID, settings.patch_red);
+  setButton(GREEN_BUTTON, true);
+  setButton(RED_BUTTON, false);
 
   codec.setup();
   codec.init(settings);
@@ -257,7 +266,7 @@ void setup(){
  extern "C" {
 #endif
 
-   extern volatile SharedMemoryAudioStatus audioStatus;
+extern volatile SharedMemoryAudioStatus audioStatus;
 
 __attribute__ ((section (".coderam")))
 void audioCallback(int16_t *src, int16_t *dst){
@@ -266,7 +275,7 @@ void audioCallback(int16_t *src, int16_t *dst){
 #endif
   getSharedMemory()->audio_input = src;
   getSharedMemory()->audio_output = dst;
-  // getSharedMemory()->audio_blocksize = sz;
+  // doProcessAudio = false;
   audioStatus = AUDIO_READY_STATUS;
   // program.audioReady();
 }

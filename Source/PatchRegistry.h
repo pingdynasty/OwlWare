@@ -16,15 +16,20 @@ public:
   PatchDefinition* getPatchDefinition(unsigned int index){
     if(index < nofPatches)
       return defs[index];
+    if(index == nofPatches && dynamicPatchDefinition != NULL)
+      return dynamicPatchDefinition;
     return NULL;
   }
   unsigned int getNumberOfPatches();
-  /* void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels); */
   void registerPatch(PatchDefinition* def);
+  void setDynamicPatchDefinition(PatchDefinition* def){
+    dynamicPatchDefinition = def;
+  }
 private:
   PatchDefinition* defs[MAX_NUMBER_OF_PATCHES];
   /* const char* names[MAX_NUMBER_OF_PATCHES]; */
   unsigned int nofPatches;
+  PatchDefinition* dynamicPatchDefinition;
 };
 
 #endif // __PatchRegistry_h__

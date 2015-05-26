@@ -6,7 +6,7 @@
 
 class PatchDefinition {
 public:
-  PatchDefinition(char* nm, uint8_t ins, uint8_t outs) :
+  PatchDefinition(const char* nm, uint8_t ins, uint8_t outs) :
     name(nm), inputs(ins), outputs(outs) {
   }
   PatchDefinition()
@@ -29,12 +29,12 @@ public:
   uint32_t getStackSize(){
     return stackSize;
   }
-  char* getName(){
+  const char* getName(){
     return name;
   }
   // void clear();
-protected:
-  char* name;
+// protected:
+  const char* name;
   uint8_t inputs;
   uint8_t outputs;
   uint32_t* stackBase;
