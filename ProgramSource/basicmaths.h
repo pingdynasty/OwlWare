@@ -48,8 +48,14 @@
  extern "C" {
 #endif
 
-float fastPow(float a, float b);
-float fastSqrt(float a);
+   /* float fastPow(float a, float b); */
+   /* float fastSqrt(float a); */
+
+   inline float arm_sqrt(float in){
+     float out;
+     arm_sqrt_f32(in, &out);
+     return out;
+   }
 
 #ifdef __cplusplus
 }
@@ -61,5 +67,7 @@ float fastSqrt(float a);
 #define sinf(x) arm_sin_f32(x)
 #define cos(x) arm_cos_f32(x)
 #define cosf(x) arm_cos_f32(x)
+#define sqrt(x) arm_sqrt(x)
+#define sqrtf(x) arm_sqrt(x)
 
 #endif // __basicmaths_h__
