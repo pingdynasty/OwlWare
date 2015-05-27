@@ -290,7 +290,6 @@ public:
 	// firmware upload complete
 	// midi.sendCc(DEVICE_STATUS, 0x7f);
 	setLed(NONE);
-	// program.loadDynamicProgram(loader.getData(), loader.getSize());
 	program.loadDynamicProgram(loader.getData(), loader.getSize());
 	// if(program.verify())
 	program.startProgram();
