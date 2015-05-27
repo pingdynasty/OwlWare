@@ -134,7 +134,8 @@ void ProgramManager::audioReady(){
 __attribute__ ((section (".coderam")))
 void ProgramManager::programReady(){
 #ifdef DEBUG_DWT
-  currentProgramVector->cycles_per_block = *DWT_CYCCNT;
+  currentProgramVector->cycles_per_block = 
+    (*DWT_CYCCNT + currentProgramVector->cycles_per_block)>>1;
 #endif /* DEBUG_DWT */
 #ifdef DEBUG_AUDIO
   clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
