@@ -169,13 +169,13 @@ void updateProgramVector(SharedMemory* smem){
   // smem->parameters[GREEN_PATCH_PARAMETER_ID] = value;
   // smem->parameters[RED_PATCH_PARAMETER_ID] = value;
   smem->buttons = 0;
-  smem->error = 0;
   smem->registerPatch = registerPatch;
   smem->registerPatchParameter = registerPatchParameter;
   smem->cycles_per_block = 0;
   smem->heap_bytes_used = 0;
   smem->programReady = programReady;
   smem->programStatus = programStatus;
+  smem->message = NULL;
 }
 
 void setup(){

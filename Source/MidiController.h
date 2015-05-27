@@ -26,6 +26,7 @@ public:
   void sendFirmwareVersion();
   void sendDeviceId();
   void sendSelfTest();
+  void sendProgramMessage();
 };
 
 #endif /* __MIDI_CONTROLLER_H */

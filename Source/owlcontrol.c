@@ -6,8 +6,14 @@
 #include "device.h"
 #include "gpio.h"
 
+#ifdef OWLMODULAR
+#define HARDWARE_VERSION             "OWL Modular"
+#else /* OWLMODULAR */
+#define HARDWARE_VERSION             "OWL Pedal"
+#endif /* OWLMODULAR */
+
 char* getFirmwareVersion(){ 
-  return HARDWARE_VERSION "-" FIRMWARE_VERSION ;
+  return HARDWARE_VERSION " " FIRMWARE_VERSION ;
 }
 
 bool isClockExternal(){

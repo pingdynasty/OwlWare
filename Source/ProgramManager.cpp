@@ -225,6 +225,7 @@ void ProgramManager::loadStaticProgram(PatchDefinition* def){
   patchdef = def;
   currentProgramVector = &vector;
   updateProgramVector(currentProgramVector);
+  setErrorStatus(NO_ERROR);
 }
 
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
@@ -232,6 +233,7 @@ void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   patchdef = &dynamo;
   currentProgramVector = dynamo.getProgramVector();
   updateProgramVector(currentProgramVector);
+  setErrorStatus(NO_ERROR);
 }
 
 uint32_t ProgramManager::getProgramStackSize(){

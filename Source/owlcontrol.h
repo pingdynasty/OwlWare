@@ -88,6 +88,16 @@
 
    void exitProgram();
 
+   int8_t getErrorStatus();
+   void setErrorStatus(int8_t err);
+
+#define NO_ERROR         0x00
+#define HARDFAULT_ERROR  0x10
+#define BUS_ERROR        0x20
+#define MEM_ERROR        0x30
+#define NMI_ERROR        0x40
+#define USAGE_ERROR      0x50
+
 #ifdef __cplusplus
 }
 #endif

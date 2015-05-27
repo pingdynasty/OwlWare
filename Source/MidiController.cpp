@@ -89,6 +89,7 @@ void MidiController::sendPatchName(uint8_t index){
 
 void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
+  sendProgramMessage();
 //  sendDeviceStats();
 }
 
@@ -122,32 +123,57 @@ void MidiController::sendDeviceStats(){
   sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
+void MidiController::sendProgramMessage(){
+  SharedMemory* smem = getSharedMemory();
+  if(smem != NULL && smem->message != NULL){
+    char buffer[64];
+    buffer[0] = SYSEX_FIRMWARE_VERSION;
+    char* p = &buffer[1];
+    p = stpncpy(p, smem->message, 63);
+    sendSysEx((uint8_t*)buffer, p-buffer);    
+  }
+}
+
 void MidiController::sendFirmwareVersion(){
   char buffer[64];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
   char* p = &buffer[1];
   p = stpcpy(p, getFirmwareVersion());
   p = stpcpy(p, (const char*)" (");
-  p = stpcpy(p, itoa(program.getCyclesPerBlock()/settings.audio_blocksize, 10));
-  p = stpcpy(p, (const char*)" | ");
-  p = stpcpy(p, itoa(program.getHeapMemoryUsed(), 10));
+  uint8_t err = getErrorStatus();
+  switch(err){
+  case NO_ERROR:
+    p = stpcpy(p, itoa(program.getCyclesPerBlock()/settings.audio_blocksize, 10));
+    p = stpcpy(p, (const char*)" | ");
+    p = stpcpy(p, itoa(program.getHeapMemoryUsed(), 10));
+    break;
+  case MEM_ERROR:
+    p = stpcpy(p, (const char*)"Memory Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case BUS_ERROR:
+    p = stpcpy(p, (const char*)"Bus Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case USAGE_ERROR:
+    p = stpcpy(p, (const char*)"Usage Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case NMI_ERROR:
+    p = stpcpy(p, (const char*)"Non-maskable Interrupt 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case HARDFAULT_ERROR:
+    p = stpcpy(p, (const char*)"HardFault Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  default:
+    p = stpcpy(p, (const char*)"Unknown Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  }
   p = stpcpy(p, (const char*)")");
   sendSysEx((uint8_t*)buffer, p-buffer);
-
-  // char* version = getFirmwareVersion();
-  // struct mallinfo minfo = mallinfo();
-  // int used = minfo.uordblks;
-  // uint8_t len = strlen(version);  
-  // char buffer[len+32];
-  // uint32_t cycles = getSharedMemory()->cycles_per_block/settings.audio_blocksize;
-  // len = sprintf(buffer+1, "%s (%lu | %lu)", version, cycles, getSharedMemory()->heap_bytes_used);
-// #ifdef DEBUG_DWT
-//   uint32_t cycles = dwt_count/settings.audio_blocksize;
-//   len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
-// #else /* DEBUG_DWT */
-//   len = sprintf(buffer+1, "%s (%d bytes)", version, used);
-// #endif /* DEBUG_DWT */
-  // sendSysEx((uint8_t*)buffer, len+2);
 }
 
 void MidiController::sendDeviceId(){
