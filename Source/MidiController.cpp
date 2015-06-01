@@ -90,7 +90,7 @@ void MidiController::sendPatchName(uint8_t index){
 void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
   sendProgramMessage();
-//  sendDeviceStats();
+  sendDeviceStats();
 }
 
 // #include <stdio.h>
@@ -141,7 +141,7 @@ void MidiController::sendFirmwareVersion(){
   p = stpcpy(p, getFirmwareVersion());
   p = stpcpy(p, (const char*)" (");
   uint8_t err = getErrorStatus();
-  switch(err){
+  switch(err & 0xf0){
   case NO_ERROR:
     p = stpcpy(p, itoa(program.getCyclesPerBlock()/settings.audio_blocksize, 10));
     p = stpcpy(p, (const char*)" | ");
@@ -165,6 +165,10 @@ void MidiController::sendFirmwareVersion(){
     break;
   case HARDFAULT_ERROR:
     p = stpcpy(p, (const char*)"HardFault Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case PROGRAM_ERROR:
+    p = stpcpy(p, (const char*)"Missing or Invalid Program 0x");
     p = stpcpy(p, itoa(err, 16));
     break;
   default:

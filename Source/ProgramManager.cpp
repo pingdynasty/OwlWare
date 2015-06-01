@@ -15,9 +15,10 @@ DynamicPatchDefinition dynamo;
 
 ProgramManager program;
 SharedMemory vector;
-// SharedMemory* currentProgramVector = &vector;
+SharedMemory* currentProgramVector;
 
 extern void setup(); // main OWL setup
+extern void updateProgramVector(SharedMemory*);
 
 // #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -33,6 +34,7 @@ SemaphoreHandle_t xSemaphore = NULL;
 
 #define MANAGER_STACK_SIZE          (6*1024/sizeof(portSTACK_TYPE))
 // #define PROGRAM_STACK_SIZE          (46*1024/sizeof(portSTACK_TYPE))
+#define PROGRAM_STACK_SIZE          (32*1024/sizeof(portSTACK_TYPE))
 
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 
@@ -47,9 +49,12 @@ extern "C" {
   ProgramFunction programFunction = NULL;
   void runProgramTask(void* p){
     if(patchdef != NULL){
+      updateProgramVector(currentProgramVector);
+      setErrorStatus(NO_ERROR);
       setLed(GREEN);
       patchdef->run();
     }
+    setErrorStatus(PROGRAM_ERROR);
     setLed(RED);
     for(;;);
   }
@@ -57,22 +62,6 @@ extern "C" {
     setup(); // call main OWL setup
     program.runManager();
   }
-
-  // void restartProgramTask(void* p){
-  //   if(xProgramHandle != NULL){
-  //     vTaskDelete(xProgramHandle);    
-  //     xProgramHandle = NULL;
-  //   }
-  //   taskYIELD();
-  //   if(xProgramHandle == NULL && patchdef != NULL)
-  //     xTaskGenericCreate(runProgramTask, "Program", 
-  // 			 patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
-  // 			 NULL, 2, &xProgramHandle, 
-  // 			 patchdef->getStackBase(), NULL);
-  //   vTaskDelete(NULL);
-  //   taskYIELD();
-  //   for(;;);
-  // }
 }
 
 #ifdef DEBUG_DWT
@@ -203,8 +192,6 @@ void ProgramManager::exit(){
 
 /* exit and restart program */
 void ProgramManager::reset(){
-  // TaskHandle_t xResetHandle = NULL;
-  // xTaskCreate(restartProgramTask, "Reset", configMINIMAL_STACK_SIZE, NULL, 2, &xResetHandle);
   uint32_t ulValue = STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
@@ -219,21 +206,15 @@ void ProgramManager::reset(){
 //   for(;;);
 // }
 
-void updateProgramVector(SharedMemory*);
-
 void ProgramManager::loadStaticProgram(PatchDefinition* def){
   patchdef = def;
   currentProgramVector = &vector;
-  updateProgramVector(currentProgramVector);
-  setErrorStatus(NO_ERROR);
 }
 
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   dynamo.load(address, length);
   patchdef = &dynamo;
   currentProgramVector = dynamo.getProgramVector();
-  updateProgramVector(currentProgramVector);
-  setErrorStatus(NO_ERROR);
 }
 
 uint32_t ProgramManager::getProgramStackSize(){
@@ -283,21 +264,20 @@ void ProgramManager::runManager(){
 	// running = false;
       }
     }
-    // taskYIELD(); 
-    // doesn't trigger call to idle
-    // prvIdleTask();
-    // prvCheckTasksWaitingTermination();
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       // allow idle task to garbage collect if necessary
       // vTaskDelay(100/portTICK_PERIOD_MS);
       vTaskDelay(20);
       if(xProgramHandle == NULL && patchdef != NULL)
-	xTaskGenericCreate(runProgramTask, "Program", 
-			   patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
-			   NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle, 
-			   // NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle, 
-			   patchdef->getStackBase(), NULL);
-      // xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2, &xProgramHandle);
+	if(patchdef->getStackSize() > 0){
+	  xTaskGenericCreate(runProgramTask, "Program", 
+			     patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
+			     NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle, 
+			     // NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle, 
+			     patchdef->getStackBase(), NULL);
+	}else{
+	  xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle);
+	}
     }
   }
 }

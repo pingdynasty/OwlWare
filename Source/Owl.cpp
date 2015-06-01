@@ -28,9 +28,9 @@ ApplicationSettings settings;
 PatchRegistry registry;
 volatile bool bypass = false;
 
-SharedMemory* currentProgramVector = NULL;
+SharedMemory* programVector = NULL;
 SharedMemory* getSharedMemory(){
-  return currentProgramVector;
+  return programVector;
 }
 
 bool getButton(PatchButtonId bid){
@@ -154,7 +154,7 @@ __attribute__ ((section (".coderam")))
 
 
 void updateProgramVector(SharedMemory* smem){
-  currentProgramVector = smem;
+  programVector = smem;
   smem->checksum = sizeof(SharedMemory);
   smem->status = AUDIO_IDLE_STATUS;
   // smem->audio_input = NULL;
@@ -283,8 +283,8 @@ void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  currentProgramVector->audio_input = src;
-  currentProgramVector->audio_output = dst;
+  programVector->audio_input = src;
+  programVector->audio_output = dst;
   // doProcessAudio = false;
   audioStatus = AUDIO_READY_STATUS;
   // program.audioReady();

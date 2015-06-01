@@ -41,8 +41,6 @@ public:
 
   uint32_t getCyclesPerBlock();
   uint32_t getHeapMemoryUsed();
-
-  SharedMemory* currentProgramVector;
 };
 
 extern ProgramManager program;

@@ -4,9 +4,7 @@
 #include <math.h>
 #include "crc32.h"
 #include "sysex.h"
-#include "clock.h"
-#include "device.h"
-// #include "ProgramManager.h"
+// #include "device.h"
 
 class FirmwareLoader {
 private:
@@ -17,7 +15,6 @@ private:
   // };
   // SysexFirmwareStatus status = NORMAL;
   int packageIndex = 0;
-  uint32_t timestamp;
   uint8_t* buffer = NULL;
   uint32_t size;
   uint32_t index;
@@ -59,7 +56,6 @@ public:
     if(idx == 0){
       clear();
       // first package
-      timestamp = getSysTicks();
       if(length < 3+5+5)
 	return error(-1);
       // stop running program and free its memory

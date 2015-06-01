@@ -20,7 +20,7 @@ enum { FREE,
        IN_USE
 };
 
-void InitMem(char *ptr, int size_in_bytes) {
+void sram_init(char *ptr, int size_in_bytes) {
   /* store the ptr and size_in_bytes in global variable */
   max_mem = size_in_bytes;
   mem_start_p = ptr;
@@ -31,7 +31,11 @@ void InitMem(char *ptr, int size_in_bytes) {
   /* This function is complete :-) */
 }
 
-void * myalloc(int elem_size){
+int sram_used(){
+  return allocated_mem;
+}
+
+void * sram_alloc(int elem_size){
   /* check whether any chunk (allocated before) is free first */
   MCB_P p_mcb;
   int flag = NO_MCB;
@@ -68,7 +72,7 @@ void * myalloc(int elem_size){
   /* if size of the available chunk is equal to greater than required size, use that chunk */
 }
 
-void myfree(void *p) {
+void sram_free(void *p) {
   /* Mark in MCB that this chunk is free */
   MCB_P ptr = (MCB_P)p;
   ptr--;

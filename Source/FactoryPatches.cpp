@@ -4,6 +4,7 @@
 #include "sramalloc.h"
 #include "device.h"
 #include "basicmaths.h"
+#include "SharedMemory.h"
 
 // #define PROGRAM_STACK_SIZE          (32*1024/sizeof(portSTACK_TYPE))
 #define PROGRAM_STACK_SIZE          (16*1024)
@@ -16,10 +17,11 @@ PatchProcessor* getInitialisingPatchProcessor(){
 
 
 void FactoryPatchDefinition::run(){
-  InitMem((char*)EXTRAM, 1024*1024);
+  sram_init((char*)EXTRAM, 1024*1024);
   processor = new PatchProcessor();
   Patch* patch = create();
   processor->setPatch(patch);
+  getSharedMemory()->heap_bytes_used = sram_used();
   processor->run();
 }
 

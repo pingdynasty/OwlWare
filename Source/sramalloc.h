@@ -5,9 +5,10 @@
  extern "C" {
 #endif
 
-void InitMem(char *ptr, int size_in_bytes);
-void * myalloc(int elem_size);
-void myfree(void *p);
+void sram_init(char *ptr, int size_in_bytes);
+void* sram_alloc(int elem_size);
+void sram_free(void *p);
+int sram_used();
 
 #ifdef __cplusplus
 }

@@ -97,6 +97,7 @@
 #define MEM_ERROR        0x30
 #define NMI_ERROR        0x40
 #define USAGE_ERROR      0x50
+#define PROGRAM_ERROR    0x60
 
 #ifdef __cplusplus
 }
