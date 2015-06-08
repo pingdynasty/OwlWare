@@ -1,7 +1,7 @@
 #include <inttypes.h>
 
-// #define OWLMODULAR
-#define FIRMWARE_VERSION             "sysex-02"
+/* #define OWLMODULAR */
+#define FIRMWARE_VERSION             "vector-02"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -11,8 +11,8 @@
 #define DEBUG_AUDIO
 #define DEBUG_DWT
 
-#define GREEN_PATCH                  0
-#define RED_PATCH                    1
+#define DEFAULT_PROGRAM              0
+/* #define MAX_FACTORY_PROGRAM          32 */
 
 #define AUDIO_BIGEND
 /* #define AUDIO_SATURATE_SAMPLES // SATURATE adds almost 500 cycles to 24-bit mode */
@@ -20,8 +20,8 @@
 #define AUDIO_FORMAT                 I2S_FORMAT_16bit
 #define AUDIO_CODEC_MASTER           true
 #define AUDIO_CHANNELS               2
-#define AUDIO_BITDEPTH               16    /* bits per sample */
-/* #define AUDIO_BITDEPTH               24    /\* bits per sample *\/ */
+/* #define AUDIO_BITDEPTH               16    /\* bits per sample *\/ */
+#define AUDIO_BITDEPTH               24    /* bits per sample */
 #define AUDIO_SAMPLINGRATE           48000
 #define AUDIO_BLOCK_SIZE             128   /* size in samples of a single channel audio block */
 #define AUDIO_MAX_BLOCK_SIZE         512

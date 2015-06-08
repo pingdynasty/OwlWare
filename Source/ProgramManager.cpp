@@ -9,6 +9,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "PatchRegistry.h"
+#include "ApplicationSettings.h"
 
 DynamicPatchDefinition dynamo;
 // #define JUMPTO(address) ((void (*)(void))address)();
@@ -16,6 +18,10 @@ DynamicPatchDefinition dynamo;
 ProgramManager program;
 SharedMemory vector;
 SharedMemory* currentProgramVector;
+
+SharedMemory* getSharedMemory(){
+  return currentProgramVector;
+}
 
 extern void setup(); // main OWL setup
 extern void updateProgramVector(SharedMemory*);
@@ -206,6 +212,21 @@ void ProgramManager::reset(){
 //   for(;;);
 // }
 
+void ProgramManager::loadProgram(uint8_t pid){
+  // if(pid < MAX_FACTORY_PROGRAM){
+  if(pid < registry.getNumberOfPatches()){
+    program.loadStaticProgram(registry.getPatchDefinition(pid));
+    settings.program_index = pid;
+  }
+    // if(pid < MAX_FACTORY_PROGRAM)
+    //   loadFactoryPatch(pid);
+    // else
+    //   // time to erase 128kB flash sector, typ 875ms
+    //   // Program/erase parallelism
+    //   // (PSIZE) = x 32 : 1-2s
+    //   loadProgram(pid);
+}
+
 void ProgramManager::loadStaticProgram(PatchDefinition* def){
   patchdef = def;
   currentProgramVector = &vector;
@@ -215,6 +236,7 @@ void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   dynamo.load(address, length);
   patchdef = &dynamo;
   currentProgramVector = dynamo.getProgramVector();
+  settings.program_index = 0;
 }
 
 uint32_t ProgramManager::getProgramStackSize(){
@@ -283,7 +305,7 @@ void ProgramManager::runManager(){
 }
 
 #if 0
-bool ProgramManager::saveProgram(uint8_t sector){
+bool ProgramManager::saveProgramToFlash(uint8_t sector){
   if(sector > 4)
     return false;
   uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
@@ -300,7 +322,7 @@ bool ProgramManager::saveProgram(uint8_t sector){
   return true;
 }
 
-bool ProgramManager::loadProgram(uint8_t sector){
+bool ProgramManager::loadProgramFromFlash(uint8_t sector){
   if(sector > 4)
     return false;
   uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11

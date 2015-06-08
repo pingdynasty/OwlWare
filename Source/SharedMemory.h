@@ -36,10 +36,6 @@
      char* message;
    } SharedMemory;
 
-#define PATCH_MODE_PARAMETER_ID    16
-#define GREEN_PATCH_PARAMETER_ID   17
-#define RED_PATCH_PARAMETER_ID     18
-
 #define CHECKSUM_ERROR_STATUS      -10
 #define OUT_OF_MEMORY_ERROR_STATUS -20
 

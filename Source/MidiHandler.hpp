@@ -26,18 +26,8 @@ public:
   }
 
   void handleProgramChange(uint8_t status, uint8_t pid){
-    if(pid < registry.getNumberOfPatches()){
-      program.loadStaticProgram(registry.getPatchDefinition(pid));
-      // program.loadStaticProgram(pid);
-      program.reset();
-    }
-    // if(pid < MAX_FACTORY_PROGRAM)
-    //   loadFactoryPatch(pid);
-    // else
-    //   // time to erase 128kB flash sector, typ 875ms
-    //   // Program/erase parallelism
-    //   // (PSIZE) = x 32 : 1-2s
-    //   loadProgram(pid);
+    program.loadProgram(pid);
+    program.reset();
   }
 
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
@@ -78,25 +68,6 @@ public:
       }else{
 	setLed(GREEN);
       }
-      break;
-    case PATCH_MODE:
-      settings.patch_mode = value >> 4;
-      // getSharedMemory()->parameters[PATCH_MODE_PARAMETER_ID] = settings.patch_mode;
-      // patches.setActiveSlot(patches.getActiveSlot());
-      break;
-    case PATCH_SLOT_GREEN:
-      settings.patch_green = value;
-      // getSharedMemory()->parameters[GREEN_PATCH_PARAMETER_ID] = value;
-      // patches.setPatch(GREEN, value);
-      break;
-    case PATCH_SLOT_RED:
-      settings.patch_red = value;      
-      // getSharedMemory()->parameters[RED_PATCH_PARAMETER_ID] = value;
-      // patches.setPatch(RED, value);
-      break;
-    case ACTIVE_SLOT:
-      // getSharedMemory()->parameters[PATCH_MODE_PARAMETER_ID] |= (value == 127);
-      // patches.setActiveSlot(value == 127 ? RED : GREEN);
       break;
     case LEFT_INPUT_GAIN:
       settings.inputGainLeft = value>>2;

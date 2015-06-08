@@ -10,17 +10,6 @@
 class PatchController;
 extern PatchController patches;
 
-enum PatchModeId {
-  SINGLE_GREEN_MODE   = 0,
-  SINGLE_RED_MODE     = 1,
-  DUAL_GREEN_MODE     = 2,
-  DUAL_RED_MODE       = 3,
-  SERIES_GREEN_MODE   = 4,
-  SERIES_RED_MODE     = 5,
-  PARALLEL_GREEN_MODE = 6,
-  PARALLEL_RED_MODE   = 7
-};
-
 class PatchController {
 public:  
   PatchController();
@@ -42,10 +31,7 @@ public:
   /* Patch* getActivePatch(); */
 private:
   void processParallel(AudioBuffer& buffer);
-  PatchProcessor* initialisingProcessor;
-  PatchProcessor green;
-  PatchProcessor red;
-  uint8_t mode;
+  PatchProcessor processor;
   uint16_t* parameterValues;
 
 public:  
@@ -68,18 +54,6 @@ public:
       getSharedMemory()->buttons |= 1<<bid;
     else
       getSharedMemory()->buttons &= ~(1<<bid);
-  }
-  PatchModeId getPatchMode(){
-    return (PatchModeId)getSharedMemory()->parameters[PATCH_MODE_PARAMETER_ID];
-  }
-  void setPatchMode(PatchModeId mode){
-    getSharedMemory()->parameters[PATCH_MODE_PARAMETER_ID] = mode;
-  }
-  uint16_t getGreenPatchId(){
-    return getSharedMemory()->parameters[GREEN_PATCH_PARAMETER_ID];
-  }
-  uint16_t getRedPatchId(){
-    return getSharedMemory()->parameters[RED_PATCH_PARAMETER_ID];
   }
 };
 

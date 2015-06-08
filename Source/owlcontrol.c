@@ -186,8 +186,8 @@ void setupSwitchB(void (*f)()){
   EXTI_StructInit(&EXTI_InitStructure);
   EXTI_InitStructure.EXTI_Line = SWITCH_B_PIN_LINE;
   EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-  EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-/*   EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling; */
+  /* EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling; */
+  EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
   EXTI_InitStructure.EXTI_LineCmd = ENABLE;
   EXTI_Init(&EXTI_InitStructure);
 

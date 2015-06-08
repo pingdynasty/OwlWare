@@ -29,10 +29,6 @@ void MidiController::sendSettings(){
   // sendCc(PATCH_PARAMETER_E, (uint8_t)(processor->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
   sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
   sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
-  sendCc(PATCH_MODE, settings.patch_mode << 4);
-  sendCc(PATCH_SLOT_GREEN, settings.patch_green);
-  sendCc(PATCH_SLOT_RED, settings.patch_red);
-  // sendCc(ACTIVE_SLOT, patches.getActiveSlot() == GREEN ? 0 : 127);
   sendCc(LEFT_INPUT_GAIN, codec.getInputGainLeft()<<2);
   sendCc(RIGHT_INPUT_GAIN, codec.getInputGainRight()<<2);
   sendCc(LEFT_OUTPUT_GAIN, codec.getOutputGainLeft());
@@ -127,7 +123,7 @@ void MidiController::sendProgramMessage(){
   SharedMemory* smem = getSharedMemory();
   if(smem != NULL && smem->message != NULL){
     char buffer[64];
-    buffer[0] = SYSEX_FIRMWARE_VERSION;
+    buffer[0] = SYSEX_PROGRAM_MESSAGE;
     char* p = &buffer[1];
     p = stpncpy(p, smem->message, 63);
     sendSysEx((uint8_t*)buffer, p-buffer);    

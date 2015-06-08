@@ -29,20 +29,17 @@ PatchRegistry registry;
 volatile bool bypass = false;
 
 SharedMemory* programVector = NULL;
-SharedMemory* getSharedMemory(){
-  return programVector;
-}
 
 bool getButton(PatchButtonId bid){
-  // return getSharedMemory()->buttons & (1<<bid);
-  return false;
+  return getSharedMemory()->buttons & (1<<bid);
+  // return false;
 }
 
 void setButton(PatchButtonId bid, bool on){
-  // if(on)
-  //   getSharedMemory()->buttons |= 1<<bid;
-  // else
-  //   getSharedMemory()->buttons &= ~(1<<bid);
+  if(on)
+    getSharedMemory()->buttons |= 1<<bid;
+  else
+    getSharedMemory()->buttons &= ~(1<<bid);
 }
 
 void updateLed(){
@@ -60,11 +57,11 @@ void updateBypassMode(){
   bypass = false;
 #else
   if(isStompSwitchPressed()){
-    setButton(PUSHBUTTON, true);
+    setButton(BYPASS_BUTTON, true);
     bypass = true;
     setLed(NONE);    
   }else{
-    setButton(PUSHBUTTON, false);
+    setButton(BYPASS_BUTTON, false);
     bypass = false;
     updateLed();
   }
@@ -90,8 +87,11 @@ void toggleActiveSlot(){
 
 void pushButtonCallback(){
   DEBOUNCE(pushbutton, 200);
-  if(isPushButtonPressed() && settings.patch_mode != PATCHMODE_SINGLE)
-    toggleActiveSlot();
+  if(isPushButtonPressed()){
+    setButton(PUSHBUTTON, true);
+  }else{
+    setButton(PUSHBUTTON, false);
+  }
 }
 
 void exitProgram(){
@@ -125,7 +125,6 @@ void resetProgram(){
      dynamicPatchDefinition.inputs = inputChannels;
      dynamicPatchDefinition.outputs = outputChannels;
      registry.setDynamicPatchDefinition(&dynamicPatchDefinition);
-     settings.patch_green = registry.getNumberOfPatches()-1;
    }
 
    void registerPatchParameter(uint8_t id, const char* name){
@@ -165,10 +164,7 @@ void updateProgramVector(SharedMemory* smem){
   smem->parameters = getAnalogValues();
   smem->parameters_size = NOF_PARAMETERS;
   // todo: pass real-time updates from MidiHandler
-  // smem->parameters[PATCH_MODE_PARAMETER_ID] = settings.patch_mode;
-  // smem->parameters[GREEN_PATCH_PARAMETER_ID] = value;
-  // smem->parameters[RED_PATCH_PARAMETER_ID] = value;
-  smem->buttons = 0;
+  smem->buttons = (1<<GREEN_BUTTON);
   smem->registerPatch = registerPatch;
   smem->registerPatchParameter = registerPatchParameter;
   smem->cycles_per_block = 0;
@@ -195,6 +191,8 @@ void setup(){
   NVIC_SetPriority(CODEC_I2S_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 1, 0));
   NVIC_SetPriority(ADC_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 3, 0));
   NVIC_SetPriority(OTG_FS_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 5, 0));
+
+  updateProgramVector(getSharedMemory());
 
   ledSetup();
   setLed(RED);
@@ -258,17 +256,11 @@ void setup(){
   // SharedMemory* smemp = (SharedMemory*)BKPSRAM_GetMemoryAddress();
   // smemp = &smem;
 
-  setParameter(PATCH_MODE_PARAMETER_ID, settings.patch_mode);
-  setParameter(GREEN_PATCH_PARAMETER_ID, settings.patch_green);
-  setParameter(RED_PATCH_PARAMETER_ID, settings.patch_red);
-  setButton(GREEN_BUTTON, true);
-  setButton(RED_BUTTON, false);
-
   codec.setup();
   codec.init(settings);
   codec.start();
 
-  program.loadStaticProgram(registry.getPatchDefinition(settings.patch_green));
+  program.loadProgram(settings.program_index);
   program.startProgram();
 }
 

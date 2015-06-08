@@ -19,6 +19,7 @@ public:
   /*   return running; */
   /* } */
   // void load(PatchDefinition* def);
+  void loadProgram(uint8_t index);
   void loadStaticProgram(PatchDefinition* def);
   void loadDynamicProgram(void* address, uint32_t length);
   /* bool verify(); */
@@ -36,11 +37,12 @@ public:
   uint32_t getProgramStackSize();
   uint32_t getProgramStackAllocation();
 
-  bool saveProgram(uint8_t sector);
-  bool loadProgram(uint8_t sector);
+  bool saveProgramToFlash(uint8_t sector);
+  bool loadProgramFromFlash(uint8_t sector);
 
   uint32_t getCyclesPerBlock();
   uint32_t getHeapMemoryUsed();
+  uint8_t getProgramIndex();
 };
 
 extern ProgramManager program;

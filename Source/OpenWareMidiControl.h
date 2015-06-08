@@ -28,7 +28,7 @@ enum OpenWareMidiSysexCommand {
   SYSEX_FIRMWARE_UPLOAD           = 0x10,
   SYSEX_FIRMWARE_VERSION          = 0x20,
   SYSEX_DEVICE_ID                 = 0x21,
-  SYSEX_SELFTEST                  = 0x22,
+  SYSEX_PROGRAM_MESSAGE           = 0x22,
   SYSEX_DEVICE_STATS              = 0x23
 };
 
@@ -43,21 +43,11 @@ enum OpenWareMidiControl {
   PATCH_PARAMETER_E      = 24, /* Expression pedal / input */
   PATCH_BUTTON           = 25, /* LED Pushbutton: 0=not pressed, 127=pressed */
   PATCH_CONTROL          = 26, /* Remote control: 0=local, 127=MIDI */
-  PATCH_MODE             = 27, /* 0-31 = single,
-				* 32-63 = dual,
-				* 64-95 = series,
-				* 96-127 = parallel
-				*/
-  PATCH_SLOT_GREEN       = 28, /* load patch into green slot */
-  PATCH_SLOT_RED         = 29, /* load patch into red slot */
-
   LED                    = 30, /* set/get LED value: 
 				* 0-41 = off
 				* 42-83 = green
 				* 84-127 = red 
 				*/
-  ACTIVE_SLOT            = 31, /* currently active slot: 0 for green slot, 127 for red */
-
   LEFT_INPUT_GAIN        = 32, /* left channel input gain, -34.5dB to +12dB (92 = 0dB) */
   RIGHT_INPUT_GAIN       = 33,
   LEFT_OUTPUT_GAIN       = 34, /* left channel output gain, -73dB to +6dB (121 = 0dB) */
