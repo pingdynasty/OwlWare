@@ -24,6 +24,7 @@ enum PatchButtonId {
 enum OpenWareMidiSysexCommand {
   SYSEX_PRESET_NAME_COMMAND       = 0x01,
   SYSEX_PARAMETER_NAME_COMMAND    = 0x02,
+  SYSEX_CONFIGURATION_COMMAND     = 0x03,
   SYSEX_DFU_COMMAND               = 0x7e,
   SYSEX_FIRMWARE_UPLOAD           = 0x10,
   SYSEX_FIRMWARE_VERSION          = 0x20,

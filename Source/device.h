@@ -49,7 +49,7 @@
 #define NOF_ADC_VALUES               5
 #define NOF_PARAMETERS               24
 #define MAX_BUFFERS_PER_PATCH        8
-#define MAX_NUMBER_OF_PATCHES        64
+#define MAX_NUMBER_OF_PATCHES        32
 #define MAX_SYSEX_FIRMWARE_SIZE      (80*1024)
 
 /* I2C clock speed configuration (in Hz)  */

@@ -6,15 +6,10 @@
 #include "basicmaths.h"
 #include "ProgramVector.h"
 
-// #define PROGRAM_STACK_SIZE          (32*1024/sizeof(portSTACK_TYPE))
-#define PROGRAM_STACK_SIZE          (16*1024)
-// extern uint8_t* ucHeap;
-
 PatchProcessor *processor;
 PatchProcessor* getInitialisingPatchProcessor(){
   return processor;
 }
-
 
 void FactoryPatchDefinition::run(){
   sram_init((char*)EXTRAM, 1024*1024);
@@ -58,14 +53,14 @@ void FactoryPatchDefinition::init(){
 FactoryPatchDefinition::FactoryPatchDefinition() {
   // stackBase = (uint32_t*)ucHeap;
   stackBase = NULL;
-  stackSize = PROGRAM_STACK_SIZE;
+  stackSize = 0;
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition(char* name, uint8_t inputs, uint8_t outputs, PatchCreator c) :
   PatchDefinition(name, inputs, outputs), creator(c) {
   // stackBase = (uint32_t*)ucHeap;
   stackBase = NULL;
-  stackSize = PROGRAM_STACK_SIZE;
+  stackSize = 0;
 }
 
 void FactoryPatchDefinition::setup(char* nm, uint8_t ins, uint8_t outs, PatchCreator c){

@@ -74,19 +74,23 @@ void MidiController::sendPatchNames(){
 
 void MidiController::sendPatchName(uint8_t index){
   const char* name = registry.getName(index);
-  uint8_t size = strlen(name);
-  // uint8_t size = strnlen(name, 16);
-  uint8_t buffer[size+3];
-  buffer[0] = SYSEX_PRESET_NAME_COMMAND;
-  buffer[1] = index;
-  memcpy(buffer+2, name, size+1);
-  sendSysEx(buffer, sizeof(buffer));
+  if(name != NULL){
+    uint8_t size = strlen(name);
+    // uint8_t size = strnlen(name, 16);
+    uint8_t buffer[size+3];
+    buffer[0] = SYSEX_PRESET_NAME_COMMAND;
+    buffer[1] = index;
+    memcpy(buffer+2, name, size+1);
+    sendSysEx(buffer, sizeof(buffer));
+  }
 }
 
 void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
   sendProgramMessage();
+#ifdef DEBUG_STACK
   sendDeviceStats();
+#endif /* DEBUG_STACK */
 }
 
 // #include <stdio.h>
@@ -108,6 +112,7 @@ char* itoa(int val, int base){
 }
 #include <string.h>
 
+#ifdef DEBUG_STACK
 void MidiController::sendDeviceStats(){
   char buffer[64];
   buffer[0] = SYSEX_DEVICE_STATS;
@@ -118,6 +123,7 @@ void MidiController::sendDeviceStats(){
   p = stpcpy(p, itoa(program.getProgramStackAllocation(), 10));
   sendSysEx((uint8_t*)buffer, p-buffer);
 }
+#endif /* DEBUG_STACK */
 
 void MidiController::sendProgramMessage(){
   ProgramVector* smem = getProgramVector();

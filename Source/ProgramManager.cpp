@@ -7,17 +7,26 @@
 #include "device.h"
 #include "DynamicPatchDefinition.hpp"
 #include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
 #include "PatchRegistry.h"
 #include "ApplicationSettings.h"
+
+// #define AUDIO_TASK_SUSPEND
+// #define AUDIO_TASK_SEMAPHORE
+#define AUDIO_TASK_DIRECT
+// #define AUDIO_TASK_YIELD
+/* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
+
+#include "task.h"
+#if defined AUDIO_TASK_SEMAPHORE
+#include "semphr.h"
+#endif
 
 DynamicPatchDefinition dynamo;
 // #define JUMPTO(address) ((void (*)(void))address)();
 
 ProgramManager program;
 ProgramVector vector;
-ProgramVector* currentProgramVector;
+ProgramVector* currentProgramVector = &vector;
 
 ProgramVector* getProgramVector(){
   return currentProgramVector;
@@ -25,12 +34,6 @@ ProgramVector* getProgramVector(){
 
 extern void setup(); // main OWL setup
 extern void updateProgramVector(ProgramVector*);
-
-// #define AUDIO_TASK_SUSPEND
-// #define AUDIO_TASK_SEMAPHORE
-#define AUDIO_TASK_DIRECT
-// #define AUDIO_TASK_YIELD
-/* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
 
 TaskHandle_t xProgramHandle = NULL;
 TaskHandle_t xManagerHandle = NULL;
@@ -41,6 +44,12 @@ SemaphoreHandle_t xSemaphore = NULL;
 #define MANAGER_STACK_SIZE          (6*1024/sizeof(portSTACK_TYPE))
 // #define PROGRAM_STACK_SIZE          (46*1024/sizeof(portSTACK_TYPE))
 #define PROGRAM_STACK_SIZE          (32*1024/sizeof(portSTACK_TYPE))
+#define PROGRAM_PRIORITY            (2 | portPRIVILEGE_BIT)
+#define MANAGER_PRIORITY            (4 | portPRIVILEGE_BIT)
+// #define PROGRAM_PRIORITY            (2)
+// #define MANAGER_PRIORITY            (4)
+// FreeRTOS low priority numbers denote low priority tasks. 
+// The idle task has priority zero (tskIDLE_PRIORITY).
 
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 
@@ -83,6 +92,7 @@ ProgramManager::ProgramManager() { //: patchdef(NULL) {
 #endif /* DEBUG_DWT */
 }
 
+#ifdef DEBUG_STACK
 unsigned long pH = 0;
 unsigned long mH = 0;
 unsigned long tH = 0;
@@ -99,6 +109,7 @@ void stats(){
   if(high > tH)
     tH = high;
 }
+#endif /* DEBUG_STACK */
 
 #if defined AUDIO_TASK_DIRECT
 volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
@@ -163,7 +174,7 @@ void ProgramManager::programStatus(int){
 
 void ProgramManager::startManager(){
   if(xManagerHandle == NULL)
-    xTaskCreate(runManagerTask, "Manager", configMINIMAL_STACK_SIZE, NULL, 4, &xManagerHandle);
+    xTaskCreate(runManagerTask, "Manager", MANAGER_STACK_SIZE, NULL, MANAGER_PRIORITY, &xManagerHandle);
 #if defined AUDIO_TASK_SEMAPHORE
   if(xSemaphore == NULL)
     xSemaphore = xSemaphoreCreateBinary();
@@ -200,6 +211,7 @@ void ProgramManager::exit(){
 
 /* exit and restart program */
 void ProgramManager::reset(){
+  // uint32_t ulValue = RESET_PROGRAM_NOTIFICATION;
   uint32_t ulValue = STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
@@ -241,12 +253,14 @@ void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   settings.program_index = 0;
 }
 
+#ifdef DEBUG_STACK
 uint32_t ProgramManager::getProgramStackSize(){
   if(xProgramHandle == NULL)
     return 0;
   pH = uxTaskGetStackHighWaterMark(xProgramHandle);
   return pH*sizeof(portSTACK_TYPE);
 }
+#endif /* DEBUG_STACK */
 
 uint32_t ProgramManager::getProgramStackAllocation(){
   if(patchdef != NULL)
@@ -264,11 +278,13 @@ uint32_t ProgramManager::getHeapMemoryUsed(){
 
 void ProgramManager::runManager(){
   uint32_t ulNotifiedValue = 0;
-  // TickType_t xMaxBlockTime = pdMS_TO_TICKS( 5000 );
+  // TickType_t xMaxBlockTime = pdMS_TO_TICKS( 1000 );
   TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
   setLed(GREEN);
   for(;;){
-    stats();    
+#ifdef DEBUG_STACK
+    stats();
+#endif /* DEBUG_STACK */
     /* Block indefinitely (without a timeout, so no need to check the function's
        return value) to wait for a notification.
        Bits in this RTOS task's notification value are set by the notifying
@@ -277,31 +293,36 @@ void ProgramManager::runManager(){
 		    UINT32_MAX,       /* Reset the notification value to 0 on exit. */
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
 		    xMaxBlockTime ); 
-    stats();
-    // if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // reset
-
-    // }else 
     if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){ // stop      
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
-	// running = false;
+	// allow idle task to garbage collect if necessary
+	// vTaskDelay(100/portTICK_PERIOD_MS);
+	vTaskDelay(20);
       }
     }
+    // if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // reset
+    //   // allow idle task to garbage collect if necessary
+    //   // vTaskDelay(100/portTICK_PERIOD_MS);
+    //   vTaskDelay(20);
+    // }
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
-      // allow idle task to garbage collect if necessary
-      // vTaskDelay(100/portTICK_PERIOD_MS);
-      vTaskDelay(20);
-      if(xProgramHandle == NULL && patchdef != NULL)
+      if(xProgramHandle == NULL && patchdef != NULL){
+	BaseType_t ret;
 	if(patchdef->getStackSize() > 0){
-	  xTaskGenericCreate(runProgramTask, "Program", 
-			     patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
-			     NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle, 
-			     // NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle, 
-			     patchdef->getStackBase(), NULL);
+	  ret = xTaskGenericCreate(runProgramTask, "Program", 
+				   patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
+				   NULL, PROGRAM_PRIORITY, &xProgramHandle, 
+				   patchdef->getStackBase(), NULL);
 	}else{
-	  xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, 2 | portPRIVILEGE_BIT, &xProgramHandle);
+	  ret = xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, PROGRAM_PRIORITY, &xProgramHandle);
 	}
+	if(ret != pdPASS){
+	  setErrorStatus(PROGRAM_ERROR);
+	  setLed(RED);
+	}
+      }
     }
   }
 }

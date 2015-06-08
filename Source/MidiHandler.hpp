@@ -239,38 +239,41 @@ public:
 
   FirmwareLoader loader;
 
+  void handleFirmwareUploadCommand(uint8_t* data, uint16_t size){
+    // codec.stop();
+    int32_t ret = loader.handleFirmwareUpload(data, size);
+    if(ret < 0){
+      // firmware upload error
+      // midi.sendCc(DEVICE_STATUS, -ret);
+      setLed(RED);
+      // program.reset();
+      // codec.start(); // doesn't synchronise the codec well
+    }else if(ret > 0){
+      // firmware upload complete
+      // midi.sendCc(DEVICE_STATUS, 0x7f);
+      setLed(NONE);
+      program.loadDynamicProgram(loader.getData(), loader.getSize());
+      // if(program.verify())
+      program.startProgram();
+      loader.clear();
+    }else{
+      toggleLed();
+    }
+  }
+
   void handleSysEx(uint8_t* data, uint16_t size){
     if(size < 3 || 
        data[0] != MIDI_SYSEX_MANUFACTURER || 
        data[1] != MIDI_SYSEX_DEVICE)
       return;
     switch(data[2]){
+    case SYSEX_CONFIGURATION_COMMAND:
+      break;
     case SYSEX_DFU_COMMAND:
       jump_to_bootloader();
       break;
     case SYSEX_FIRMWARE_UPLOAD:
-      // codec.stop();
-      int32_t ret = loader.handleFirmwareUpload(data, size);
-      if(ret < 0){
-	// firmware upload error
-	// midi.sendCc(DEVICE_STATUS, -ret);
-	setLed(RED);
-	// program.reset();
-	// codec.start(); // doesn't synchronise the codec well
-      }else if(ret > 0){
-	// firmware upload complete
-	// midi.sendCc(DEVICE_STATUS, 0x7f);
-	setLed(NONE);
-	program.loadDynamicProgram(loader.getData(), loader.getSize());
-	// if(program.verify())
-	program.startProgram();
-	loader.clear();
-      }else{
-	// midi.sendCc(DEVICE_STATUS, 0);
-	toggleLed();
-	// if(program.isRunning())
-	//   program.stop();
-      }
+      handleFirmwareUploadCommand(data, size);
       break;
     }
   }

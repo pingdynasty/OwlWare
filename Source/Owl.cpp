@@ -28,8 +28,6 @@ ApplicationSettings settings;
 PatchRegistry registry;
 volatile bool bypass = false;
 
-ProgramVector* programVector = NULL;
-
 bool getButton(PatchButtonId bid){
   return getProgramVector()->buttons & (1<<bid);
   // return false;
@@ -152,7 +150,6 @@ __attribute__ ((section (".coderam")))
 #endif
 
 void updateProgramVector(ProgramVector* smem){
-  programVector = smem;
   smem->checksum = sizeof(ProgramVector);
 #ifdef OWLMODULAR
   smem->hardware_version = OWL_MODULAR_HARDWARE;
@@ -278,8 +275,8 @@ void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  programVector->audio_input = src;
-  programVector->audio_output = dst;
+  getProgramVector()->audio_input = src;
+  getProgramVector()->audio_output = dst;
   // doProcessAudio = false;
   audioStatus = AUDIO_READY_STATUS;
   // program.audioReady();

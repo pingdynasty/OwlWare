@@ -27,7 +27,7 @@ void assert_failed(uint8_t* file, uint32_t line){
   for(delayCounter = 0; delayCounter < 4000000; delayCounter++);
   setLed(RED);
 #ifdef DEBUG
-  for(;;);
+  __asm__("BKPT");
 #else
     /* NVIC_SystemReset(); */
   exitProgram();
@@ -47,7 +47,6 @@ void MemManage_Handler(void){
   volatile unsigned int cfsr = SCB->CFSR;
   volatile unsigned int msp = __get_MSP();
   volatile unsigned int psp = __get_PSP();
-  __asm__("BKPT");
   /* __builtin_trap(); */
 #endif
   assert_failed(0, 0);
