@@ -11,7 +11,7 @@
 #include "FirmwareLoader.hpp"
 #include "ProgramManager.h"
 #include "PatchRegistry.h"
-#include "SharedMemory.h"
+#include "ProgramVector.h"
 
 uint16_t midi_values[NOF_ADC_VALUES];
 

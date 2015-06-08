@@ -9,7 +9,7 @@
 #include "CodecController.h"
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
-#include "SharedMemory.h"
+#include "ProgramVector.h"
 #include "ProgramManager.h"
 
 uint32_t log2(uint32_t x){ 
@@ -120,7 +120,7 @@ void MidiController::sendDeviceStats(){
 }
 
 void MidiController::sendProgramMessage(){
-  SharedMemory* smem = getSharedMemory();
+  ProgramVector* smem = getProgramVector();
   if(smem != NULL && smem->message != NULL){
     char buffer[64];
     buffer[0] = SYSEX_PROGRAM_MESSAGE;

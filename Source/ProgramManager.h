@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 #include "PatchDefinition.hpp"
-#include "SharedMemory.h"
+#include "ProgramVector.h"
 
 class ProgramManager {
 private:

@@ -5,7 +5,7 @@
 #include "owlcontrol.h"
 #include "StompBox.h"
 #include "PatchProcessor.h"
-#include "SharedMemory.h"
+#include "ProgramVector.h"
 
 class PatchController;
 extern PatchController patches;
@@ -36,24 +36,24 @@ private:
 
 public:  
   uint16_t getParameter(int pid){
-      return getSharedMemory()->parameters[pid];
+      return getProgramVector()->parameters[pid];
   }
   void setParameter(int pid, uint16_t value){
-    getSharedMemory()->parameters[pid] = value;
+    getProgramVector()->parameters[pid] = value;
   }
   float getParameterValue(PatchParameterId pid){
-    if(pid < getSharedMemory()->parameters_size)
-      return getSharedMemory()->parameters[pid]/4096.0f;
+    if(pid < getProgramVector()->parameters_size)
+      return getProgramVector()->parameters[pid]/4096.0f;
     return 0.0f;
   }
   bool isButtonPressed(PatchButtonId bid){
-    return getSharedMemory()->buttons & (1<<bid);
+    return getProgramVector()->buttons & (1<<bid);
   }
   void setButton(PatchButtonId bid, bool on){
     if(on)
-      getSharedMemory()->buttons |= 1<<bid;
+      getProgramVector()->buttons |= 1<<bid;
     else
-      getSharedMemory()->buttons &= ~(1<<bid);
+      getProgramVector()->buttons &= ~(1<<bid);
   }
 };
 

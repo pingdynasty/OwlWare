@@ -3,9 +3,7 @@
 #include "MemoryBuffer.hpp"
 #include "device.h"
 #include <string.h>
-#include "SharedMemory.h"
-
-// #include "OpenWareMidiControl.h"
+#include "ProgramVector.h"
 
 PatchProcessor::PatchProcessor() 
   : patch(NULL), bufferCount(0) {
@@ -20,16 +18,11 @@ void PatchProcessor::run(){
   if(patch == NULL)
     return;
   for(;;){
-    getSharedMemory()->programReady();
-    buffer.split(getSharedMemory()->audio_input, getSharedMemory()->audio_blocksize);
-// #if AUDIO_BITDEPTH == 16
-//     buffer.split(getSharedMemory()->audio_input, getSharedMemory()->audio_blocksize*2);
-// #else
-//     buffer.split(getSharedMemory()->audio_input, getSharedMemory()->audio_blocksize*4);
-// #endif /* AUDIO_BITDEPTH != 16 */
-    setParameterValues(getSharedMemory()->parameters);
+    getProgramVector()->programReady();
+    buffer.split(getProgramVector()->audio_input, getProgramVector()->audio_blocksize);
+    setParameterValues(getProgramVector()->parameters);
     patch->processAudio(buffer);
-    buffer.comb(getSharedMemory()->audio_output);
+    buffer.comb(getProgramVector()->audio_output);
   }
 }
 
@@ -39,8 +32,6 @@ void PatchProcessor::clear(){
   bufferCount = 0;
   delete patch;
   patch = NULL;
-  // index = -1;
-  // memset(parameterNames, 0, sizeof(parameterNames));
 }
 
 void PatchProcessor::setPatch(Patch* p){
@@ -49,27 +40,10 @@ void PatchProcessor::setPatch(Patch* p){
   patch = p;
 }
 
-// void PatchProcessor::setPatch(uint8_t patchIndex){
-//   clear();
-//   if(patchIndex < registry.getNumberOfPatches())
-//     index = patchIndex;
-//   else
-//     index = 0;
-//   patch = registry.create(index);
-// }
-
 void PatchProcessor::registerParameter(PatchParameterId pid, const char* name){
-  if(getSharedMemory()->registerPatchParameter != NULL)
-    getSharedMemory()->registerPatchParameter(pid, name);
-  // if(pid < NOF_ADC_VALUES)
-  //   parameterNames[pid] = name;
+  if(getProgramVector()->registerPatchParameter != NULL)
+    getProgramVector()->registerPatchParameter(pid, name);
 }
-
-// const char* PatchProcessor::getParameterName(PatchParameterId pid){
-//   if(pid < NOF_ADC_VALUES)
-//     return parameterNames[pid];
-//   return NULL;
-// }
 
 AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
   MemoryBuffer* buf = new ManagedMemoryBuffer(channels, size);
@@ -103,15 +77,3 @@ void PatchProcessor::setParameterValues(uint16_t *params){
 #endif
     }
 }
-
-// void PatchProcessor::process(AudioBuffer& buffer){
-//   patch->processAudio(buffer);
-// }
-
-// int PatchProcessor::getBlockSize(){
-//   return patch->getBlockSize();
-// }
-
-// double PatchProcessor::getSampleRate(){
-//   return patch->getSampleRate();
-// }

@@ -8,7 +8,7 @@
 #include "CodecController.h"
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
-#include "SharedMemory.h"
+#include "ProgramVector.h"
 #include "ProgramManager.h"
 #include "bkp_sram.h"
 
@@ -28,18 +28,18 @@ ApplicationSettings settings;
 PatchRegistry registry;
 volatile bool bypass = false;
 
-SharedMemory* programVector = NULL;
+ProgramVector* programVector = NULL;
 
 bool getButton(PatchButtonId bid){
-  return getSharedMemory()->buttons & (1<<bid);
+  return getProgramVector()->buttons & (1<<bid);
   // return false;
 }
 
 void setButton(PatchButtonId bid, bool on){
   if(on)
-    getSharedMemory()->buttons |= 1<<bid;
+    getProgramVector()->buttons |= 1<<bid;
   else
-    getSharedMemory()->buttons &= ~(1<<bid);
+    getProgramVector()->buttons &= ~(1<<bid);
 }
 
 void updateLed(){
@@ -139,7 +139,7 @@ __attribute__ ((section (".coderam")))
      program.programReady();
    }
 
-   void programStatus(SharedMemoryAudioStatus status){
+   void programStatus(ProgramVectorAudioStatus status){
      program.programStatus(status);
    }
 
@@ -151,11 +151,14 @@ __attribute__ ((section (".coderam")))
 }
 #endif
 
-
-void updateProgramVector(SharedMemory* smem){
+void updateProgramVector(ProgramVector* smem){
   programVector = smem;
-  smem->checksum = sizeof(SharedMemory);
-  smem->status = AUDIO_IDLE_STATUS;
+  smem->checksum = sizeof(ProgramVector);
+#ifdef OWLMODULAR
+  smem->hardware_version = OWL_MODULAR_HARDWARE;
+#else
+  smem->hardware_version = OWL_PEDAL_HARDWARE;
+#endif
   // smem->audio_input = NULL;
   // smem->audio_output = NULL;
   smem->audio_bitdepth = settings.audio_bitdepth;
@@ -192,7 +195,7 @@ void setup(){
   NVIC_SetPriority(ADC_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 3, 0));
   NVIC_SetPriority(OTG_FS_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 5, 0));
 
-  updateProgramVector(getSharedMemory());
+  updateProgramVector(getProgramVector());
 
   ledSetup();
   setLed(RED);
@@ -253,7 +256,7 @@ void setup(){
   // set pointer to smem in the backup ram
   // uint32_t pointer = (uint32_t)&smem;
   // memcpy(BKPSRAM_GetMemoryAddress(), &pointer, 4);
-  // SharedMemory* smemp = (SharedMemory*)BKPSRAM_GetMemoryAddress();
+  // ProgramVector* smemp = (ProgramVector*)BKPSRAM_GetMemoryAddress();
   // smemp = &smem;
 
   codec.setup();
@@ -268,7 +271,7 @@ void setup(){
  extern "C" {
 #endif
 
-extern volatile SharedMemoryAudioStatus audioStatus;
+extern volatile ProgramVectorAudioStatus audioStatus;
 
 __attribute__ ((section (".coderam")))
 void audioCallback(int16_t *src, int16_t *dst){

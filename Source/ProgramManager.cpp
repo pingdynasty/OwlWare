@@ -1,7 +1,7 @@
 #include <string.h>
 #include "stm32f4xx.h"
 #include "ProgramManager.h"
-#include "SharedMemory.h"
+#include "ProgramVector.h"
 #include "owlcontrol.h"
 #include "eepromcontrol.h"
 #include "device.h"
@@ -16,15 +16,15 @@ DynamicPatchDefinition dynamo;
 // #define JUMPTO(address) ((void (*)(void))address)();
 
 ProgramManager program;
-SharedMemory vector;
-SharedMemory* currentProgramVector;
+ProgramVector vector;
+ProgramVector* currentProgramVector;
 
-SharedMemory* getSharedMemory(){
+ProgramVector* getProgramVector(){
   return currentProgramVector;
 }
 
 extern void setup(); // main OWL setup
-extern void updateProgramVector(SharedMemory*);
+extern void updateProgramVector(ProgramVector*);
 
 // #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -101,7 +101,7 @@ void stats(){
 }
 
 #if defined AUDIO_TASK_DIRECT
-volatile SharedMemoryAudioStatus audioStatus = AUDIO_IDLE_STATUS;
+volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
 #endif /* AUDIO_TASK_DIRECT */
 
 /* called by the audio interrupt when a block should be processed */
@@ -171,7 +171,8 @@ void ProgramManager::startManager(){
 }
 
 void ProgramManager::startProgram(){
-  currentProgramVector->status = AUDIO_IDLE_STATUS;
+  audioStatus = AUDIO_IDLE_STATUS;
+  // currentProgramVector->status = AUDIO_IDLE_STATUS;
   uint32_t ulValue = START_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
@@ -184,7 +185,8 @@ void ProgramManager::startProgram(){
 }
 
 void ProgramManager::exit(){
-  currentProgramVector->status = AUDIO_EXIT_STATUS; // request program exit
+  audioStatus = AUDIO_EXIT_STATUS;
+  // currentProgramVector->status = AUDIO_EXIT_STATUS; // request program exit
   uint32_t ulValue = STOP_PROGRAM_NOTIFICATION;
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
