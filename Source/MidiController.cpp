@@ -93,23 +93,22 @@ void MidiController::sendDeviceInfo(){
 #endif /* DEBUG_STACK */
 }
 
-// #include <stdio.h>
-// #ifdef DEBUG_DWT
-// extern uint32_t dwt_count;
-// #endif /* DEBUG_DWT */
-// #include <stdlib.h>
-// char* itoa(int val, char* buf, int base, int max){
-//   for(int i=max; val && i ; --i, val /= base)
-//     buf[i] = "0123456789abcdef"[val % base];
-//   return &buf[i+1];	
-// }
+#ifndef abs
+#define abs(x) ((x)>0?(x):-(x))
+#endif /* abs */
 char* itoa(int val, int base){
-  static char buf[12] = {0};
-  int i=10;
-  for(; val && i ; --i, val /= base)
-    buf[i] = "0123456789abcdef"[val % base];
+  static char buf[13] = {0};
+  int i = 11;
+  unsigned int part = abs(val);
+  do{
+    buf[i--] = "0123456789abcdef"[part % base];
+    part /= base;
+  }while(part && i);
+  if(val < 0)
+    buf[i--] = '-';
   return &buf[i+1];
 }
+
 #include <string.h>
 
 #ifdef DEBUG_STACK

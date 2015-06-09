@@ -310,7 +310,7 @@ void ProgramManager::runManager(){
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       if(xProgramHandle == NULL && patchdef != NULL){
 	BaseType_t ret;
-	if(patchdef->getStackSize() > 0){
+	if(patchdef->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
 	  ret = xTaskGenericCreate(runProgramTask, "Program", 
 				   patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
 				   NULL, PROGRAM_PRIORITY, &xProgramHandle, 

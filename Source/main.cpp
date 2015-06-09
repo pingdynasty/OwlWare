@@ -42,7 +42,6 @@ int main(void){
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
   // NVIC_SetPriorityGrouping(0);
 
-// #ifdef DEBUG
   SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk; // enable MemManageFault
   NVIC_SetPriority(MemoryManagement_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 1, 0));
   SCB->SHCSR |= SCB_SHCSR_BUSFAULTENA_Msk; // enable BusFault

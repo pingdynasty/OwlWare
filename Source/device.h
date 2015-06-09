@@ -10,6 +10,7 @@
 
 #define DEBUG_AUDIO
 #define DEBUG_DWT
+#define DEBUG_STACK
 
 #define DEFAULT_PROGRAM              0
 /* #define MAX_FACTORY_PROGRAM          32 */

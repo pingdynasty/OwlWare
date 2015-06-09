@@ -15,8 +15,6 @@
 
 uint16_t midi_values[NOF_ADC_VALUES];
 
-#define MAX_FACTORY_PROGRAM 32
-
 class MidiHandler : public MidiReader {
 private:
   uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
@@ -226,9 +224,10 @@ public:
       if(value == 127){
 	settings.reset();
 	settings.clearFlash();
+	codec.stop();
 	codec.init(settings);
+	codec.start();
 	program.reset();
-	// patches.setActiveSlot(GREEN);
       }
       break;
     }

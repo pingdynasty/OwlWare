@@ -53,14 +53,16 @@ void FactoryPatchDefinition::init(){
 FactoryPatchDefinition::FactoryPatchDefinition() {
   // stackBase = (uint32_t*)ucHeap;
   stackBase = NULL;
-  stackSize = 0;
+  stackSize  = 0;
+  // stackSize = STATIC_PROGRAM_STACK_SIZE;
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition(char* name, uint8_t inputs, uint8_t outputs, PatchCreator c) :
   PatchDefinition(name, inputs, outputs), creator(c) {
   // stackBase = (uint32_t*)ucHeap;
   stackBase = NULL;
-  stackSize = 0;
+  stackSize  = 0;
+  // stackSize = STATIC_PROGRAM_STACK_SIZE;
 }
 
 void FactoryPatchDefinition::setup(char* nm, uint8_t ins, uint8_t outs, PatchCreator c){
