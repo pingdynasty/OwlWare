@@ -21,12 +21,12 @@ void MidiController::init(uint8_t ch){
 }
 
 void MidiController::sendSettings(){
-  // PatchProcessor* processor = patches.getActivePatchProcessor();
-  // sendCc(PATCH_PARAMETER_A, (uint8_t)(processor->getParameterValue(PARAMETER_A)*127.0) & 0x7f);
-  // sendCc(PATCH_PARAMETER_B, (uint8_t)(processor->getParameterValue(PARAMETER_B)*127.0) & 0x7f);
-  // sendCc(PATCH_PARAMETER_C, (uint8_t)(processor->getParameterValue(PARAMETER_C)*127.0) & 0x7f);
-  // sendCc(PATCH_PARAMETER_D, (uint8_t)(processor->getParameterValue(PARAMETER_D)*127.0) & 0x7f);
-  // sendCc(PATCH_PARAMETER_E, (uint8_t)(processor->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
+  sendPc(settings.program_index);
+  sendCc(PATCH_PARAMETER_A, (uint8_t)(getAnalogValue(PARAMETER_A)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_B, (uint8_t)(getAnalogValue(PARAMETER_B)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_C, (uint8_t)(getAnalogValue(PARAMETER_C)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_D, (uint8_t)(getAnalogValue(PARAMETER_D)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_E, (uint8_t)(getAnalogValue(PARAMETER_E)>>5) & 0x7f);
   sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
   sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
   sendCc(LEFT_INPUT_GAIN, codec.getInputGainLeft()<<2);
@@ -38,12 +38,15 @@ void MidiController::sendSettings(){
   sendCc(LEFT_OUTPUT_MUTE, codec.getOutputMuteLeft() ? 127 : 0);
   sendCc(RIGHT_OUTPUT_MUTE, codec.getOutputMuteRight() ? 127 : 0);
   sendCc(BYPASS, codec.getBypass() ? 127 : 0);
-  sendCc(SAMPLING_RATE, (codec.getSamplingRate() >> 10) + 20);
-  sendCc(SAMPLING_BITS, (codec.getFormat() << 4) + 20);
-  sendCc(CODEC_MASTER, codec.isMaster() ? 127 : 0);
-  sendCc(CODEC_PROTOCOL, codec.getProtocol() == I2S_PROTOCOL_PHILIPS ? 0 : 127);
-  sendCc(SAMPLING_SIZE, log2(settings.audio_blocksize));
-  sendCc(LEFT_RIGHT_SWAP, codec.getSwapLeftRight());
+
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_RATE, settings.audio_samplingrate);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_WIDTH, settings.audio_bitdepth);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_BLOCKSIZE, settings.audio_blocksize);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_MASTER, settings.audio_codec_master);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_PROTOCOL, settings.audio_codec_protocol);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_BYPASS, settings.audio_codec_bypass);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_HALFSPEED, settings.audio_codec_halfspeed);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_SWAP, settings.audio_codec_swaplr);
 }
 
 void MidiController::sendPatchParameterNames(){
@@ -181,6 +184,15 @@ void MidiController::sendFirmwareVersion(){
   sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
+void MidiController::sendConfigurationSetting(const char* name, uint32_t value){
+  char buffer[16];
+  buffer[0] = SYSEX_CONFIGURATION_COMMAND;
+  char* p = &buffer[1];
+  p = stpcpy(p, name);
+  p = stpcpy(p, itoa(value, 16));
+  sendSysEx((uint8_t*)buffer, p-buffer);
+}
+
 void MidiController::sendDeviceId(){
   uint8_t buffer[15];
   buffer[0] = SYSEX_DEVICE_ID;
@@ -209,6 +221,15 @@ void MidiController::sendSelfTest(){
   // }else{
   //   sendSysEx(buffer, 2);
   // }
+}
+
+void MidiController::sendPc(uint8_t pc){
+  if(midi_device_connected()){
+    uint8_t packet[4] = { USB_COMMAND_PROGRAM_CHANGE,
+			  (uint8_t)(PROGRAM_CHANGE | channel),
+			  pc, 0 };
+    midi_send_usb_buffer(packet, sizeof(packet));
+  }
 }
 
 void MidiController::sendCc(uint8_t cc, uint8_t value){

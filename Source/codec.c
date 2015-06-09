@@ -131,7 +131,7 @@ void Codec_CtrlInterface_Init(void){
  * @param  rate: Audio frequency to be configured for the I2S peripheral. 
  * @retval None
  */
-uint32_t Codec_AudioInterface_Init(uint32_t rate, bool master, uint16_t standard, uint16_t format){
+uint32_t Codec_AudioInterface_Init(uint32_t rate, bool master, uint16_t standard, uint8_t bits){
   I2S_InitTypeDef I2S_InitStructure;
   I2S_StructInit(&I2S_InitStructure);
 
@@ -154,8 +154,20 @@ uint32_t Codec_AudioInterface_Init(uint32_t rate, bool master, uint16_t standard
   SPI_I2S_DeInit(CODEC_I2S);
   I2S_InitStructure.I2S_AudioFreq = rate;
   I2S_InitStructure.I2S_Standard = standard;
-  I2S_InitStructure.I2S_DataFormat = format;
   I2S_InitStructure.I2S_CPOL = I2S_CPOL_Low;
+  switch(bits){
+  case 16:
+    I2S_InitStructure.I2S_DataFormat = I2S_DataFormat_16b;
+    break;
+  case 24:
+    I2S_InitStructure.I2S_DataFormat = I2S_DataFormat_24b;
+    break;
+  case 32:
+    I2S_InitStructure.I2S_DataFormat = I2S_DataFormat_32b;
+    break;
+  default:
+    return -1;
+  }
 
   if(master){
     // if the codec is master then the mcu is not

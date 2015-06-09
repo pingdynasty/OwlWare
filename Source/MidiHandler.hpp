@@ -89,94 +89,11 @@ public:
     case RIGHT_OUTPUT_MUTE:
       codec.setOutputMuteRight(value == 127);
       break;
-    case BYPASS:
-      codec.setBypass(value == 127);
-      break;
     case LEFT_INPUT_MUTE:
       codec.setInputMuteLeft(value == 127);
       break;
     case RIGHT_INPUT_MUTE:
       codec.setInputMuteRight(value == 127);
-      break;
-    case SAMPLING_RATE:
-      uint32_t frequency;
-      if(value < 32){
-	frequency = 8000;
-      }else if(value < 64){
-	frequency = 32000;
-      }else if(value < 96){
-	frequency = 48000;
-      }else{
-	frequency = 96000;
-      }
-      if(frequency != settings.audio_samplingrate){
-	settings.audio_samplingrate = frequency;
-	codec.stop();
-	codec.init(settings);
-	codec.start();
-	program.reset(); // changing sampling rate may require re-initialisation of patches
-      }
-      break;
-    case SAMPLING_BITS: {
-      I2SFormat format;
-      if(value < 42){
-	format = I2S_FORMAT_16bit;
-      }else if(value < 84){
-	format = I2S_FORMAT_24bit;
-      }else{
-	format = I2S_FORMAT_32bit;
-      }      
-      if(format != settings.audio_codec_format){
-	// todo! remove?
-	settings.audio_codec_format = format;
-	codec.stop();
-	codec.init(settings);
-	codec.start();
-	program.reset();
-      }
-      break;
-    }
-    case CODEC_MASTER: {
-      bool master = value > 63;
-      /* Codec slave mode must be enabled on solder jumper MCLK on digital OWL board */
-      if(master != settings.audio_codec_master){
-	settings.audio_codec_master = master;
-	codec.stop();
-	codec.init(settings);
-	codec.start();
-	program.reset();
-      }
-      break;
-    }
-    case CODEC_PROTOCOL: {
-      I2SProtocol protocol;
-      if(value < 64){
-	protocol = I2S_PROTOCOL_PHILIPS;
-      }else{
-	protocol = I2S_PROTOCOL_MSB;
-      }
-      if(protocol != settings.audio_codec_protocol){
-	settings.audio_codec_protocol = protocol;
-	codec.stop();
-	codec.init(settings);
-	codec.start();
-	program.reset();
-      }
-      break;
-    }
-    case SAMPLING_SIZE: {
-      uint32_t blocksize = 1L << value;
-      if(settings.audio_blocksize != blocksize && blocksize <= AUDIO_MAX_BLOCK_SIZE){
-	settings.audio_blocksize = blocksize;
-	codec.stop();
-	codec.init(settings);
-	codec.start();
-	program.reset(); // changing blocksize may require re-initialisation of patches
-      }
-      break;
-    }
-    case LEFT_RIGHT_SWAP:
-      codec.setSwapLeftRight(value == 127);
       break;
     case REQUEST_SETTINGS:
       switch(value){
@@ -196,7 +113,10 @@ public:
 	midi.sendDeviceId();
 	break;
       case 5:
-	midi.sendSelfTest();
+	midi.sendDeviceStats();
+	break;
+      case 6:
+	midi.sendProgramMessage();
 	break;
       case PATCH_BUTTON:
 	midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
@@ -216,10 +136,6 @@ public:
 	toggleLed();
       }
       break;
-    case DEVICE_FIRMWARE_UPDATE:
-      if(value == 127)
-	jump_to_bootloader();
-      break;
     case FACTORY_RESET:
       if(value == 127){
 	settings.reset();
@@ -236,8 +152,42 @@ public:
   void handleSystemCommon(uint8_t){
   }
 
-  FirmwareLoader loader;
+  void updateCodecSettings(){
+    codec.stop();
+    codec.init(settings);
+    codec.start();
+    program.reset();
+  }
 
+  void handleConfigurationCommand(uint8_t* data, uint16_t size){
+    if(size < 4)
+      return;
+    char* p = (char*)data;
+    uint32_t value = strtol(p+2, NULL, 16);
+    if(strncmp(SYSEX_CONFIGURATION_AUDIO_RATE, p, 2) == 0){
+      // uint32_t freq = strntol(data+2, &data, 16);
+      // settings.audio_samplingrate = freq;
+      settings.audio_samplingrate = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_BLOCKSIZE, p, 2) == 0){
+      settings.audio_blocksize = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_WIDTH, p, 2) == 0){
+      settings.audio_bitdepth = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_PROTOCOL, p, 2) == 0){
+      settings.audio_codec_protocol = (I2SProtocol)value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_MASTER, p, 2) == 0){
+      settings.audio_codec_master = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_SWAP, p, 2) == 0){
+      settings.audio_codec_swaplr = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_BYPASS, p, 2) == 0){
+      settings.audio_codec_bypass = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_HALFSPEED, p, 2) == 0){
+      settings.audio_codec_halfspeed = value;
+      // settings.audio_codec_halfspeed = (p[2] == '1' ? true : false);
+    }
+    updateCodecSettings();
+  }
+
+  FirmwareLoader loader;
   void handleFirmwareUploadCommand(uint8_t* data, uint16_t size){
     // codec.stop();
     int32_t ret = loader.handleFirmwareUpload(data, size);
@@ -267,6 +217,7 @@ public:
       return;
     switch(data[2]){
     case SYSEX_CONFIGURATION_COMMAND:
+      handleConfigurationCommand(data+3, size-3);
       break;
     case SYSEX_DFU_COMMAND:
       jump_to_bootloader();

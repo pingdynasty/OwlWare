@@ -168,11 +168,11 @@ Hardware Configuration defines parameters
 #define WM8731_SR_32_32      (0x06<<2)
 #define WM8731_SR_96_96      (0x07<<2)
 #define WM8731_SR_USB_48_48  (0x00<<2)  /* USB mode rates */
-#define WM8731_SR_USB_44_44  (0x18<<2)
+#define WM8731_SR_USB_44_44  (0x08<<2)
 #define WM8731_SR_USB_48_08  (0x01<<2)
-#define WM8731_SR_USB_44_08  (0x19<<2)
+#define WM8731_SR_USB_44_08  (0x09<<2)
 #define WM8731_SR_USB_08_48  (0x02<<2)
-#define WM8731_SR_USB_08_44  (0x1a<<2)
+#define WM8731_SR_USB_08_44  (0x0a<<2)
 #define WM8731_SR_USB_08_08  (0x03<<2)
 #define WM8731_SR_USB_32_32  (0x06<<2)
 #define WM8731_SR_USB_96_96  (0x07<<2)
@@ -194,7 +194,7 @@ Hardware Configuration defines parameters
 
 /* Low layer codec functions */
 void     Codec_CtrlInterface_Init(void);
-uint32_t Codec_AudioInterface_Init(uint32_t AudioFreq, bool master, uint16_t standard, uint16_t format);
+uint32_t Codec_AudioInterface_Init(uint32_t AudioFreq, bool master, uint16_t standard, uint8_t bits);
 uint32_t Codec_Reset(void);
 uint32_t Codec_WriteRegister(uint8_t RegisterAddr, uint16_t RegisterValue);
 void     Codec_GPIO_Init(void);

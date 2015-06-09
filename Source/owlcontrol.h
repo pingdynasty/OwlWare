@@ -88,6 +88,8 @@
 
    void exitProgram();
 
+   void updateProgramIndex(uint8_t index);
+
    int8_t getErrorStatus();
    void setErrorStatus(int8_t err);
 

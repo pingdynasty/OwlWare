@@ -28,6 +28,10 @@ ApplicationSettings settings;
 PatchRegistry registry;
 volatile bool bypass = false;
 
+// uint16_t getParameterValue(PatchParameterId pid){
+//   return getProgramVector()->parameters[pid];
+// }
+
 bool getButton(PatchButtonId bid){
   return getProgramVector()->buttons & (1<<bid);
   // return false;
@@ -102,10 +106,15 @@ void exitProgram(){
   registry.setDynamicPatchDefinition(NULL);
 }
 
-void resetProgram(){
-  program.reset();
-  registry.setDynamicPatchDefinition(NULL);
+void updateProgramIndex(uint8_t index){
+  settings.program_index = 0;
+  midi.sendPc(index);
 }
+
+// void resetProgram(){
+//   program.reset();
+//   registry.setDynamicPatchDefinition(NULL);
+// }
 
 // void run(){
 //   program.load((uint32_t*)PATCHFLASH, 64*1024);

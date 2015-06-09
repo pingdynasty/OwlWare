@@ -20,7 +20,10 @@ private:
   void clearRegister(uint8_t addr, uint16_t value);
   void setCodecMaster(bool master);
   void setCodecProtocol(I2SProtocol protocol);
-  void setCodecFormat(I2SFormat format);  
+  void setBitDepth(uint8_t bits);
+  uint32_t getSamplingRate();
+  I2SProtocol getProtocol();
+  bool isMaster();
 public:
   CodecController();
 
@@ -28,10 +31,6 @@ public:
   void clear();
   void init(ApplicationSettings& settings);
   void setSamplingRate(uint32_t rate);
-  uint32_t getSamplingRate();
-  I2SProtocol getProtocol();
-  I2SFormat getFormat();
-  bool isMaster();
 
   void setActive(bool active);
 
@@ -41,8 +40,6 @@ public:
   void resume();
 
   void softMute(bool mute);
-  void setBypass(bool bypass);
-  bool getBypass();
 
   /* Input gain: 5 bit value 0-0x1f, decimal 0-31 */
   /* One step equals 1.5dB */
@@ -75,6 +72,10 @@ public:
 
   void setSwapLeftRight(bool swap);
   bool getSwapLeftRight();
+  void setHalfSpeed(bool half);
+  bool getHalfSpeed();
+  void setBypass(bool bypass);
+  bool getBypass();
 
 };
 

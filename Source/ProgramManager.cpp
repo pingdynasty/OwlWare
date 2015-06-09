@@ -230,7 +230,7 @@ void ProgramManager::loadProgram(uint8_t pid){
   // if(pid < MAX_FACTORY_PROGRAM){
   if(pid < registry.getNumberOfPatches()){
     program.loadStaticProgram(registry.getPatchDefinition(pid));
-    settings.program_index = pid;
+    updateProgramIndex(pid);
   }
     // if(pid < MAX_FACTORY_PROGRAM)
     //   loadFactoryPatch(pid);
@@ -250,7 +250,7 @@ void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   dynamo.load(address, length);
   patchdef = &dynamo;
   currentProgramVector = dynamo.getProgramVector();
-  settings.program_index = 0;
+  updateProgramIndex(0);
 }
 
 #ifdef DEBUG_STACK

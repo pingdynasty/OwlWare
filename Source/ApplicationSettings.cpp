@@ -13,16 +13,18 @@ void ApplicationSettings::init(){
 
 void ApplicationSettings::reset(){
   audio_codec_master = AUDIO_CODEC_MASTER;
-  audio_codec_format = AUDIO_FORMAT;
+  audio_codec_swaplr = false;
+  audio_codec_bypass = false;
+  audio_codec_halfspeed = false;
   audio_codec_protocol = AUDIO_PROTOCOL;
   audio_samplingrate = AUDIO_SAMPLINGRATE;
   audio_bitdepth = AUDIO_BITDEPTH;
   audio_blocksize = AUDIO_BLOCK_SIZE;
-  program_index = DEFAULT_PROGRAM;
   inputGainLeft = AUDIO_INPUT_GAIN_LEFT;
   inputGainRight = AUDIO_INPUT_GAIN_RIGHT;
   outputGainLeft = AUDIO_OUTPUT_GAIN_LEFT;
   outputGainRight = AUDIO_OUTPUT_GAIN_RIGHT;
+  program_index = DEFAULT_PROGRAM;
 }
 
 bool ApplicationSettings::settingsInFlash(){

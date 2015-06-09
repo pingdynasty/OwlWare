@@ -80,19 +80,18 @@ void CodecController::clear(){
 }
 
 void CodecController::init(ApplicationSettings& settings){
-//   setPin(GPIOA, GPIO_Pin_6); // DEBUG
   // setActive(false);
   clear();
 
   /* configure codec */
   setSamplingRate(settings.audio_samplingrate);
   setCodecMaster(settings.audio_codec_master);
-  setCodecProtocol(settings.audio_codec_protocol);
-  setCodecFormat(settings.audio_codec_format);
+  setCodecProtocol((I2SProtocol)settings.audio_codec_protocol);
+  setBitDepth(settings.audio_bitdepth);
 
   /* Configure the I2S peripheral */
   if(Codec_AudioInterface_Init(settings.audio_samplingrate, settings.audio_codec_master, 
-			       settings.audio_codec_protocol, settings.audio_codec_format) != 0)
+			       settings.audio_codec_protocol, settings.audio_bitdepth) != 0)
     assert_param(false);
 
   setInputGainLeft(settings.inputGainLeft);
@@ -100,48 +99,43 @@ void CodecController::init(ApplicationSettings& settings){
   setOutputGainLeft(settings.outputGainLeft);
   setOutputGainRight(settings.outputGainRight);
 
+  setBypass(settings.audio_codec_bypass);
+  setSwapLeftRight(settings.audio_codec_swaplr);
+  setHalfSpeed(settings.audio_codec_halfspeed);
+
   I2S_Block_Init(tx_buffer, rx_buffer, settings.audio_blocksize);
   // setActive(true);
-
-  // getProgramVector()->audio_bitdepth = settings.audio_bitdepth;
-  // getProgramVector()->audio_samplingrate = settings.audio_samplingrate;
-  // getProgramVector()->audio_blocksize = settings.audio_blocksize;
-
-//   clearPin(GPIOA, GPIO_Pin_6); // DEBUG
 }
 
-void CodecController::setSamplingRate(uint32_t rate){
-    switch(rate){
-    case 8000:
-      writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_08_08);
-      break;
-    case 32000:
-      writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_32_32);
-      break;
-    case 48000:
-      writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_48_48);
-      break;
-    case 96000:
-      writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_96_96);
-      break;
-    }
-    // settings.audio_samplingrate = rate;
-}
 
 uint32_t CodecController::getSamplingRate(){
   return settings.audio_samplingrate;
 }
 
 I2SProtocol CodecController::getProtocol(){
-  return settings.audio_codec_protocol;
-}
-
-I2SFormat CodecController::getFormat(){
-  return settings.audio_codec_format;
+  return (I2SProtocol)settings.audio_codec_protocol;
 }
 
 bool CodecController::isMaster(){
   return settings.audio_codec_master;
+}
+
+void CodecController::setSamplingRate(uint32_t rate){
+  switch(rate){
+  case 8000:
+    writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_08_08);
+    break;
+  case 32000:
+    writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_32_32);
+    break;
+  case 48000:
+    writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_48_48);
+    break;
+  case 96000:
+    writeRegister(SAMPLING_CONTROL_REGISTER, WM8731_MODE_NORMAL|WM8731_SR_96_96);
+    // digital filter type 2, BOSR 0 128fs
+    break;
+  }
 }
 
 void CodecController::setActive(bool active){
@@ -171,11 +165,6 @@ void CodecController::setCodecProtocol(I2SProtocol protocol){
     writeRegister(DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER, 
 		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & 0x1fc)
 		  | WM8731_FORMAT_I2S);
-
-    // todo: this is a hack to test halving the sampling rate
-    // /why/ is this necessary?
-    setRegister(SAMPLING_CONTROL_REGISTER, WM8731_CLKIDIV2);
-
   }else{
     writeRegister(DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER, 
 		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & 0x1fc)
@@ -183,21 +172,21 @@ void CodecController::setCodecProtocol(I2SProtocol protocol){
   }
 }
 
-void CodecController::setCodecFormat(I2SFormat format){
-  switch(format){
-  case I2S_FORMAT_16bit:
+void CodecController::setBitDepth(uint8_t bits){
+  switch(bits){
+  case 16:
     writeRegister(DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER, 
-		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & 0x1f3)
+		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & ~(3<<2))
 		  | WM8731_IWL_16BIT);
     break;
-  case I2S_FORMAT_24bit:
+  case 24:
     writeRegister(DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER, 
-		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & 0x1f3)
+		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & ~(3<<2))
 		  | WM8731_IWL_24BIT);
     break;
-  case I2S_FORMAT_32bit:
+  case 32:
     writeRegister(DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER, 
-		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & 0x1f3)
+		  (wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & ~(3<<2))
 		  | WM8731_IWL_32BIT);
     break;
   }
@@ -367,4 +356,15 @@ void CodecController::setSwapLeftRight(bool swap){
 
 bool CodecController::getSwapLeftRight(){
   return wm8731_registers[DIGITAL_AUDIO_INTERFACE_FORMAT_REGISTER] & WM8731_LRSWAP;
+}
+
+void CodecController::setHalfSpeed(bool half){
+  if(half)
+    setRegister(SAMPLING_CONTROL_REGISTER, WM8731_CLKIDIV2);
+  else
+    clearRegister(SAMPLING_CONTROL_REGISTER, WM8731_CLKIDIV2);
+}
+
+bool CodecController::getHalfSpeed(){
+  return wm8731_registers[SAMPLING_CONTROL_REGISTER] & WM8731_CLKIDIV2;
 }
