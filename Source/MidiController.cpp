@@ -1,6 +1,5 @@
 #include <errno.h>
 #include <string.h>
-#include "sysex.h"
 #include "owlcontrol.h"
 #include "midicontrol.h"
 #include "MidiStatus.h"
@@ -11,6 +10,7 @@
 #include "OpenWareMidiControl.h"
 #include "ProgramVector.h"
 #include "ProgramManager.h"
+#include <math.h> /* for ceilf */
 
 uint32_t log2(uint32_t x){ 
   return x == 0 ? 0 : 31 - __builtin_clz (x); /* clz returns the number of leading 0's */
@@ -91,6 +91,7 @@ void MidiController::sendPatchName(uint8_t index){
 void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
   sendProgramMessage();
+  sendProgramStats();
 #ifdef DEBUG_STACK
   sendDeviceStats();
 #endif /* DEBUG_STACK */
@@ -127,30 +128,22 @@ void MidiController::sendDeviceStats(){
 }
 #endif /* DEBUG_STACK */
 
-void MidiController::sendProgramMessage(){
-  ProgramVector* smem = getProgramVector();
-  if(smem != NULL && smem->message != NULL){
-    char buffer[64];
-    buffer[0] = SYSEX_PROGRAM_MESSAGE;
-    char* p = &buffer[1];
-    p = stpncpy(p, smem->message, 63);
-    sendSysEx((uint8_t*)buffer, p-buffer);    
-  }
-}
-
-void MidiController::sendFirmwareVersion(){
+void MidiController::sendProgramStats(){
   char buffer[64];
-  buffer[0] = SYSEX_FIRMWARE_VERSION;
+  buffer[0] = SYSEX_PROGRAM_STATS;
   char* p = &buffer[1];
-  p = stpcpy(p, getFirmwareVersion());
-  p = stpcpy(p, (const char*)" (");
   uint8_t err = getErrorStatus();
   switch(err & 0xf0){
-  case NO_ERROR:
-    p = stpcpy(p, itoa(program.getCyclesPerBlock()/settings.audio_blocksize, 10));
-    p = stpcpy(p, (const char*)" | ");
-    p = stpcpy(p, itoa(program.getHeapMemoryUsed(), 10));
+  case NO_ERROR: {
+    p = stpcpy(p, (const char*)"CPU ");
+    float percent = (program.getCyclesPerBlock()/settings.audio_blocksize) / (float)3500;
+    p = stpcpy(p, itoa(ceilf(percent*100), 10));
+    p = stpcpy(p, (const char*)"% Heap ");
+    percent = program.getHeapMemoryUsed()/(float)(1024*1024);
+    p = stpcpy(p, itoa(ceilf(percent*100), 10));
+    p = stpcpy(p, (const char*)"%");
     break;
+  }
   case MEM_ERROR:
     p = stpcpy(p, (const char*)"Memory Error 0x");
     p = stpcpy(p, itoa(err, 16));
@@ -180,7 +173,25 @@ void MidiController::sendFirmwareVersion(){
     p = stpcpy(p, itoa(err, 16));
     break;
   }
-  p = stpcpy(p, (const char*)")");
+  sendSysEx((uint8_t*)buffer, p-buffer);
+}
+
+void MidiController::sendProgramMessage(){
+  ProgramVector* smem = getProgramVector();
+  if(smem != NULL && smem->message != NULL){
+    char buffer[64];
+    buffer[0] = SYSEX_PROGRAM_MESSAGE;
+    char* p = &buffer[1];
+    p = stpncpy(p, smem->message, 63);
+    sendSysEx((uint8_t*)buffer, p-buffer);    
+  }
+}
+
+void MidiController::sendFirmwareVersion(){
+  char buffer[64];
+  buffer[0] = SYSEX_FIRMWARE_VERSION;
+  char* p = &buffer[1];
+  p = stpcpy(p, getFirmwareVersion());
   sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
@@ -194,11 +205,15 @@ void MidiController::sendConfigurationSetting(const char* name, uint32_t value){
 }
 
 void MidiController::sendDeviceId(){
-  uint8_t buffer[15];
+  uint32_t* deviceId = getDeviceId();
+  char buffer[36];
   buffer[0] = SYSEX_DEVICE_ID;
-  uint8_t* deviceId = getDeviceId();
-  data_to_sysex(deviceId, buffer+1, 3*4);
-  sendSysEx(buffer, sizeof(buffer));
+  char* p = &buffer[1];
+  for(int i=0; i<3; i++){
+    p = stpcpy(p, itoa(deviceId[i], 16));
+    p = stpcpy(p, ".");
+  }
+  sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
 void MidiController::sendSelfTest(){

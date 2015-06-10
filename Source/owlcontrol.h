@@ -12,7 +12,7 @@
 #endif
 
    bool isClockExternal();
-   uint8_t* getDeviceId();
+   uint32_t* getDeviceId();
    void jump_to_bootloader();
    char* getFirmwareVersion();
 

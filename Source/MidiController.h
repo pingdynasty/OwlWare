@@ -25,6 +25,7 @@ public:
   void sendPatchName(uint8_t index);
   void sendDeviceInfo();
   void sendDeviceStats();
+  void sendProgramStats();
   void sendFirmwareVersion();
   void sendDeviceId();
   void sendSelfTest();

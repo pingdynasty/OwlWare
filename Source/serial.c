@@ -93,17 +93,14 @@ void printByte(char c){
 void printIntegerInBase(unsigned long n, unsigned long base){ 
   unsigned char buf[8 * sizeof(long)]; // Assumes 8-bit chars. 
   unsigned long i = 0;
-
   if (n == 0) {
     printByte('0');
     return;
   } 
-
   while (n > 0) {
     buf[i++] = n % base;
     n /= base;
   }
-
   for (; i > 0; i--)
     printByte(buf[i - 1] < 10 ?
 	      '0' + buf[i - 1] :

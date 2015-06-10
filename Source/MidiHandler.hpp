@@ -106,17 +106,20 @@ public:
       case 2:
 	midi.sendPatchParameterNames();
 	break;
-      case 3:
+      case SYSEX_FIRMWARE_VERSION:
 	midi.sendFirmwareVersion();
 	break;
-      case 4:
+      case SYSEX_DEVICE_ID:
 	midi.sendDeviceId();
 	break;
-      case 5:
+      case SYSEX_DEVICE_STATS:
 	midi.sendDeviceStats();
 	break;
-      case 6:
+      case SYSEX_PROGRAM_MESSAGE:
 	midi.sendProgramMessage();
+	break;
+      case SYSEX_PROGRAM_STATS:
+	midi.sendProgramStats();
 	break;
       case PATCH_BUTTON:
 	midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);

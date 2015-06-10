@@ -22,13 +22,13 @@ bool isClockExternal(){
 }
 
 /* Unique device ID register (96 bits: 12 bytes) */
-uint8_t* getDeviceId(){
+uint32_t* getDeviceId(){
   const uint32_t* addr = (uint32_t*)0x1fff7a10;
   static uint32_t deviceId[3];
   deviceId[0] = addr[0];
   deviceId[1] = addr[1];
   deviceId[2] = addr[2];
-  return (uint8_t*)deviceId;
+  return deviceId;
 
   // read location 0xE0042000
   // 16 bits revision id, 4 bits reserved, 12 bits device id
@@ -110,7 +110,11 @@ void adcSetup(){
 
 uint16_t getAnalogValue(uint8_t index){
   /* assert_param(index < sizeof(adc_values)); */
+#ifdef OWLMODULAR
+  return 0x1000 - adc_values[index];
+#else
   return adc_values[index];
+#endif
 }
 
 uint16_t* getAnalogValues(){
