@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define OWLMODULAR
+/* #define OWLMODULAR */
 #define FIRMWARE_VERSION             "vector-02"
 
 /* #define DEFINE_OWL_SYSTICK */
@@ -10,7 +10,7 @@
 
 #define DEBUG_AUDIO
 #define DEBUG_DWT
-#define DEBUG_STACK
+/* #define DEBUG_STACK */
 
 #define DEFAULT_PROGRAM              0
 /* #define MAX_FACTORY_PROGRAM          32 */

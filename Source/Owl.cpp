@@ -107,7 +107,7 @@ void exitProgram(){
 }
 
 void updateProgramIndex(uint8_t index){
-  settings.program_index = 0;
+  settings.program_index = index;
   midi.sendPc(index);
 }
 

@@ -41,8 +41,8 @@ void ApplicationSettings::loadFromFlash(){
 
 void ApplicationSettings::saveToFlash(){
   eeprom_unlock();
-  eeprom_erase(APPLICATION_SETTINGS_OFFSET);
-  eeprom_write_block(APPLICATION_SETTINGS_OFFSET, (uint8_t*)this, sizeof(*this));
+  if(eeprom_erase(APPLICATION_SETTINGS_OFFSET) == 0)
+    eeprom_write_block(APPLICATION_SETTINGS_OFFSET, (uint8_t*)this, sizeof(*this));
   eeprom_lock();
 }
 

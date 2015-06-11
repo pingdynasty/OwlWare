@@ -24,14 +24,7 @@ public:
     linkAddress = header->linkAddress;
     programVector = header->programVector;
     strncpy(programName, header->programName, sizeof(programName));
-    programFunction = NULL;
-
-    // stackBase = (uint32_t*)*(programAddress+3); // stack base pointer (low end of heap/stack)
-    // stackSize = *(programAddress+4) - *(programAddress+3);
-    // strncpy(programName, (char*)(programAddress+5), sizeof(programName));
-    // jumpAddress = (uint32_t*)*(programAddress+1); // main pointer
-    // linkAddress = (uint32_t*)*(programAddress+2); // link base address
-    // programFunction = NULL;
+    programFunction = (ProgramFunction)jumpAddress;
   }
   void copy(){
     /* copy program to ram */
@@ -39,7 +32,6 @@ public:
        (linkAddress == (uint32_t*)EXTRAM && programSize <= 1024*1024)){
       memcpy((void*)linkAddress, (void*)programAddress, programSize);
       // memmove((void*)linkAddress, (void*)programAddress, programSize);
-      programFunction = (ProgramFunction)jumpAddress;
       programAddress = linkAddress;
     }else{
       programFunction = NULL;

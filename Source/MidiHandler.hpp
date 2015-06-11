@@ -24,8 +24,10 @@ public:
   }
 
   void handleProgramChange(uint8_t status, uint8_t pid){
-    program.loadProgram(pid);
-    program.reset();
+    if(pid>0){
+      program.loadProgram(pid);
+      program.reset();
+    }
   }
 
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
@@ -162,6 +164,13 @@ public:
     program.reset();
   }
 
+  void handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
+    if(size < 1)
+      return;
+    uint8_t slot = data[0];
+    program.saveProgramToFlash(slot);
+  }
+
   void handleConfigurationCommand(uint8_t* data, uint16_t size){
     if(size < 4)
       return;
@@ -227,6 +236,9 @@ public:
       break;
     case SYSEX_FIRMWARE_UPLOAD:
       handleFirmwareUploadCommand(data, size);
+      break;
+    case SYSEX_FIRMWARE_STORE:
+      handleFirmwareStoreCommand(data+3, size-3);
       break;
     }
   }

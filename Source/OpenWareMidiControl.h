@@ -36,6 +36,7 @@ enum OpenWareMidiSysexCommand {
   SYSEX_CONFIGURATION_COMMAND     = 0x03,
   SYSEX_DFU_COMMAND               = 0x7e,
   SYSEX_FIRMWARE_UPLOAD           = 0x10,
+  SYSEX_FIRMWARE_STORE            = 0x11,
   SYSEX_FIRMWARE_VERSION          = 0x20,
   SYSEX_DEVICE_ID                 = 0x21,
   SYSEX_PROGRAM_MESSAGE           = 0x22,

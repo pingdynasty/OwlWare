@@ -228,10 +228,13 @@ void ProgramManager::reset(){
 
 void ProgramManager::loadProgram(uint8_t pid){
   // if(pid < MAX_FACTORY_PROGRAM){
-  if(pid < registry.getNumberOfPatches()){
-    program.loadStaticProgram(registry.getPatchDefinition(pid));
+  // if(pid > 0 && pid < registry.getNumberOfPatches()){
+  PatchDefinition* def = registry.getPatchDefinition(pid);
+  if(def != NULL && def != patchdef){
+    program.loadStaticProgram(def);
     updateProgramIndex(pid);
   }
+  // }
     // if(pid < MAX_FACTORY_PROGRAM)
     //   loadFactoryPatch(pid);
     // else
@@ -327,7 +330,23 @@ void ProgramManager::runManager(){
   }
 }
 
-#if 0
+DynamicPatchDefinition flashPatches[4];
+PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
+  if(sector > 4)
+    return NULL;
+  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
+  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000  
+  uint32_t size = 80*1024; // todo: read program size (and name) from first few bytes
+  ProgramHeader* header = (ProgramHeader*)addr;
+  DynamicPatchDefinition* def = &flashPatches[sector];
+  if(header->magic == 0xDADAC0DE){
+    def->load((void*)addr, size);
+    if(def->verify())
+      return def;
+  }
+  return NULL;
+}
+
 bool ProgramManager::saveProgramToFlash(uint8_t sector){
   if(sector > 4)
     return false;
@@ -337,12 +356,15 @@ bool ProgramManager::saveProgramToFlash(uint8_t sector){
   if(addr < 0x3c000 || addr > 0xdc000)
     return false;
   eeprom_unlock();
-  eeprom_erase(addr);
+  int ret = eeprom_erase(addr);
+  if(ret)
+    return false;
   // todo: write program size (and name) in first few bytes
   // assumes program is loaded to PATCHRAM
-  eeprom_write_block(addr, (uint8_t*)PATCHRAM, programLength);
+  uint32_t size = 80*1024;
+  ret = eeprom_write_block(addr, (uint8_t*)PATCHRAM, size);
   eeprom_lock();
-  return true;
+  return ret == 0;
 }
 
 bool ProgramManager::loadProgramFromFlash(uint8_t sector){
@@ -354,7 +376,6 @@ bool ProgramManager::loadProgramFromFlash(uint8_t sector){
   loadDynamicProgram((void*)addr, size);
   return true;
 }
-#endif // 0
 
 /*
   __set_CONTROL(0x3); // Switch to use Process Stack, unprivilegedstate

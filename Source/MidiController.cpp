@@ -71,7 +71,8 @@ void MidiController::sendPatchParameterName(PatchParameterId pid, const char* na
 }
 
 void MidiController::sendPatchNames(){
-  for(unsigned int i=0; i<registry.getNumberOfPatches(); ++i)
+  // +1 for the current / dynamic patch in slot 0
+  for(unsigned int i=0; i<registry.getNumberOfPatches()+1; ++i)
     sendPatchName(i);
 }
 
@@ -92,9 +93,7 @@ void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
   sendProgramMessage();
   sendProgramStats();
-#ifdef DEBUG_STACK
   sendDeviceStats();
-#endif /* DEBUG_STACK */
 }
 
 #ifndef abs
@@ -115,8 +114,8 @@ char* itoa(int val, int base){
 
 #include <string.h>
 
-#ifdef DEBUG_STACK
 void MidiController::sendDeviceStats(){
+#ifdef DEBUG_STACK
   char buffer[64];
   buffer[0] = SYSEX_DEVICE_STATS;
   char* p = &buffer[1];
@@ -125,8 +124,8 @@ void MidiController::sendDeviceStats(){
   p = stpcpy(p, (const char*)"/");
   p = stpcpy(p, itoa(program.getProgramStackAllocation(), 10));
   sendSysEx((uint8_t*)buffer, p-buffer);
-}
 #endif /* DEBUG_STACK */
+}
 
 void MidiController::sendProgramStats(){
   char buffer[64];

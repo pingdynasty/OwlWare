@@ -14,10 +14,10 @@ public:
   void reset();
   const char* getName(unsigned int index);
   PatchDefinition* getPatchDefinition(unsigned int index){
-    if(index < nofPatches)
-      return defs[index];
-    if(index == nofPatches && dynamicPatchDefinition != NULL)
+    if(index == 0)
       return dynamicPatchDefinition;
+    if(--index < nofPatches)
+      return defs[index];
     return NULL;
   }
   unsigned int getNumberOfPatches();
