@@ -336,19 +336,21 @@ PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
     return NULL;
   uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
   addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000  
-  uint32_t size = 80*1024; // todo: read program size (and name) from first few bytes
   ProgramHeader* header = (ProgramHeader*)addr;
   DynamicPatchDefinition* def = &flashPatches[sector];
-  if(header->magic == 0xDADAC0DE){
-    def->load((void*)addr, size);
-    if(def->verify())
+  uint32_t size = (uint32_t)header->endAddress - (uint32_t)header->linkAddress;
+  if(header->magic == 0xDADAC0DE && size <= 80*1024){
+    if(def->load((void*)addr, size) && def->verify())
       return def;
   }
   return NULL;
 }
 
 bool ProgramManager::saveProgramToFlash(uint8_t sector){
+  // save current dynamic program (program index 0)
   if(sector > 4)
+    return false;
+  if(!dynamo.verify())
     return false;
   uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
   addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000
@@ -359,10 +361,7 @@ bool ProgramManager::saveProgramToFlash(uint8_t sector){
   int ret = eeprom_erase(addr);
   if(ret)
     return false;
-  // todo: write program size (and name) in first few bytes
-  // assumes program is loaded to PATCHRAM
-  uint32_t size = 80*1024;
-  ret = eeprom_write_block(addr, (uint8_t*)PATCHRAM, size);
+  ret = eeprom_write_block(addr, (uint8_t*)dynamo.getLinkAddress(), dynamo.getProgramSize());
   eeprom_lock();
   return ret == 0;
 }

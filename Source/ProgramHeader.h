@@ -10,11 +10,12 @@
    struct ProgramHeader {
      uint32_t magic;
      uint32_t* linkAddress;
+     uint32_t* endAddress;
      uint32_t* jumpAddress;
      uint32_t* stackBegin;
      uint32_t* stackEnd;
      ProgramVector* programVector;
-     char programName[16];
+     char programName[24];
    };
 
 #ifdef __cplusplus

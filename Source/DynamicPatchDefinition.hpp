@@ -14,14 +14,16 @@ public:
     PatchDefinition(programName, 2, 2) {
     load(addr, sz);
   }
-  void load(void* addr, uint32_t sz){
+  bool load(void* addr, uint32_t sz){
     programAddress = (uint32_t*)addr;
-    programSize = sz;
     header = (ProgramHeader*)addr;
+    linkAddress = header->linkAddress;
+    programSize = (uint32_t)header->endAddress - (uint32_t)header->linkAddress;
+    if(sz != programSize)
+      return false;
     stackBase = header->stackBegin;
     stackSize = (uint32_t)header->stackEnd - (uint32_t)header->stackBegin;
     jumpAddress = header->jumpAddress;
-    linkAddress = header->linkAddress;
     programVector = header->programVector;
     strncpy(programName, header->programName, sizeof(programName));
     programFunction = (ProgramFunction)jumpAddress;
@@ -32,7 +34,9 @@ public:
        (linkAddress == (uint32_t*)EXTRAM && programSize <= 1024*1024)){
       memcpy((void*)linkAddress, (void*)programAddress, programSize);
       // memmove((void*)linkAddress, (void*)programAddress, programSize);
-      programAddress = linkAddress;
+      if(programAddress == (uint32_t*)EXTRAM)
+	// avoid copying dynamic patch again after reset
+	programAddress = linkAddress; 
     }else{
       programFunction = NULL;
     }
@@ -62,8 +66,14 @@ public:
   ProgramVector* getProgramVector(){
     return programVector;
   }
+  uint32_t getProgramSize(){
+    return programSize;
+  }
+  uint32_t* getLinkAddress(){
+    return linkAddress;
+  }
 private:
-  char programName[16];
+  char programName[24];
   ProgramFunction programFunction;
   uint32_t* linkAddress;
   uint32_t* jumpAddress;
