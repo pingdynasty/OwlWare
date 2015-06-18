@@ -10,6 +10,10 @@
 #define OWL_PEDAL_HARDWARE    0x11
 #define OWL_MODULAR_HARDWARE  0x12
 
+
+#define OWL_SERVICE_ARM_RFFT_FAST_INIT_F32 0x100
+#define OWL_SERVICE_INVALID_ARGS -1
+
 typedef enum { 
   AUDIO_IDLE_STATUS = 0, 
   AUDIO_READY_STATUS, 
@@ -34,6 +38,7 @@ typedef enum {
      void (*registerPatchParameter)(uint8_t id, const char* name);
      void (*programReady)(void);
      void (*programStatus)(ProgramVectorAudioStatus status);
+     int (*serviceCall)(int service, void** params, int len);
      uint32_t cycles_per_block;
      uint32_t heap_bytes_used;
      char* message;

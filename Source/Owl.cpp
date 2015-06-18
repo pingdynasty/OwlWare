@@ -10,6 +10,7 @@
 #include "OpenWareMidiControl.h"
 #include "ProgramVector.h"
 #include "ProgramManager.h"
+#include "ServiceCall.h"
 #include "bkp_sram.h"
 
 // #include "serial.h"
@@ -180,6 +181,7 @@ void updateProgramVector(ProgramVector* smem){
   smem->heap_bytes_used = 0;
   smem->programReady = programReady;
   smem->programStatus = programStatus;
+  smem->serviceCall = serviceCall;
   smem->message = NULL;
 }
 
@@ -271,6 +273,7 @@ void setup(){
 
   program.loadProgram(settings.program_index);
   program.startProgram();
+
 }
 
 #ifdef __cplusplus

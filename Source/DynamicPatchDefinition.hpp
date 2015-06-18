@@ -61,7 +61,8 @@ public:
     if(linkAddress != programAddress)
       copy();
     if(verify())
-      programFunction();
+      programFunction(); // backloaded patch BusFaults here
+    // p/x flashPatches[0]->programFunction 0x20008029
   }
   ProgramVector* getProgramVector(){
     return programVector;

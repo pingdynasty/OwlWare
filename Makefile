@@ -10,16 +10,19 @@ ASFLAGS  = -g
 endif
 
 ifeq ($(CONFIG),Release)
-CFLAGS   = -O2
-LDFLAGS  = -flto -Wl,--gc-sections
+CFLAGS   = -O2 -flto
+# LDFLAGS  = -flto -Wl,--gc-sections
 endif
+
+LDFLAGS += -flto -Wl,--gc-sections
 
 CFLAGS  += --specs=nano.specs
 CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1
 CFLAGS  += -DEXTERNAL_SRAM 
 # CFLAGS  += -fpic -fpie
 CFLAGS  += -fdata-sections
-# CFLAGS  += -ffunction-sections -fno-omit-frame-pointer
+CFLAGS  += -ffunction-sections
+# CFLAGS  += -fno-omit-frame-pointer
 CFLAGS  += -fno-builtin
 CFLAGS  += -nostdlib -nostartfiles -ffreestanding
 CFLAGS  += -mtune=cortex-m4
@@ -52,6 +55,7 @@ CPP_SRC = main.cpp
 CPP_SRC += Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchRegistry.cpp ProgramManager.cpp
 CPP_SRC += FactoryPatches.cpp
+CPP_SRC += ServiceCall.cpp
 
 OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o) $(FREERTOS_SRC:%.c=Build/%.o)
 vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/
@@ -67,6 +71,25 @@ OBJS += $(USB_DEVICE) $(USB_OTG)
 OBJS += libnosys_gnu.o
 OBJS += $(DSPLIB)/FastMathFunctions/arm_sin_f32.o
 OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
+OBJS += $(DSPLIB)/CommonTables/arm_common_tables.o
+
+OBJS += $(DSPLIB)/TransformFunctions/arm_cfft_f32.o
+OBJS += $(DSPLIB)/TransformFunctions/arm_cfft_radix8_f32.o
+OBJS += $(DSPLIB)/TransformFunctions/arm_bitreversal2.o
+OBJS += $(DSPLIB)/TransformFunctions/arm_rfft_fast_f32.o
+OBJS += $(DSPLIB)/TransformFunctions/arm_rfft_fast_init_f32.o
+OBJS += $(DSPLIB)/CommonTables/arm_const_structs.o
+
+OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_init_f32.o
+OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_f32.o
+
+OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q31.o
+OBJS += $(DSPLIB)/SupportFunctions/arm_q31_to_float.o
+OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q15.o
+OBJS += $(DSPLIB)/SupportFunctions/arm_q15_to_float.o
+
+# OBJS += $(DSPLIB)/FastMathFunctions/arm_sin_f32.o
+# OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
 # OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_f32.o
 # OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_init_f32.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q31.o
