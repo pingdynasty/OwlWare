@@ -6,6 +6,7 @@
 #include "basicmaths.h"
 #include "ProgramVector.h"
 
+extern ProgramVector staticVector;
 PatchProcessor *processor;
 PatchProcessor* getInitialisingPatchProcessor(){
   return processor;
@@ -53,6 +54,7 @@ FactoryPatchDefinition::FactoryPatchDefinition() {
   // stackBase = (uint32_t*)ucHeap;
   stackBase = NULL;
   stackSize = STATIC_PROGRAM_STACK_SIZE;
+  programVector = &staticVector;
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition(char* name, uint8_t inputs, uint8_t outputs, PatchCreator c) :
@@ -60,6 +62,7 @@ FactoryPatchDefinition::FactoryPatchDefinition(char* name, uint8_t inputs, uint8
   // stackBase = (uint32_t*)ucHeap;
   stackBase = NULL;
   stackSize = STATIC_PROGRAM_STACK_SIZE;
+  programVector = &staticVector;
 }
 
 void FactoryPatchDefinition::setup(char* nm, uint8_t ins, uint8_t outs, PatchCreator c){

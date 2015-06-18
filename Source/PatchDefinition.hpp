@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "ProgramVector.h"
 
 class PatchDefinition {
 public:
@@ -32,6 +33,9 @@ public:
   const char* getName(){
     return name;
   }
+  ProgramVector* getProgramVector(){
+    return programVector;
+  }
   // void clear();
 // protected:
   const char* name;
@@ -39,6 +43,7 @@ public:
   uint8_t outputs;
   uint32_t* stackBase;
   uint32_t stackSize;
+  ProgramVector* programVector;
 };
 
 #endif // __PatchDefinition_hpp__

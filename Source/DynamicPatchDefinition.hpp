@@ -64,9 +64,6 @@ public:
       programFunction(); // backloaded patch BusFaults here
     // p/x flashPatches[0]->programFunction 0x20008029
   }
-  ProgramVector* getProgramVector(){
-    return programVector;
-  }
   uint32_t getProgramSize(){
     return programSize;
   }
@@ -80,7 +77,6 @@ private:
   uint32_t* jumpAddress;
   uint32_t* programAddress;
   uint32_t programSize;
-  ProgramVector* programVector;
 };
 
 

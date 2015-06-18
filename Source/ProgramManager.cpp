@@ -25,8 +25,8 @@ DynamicPatchDefinition dynamo;
 // #define JUMPTO(address) ((void (*)(void))address)();
 
 ProgramManager program;
-ProgramVector vector;
-ProgramVector* currentProgramVector = &vector;
+ProgramVector staticVector;
+ProgramVector* currentProgramVector = &staticVector;
 
 ProgramVector* getProgramVector(){
   return currentProgramVector;
@@ -246,7 +246,7 @@ void ProgramManager::loadProgram(uint8_t pid){
 
 void ProgramManager::loadStaticProgram(PatchDefinition* def){
   patchdef = def;
-  currentProgramVector = &vector;
+  currentProgramVector = def->getProgramVector();
 }
 
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
