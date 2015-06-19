@@ -30,6 +30,7 @@ enum PatchButtonId {
 #define SYSEX_CONFIGURATION_CODEC_BYPASS          "BY"
 #define SYSEX_CONFIGURATION_CODEC_HALFSPEED       "HS"
 
+
 enum OpenWareMidiSysexCommand {
   SYSEX_PRESET_NAME_COMMAND       = 0x01,
   SYSEX_PARAMETER_NAME_COMMAND    = 0x02,
@@ -37,6 +38,7 @@ enum OpenWareMidiSysexCommand {
   SYSEX_DFU_COMMAND               = 0x7e,
   SYSEX_FIRMWARE_UPLOAD           = 0x10,
   SYSEX_FIRMWARE_STORE            = 0x11,
+  SYSEX_FIRMWARE_RUN              = 0x12,
   SYSEX_FIRMWARE_VERSION          = 0x20,
   SYSEX_DEVICE_ID                 = 0x21,
   SYSEX_PROGRAM_MESSAGE           = 0x22,

@@ -92,7 +92,7 @@
 
    int8_t getErrorStatus();
    void setErrorStatus(int8_t err);
-   void setErrorMessage(int8_t err, char* msg);
+   void setErrorMessage(int8_t err, const char* msg);
 
 #define NO_ERROR         0x00
 #define HARDFAULT_ERROR  0x10

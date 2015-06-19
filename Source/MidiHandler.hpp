@@ -10,8 +10,6 @@
 #include "ApplicationSettings.h"
 #include "FirmwareLoader.hpp"
 #include "ProgramManager.h"
-#include "PatchRegistry.h"
-#include "ProgramVector.h"
 
 uint16_t midi_values[NOF_ADC_VALUES];
 
@@ -145,11 +143,8 @@ public:
       if(value == 127){
 	program.reset();
 	settings.reset();
-	settings.clearFlash();
 	codec.init(settings);
-	for(int i=0; i<4; ++i)
-	  program.eraseProgramFromFlash(i);
-	registry.init();
+	program.eraseProgramFromFlash(-1);
       }
       break;
     }
@@ -161,16 +156,6 @@ public:
   void updateCodecSettings(){
     program.reset();
     codec.init(settings);
-  }
-
-  void handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
-    if(size < 1)
-      return;
-    uint8_t slot = data[0];
-    if(program.saveProgramToFlash(slot))
-      registry.init();
-    else
-      setErrorMessage(PROGRAM_ERROR, "Failed to save program to flash");
   }
 
   void handleConfigurationCommand(uint8_t* data, uint16_t size){
@@ -206,16 +191,32 @@ public:
     int32_t ret = loader.handleFirmwareUpload(data, size);
     if(ret < 0){
       setErrorMessage(PROGRAM_ERROR, "Program upload error");
-      setLed(RED);
     }else if(ret > 0){
       // firmware upload complete
       // midi.sendCc(DEVICE_STATUS, 0x7f);
       setLed(NONE);
-      program.loadDynamicProgram(loader.getData(), loader.getSize());
-      program.startProgram();
-      loader.clear();
     }else{
       toggleLed();
+    }
+  }
+
+  void handleFirmwareRunCommand(uint8_t* data, uint16_t size){
+    if(loader.isReady()){
+      program.loadDynamicProgram(loader.getData(), loader.getSize());
+      loader.clear();
+      program.startProgram();
+    }else{
+      setErrorMessage(PROGRAM_ERROR, "No program to run");
+    }      
+  }
+
+  void handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
+    if(loader.isReady() && size >= 1){
+      uint8_t slot = data[0];
+      program.saveProgramToFlash(slot, loader.getData(), loader.getSize());
+      loader.clear();
+    }else{
+      setErrorMessage(PROGRAM_ERROR, "No program to store");
     }
   }
 
@@ -236,6 +237,9 @@ public:
       break;
     case SYSEX_FIRMWARE_STORE:
       handleFirmwareStoreCommand(data+3, size-3);
+      break;
+    case SYSEX_FIRMWARE_RUN:
+      handleFirmwareRunCommand(data+3, size-3);
       break;
     }
   }

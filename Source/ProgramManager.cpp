@@ -22,6 +22,9 @@
 #include "semphr.h"
 #endif
 
+extern void setup(); // main OWL setup
+extern void updateProgramVector(ProgramVector*);
+
 ProgramManager program;
 ProgramVector staticVector;
 static ProgramVector* currentProgramVector = &staticVector;
@@ -34,11 +37,15 @@ ProgramVector* getProgramVector(){
   return currentProgramVector;
 }
 
-extern void setup(); // main OWL setup
-extern void updateProgramVector(ProgramVector*);
+static uint32_t getFlashAddress(int sector){
+  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
+  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000
+  return addr;
+}
 
 TaskHandle_t xProgramHandle = NULL;
 TaskHandle_t xManagerHandle = NULL;
+TaskHandle_t xFlashTaskHandle = NULL;
 #if defined AUDIO_TASK_SEMAPHORE
 SemaphoreHandle_t xSemaphore = NULL;
 #endif // AUDIO_TASK_SEMAPHORE
@@ -53,17 +60,38 @@ SemaphoreHandle_t xSemaphore = NULL;
 // FreeRTOS low priority numbers denote low priority tasks. 
 // The idle task has priority zero (tskIDLE_PRIORITY).
 
+#define FLASH_TASK_STACK_SIZE       (6*1024/sizeof(portSTACK_TYPE))
+#define FLASH_TASK_PRIORITY         (3 | portPRIVILEGE_BIT)
+
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
 #define RESET_PROGRAM_NOTIFICATION  0x03
+#define PROGRAM_FLASH_NOTIFICATION  0x04
+#define ERASE_FLASH_NOTIFICATION    0x08
 
 PatchDefinition* patchdef = NULL;
+volatile int flashSectorToWrite;
+volatile void* flashAddressToWrite;
+volatile uint32_t flashSizeToWrite;
+
+static void eraseFlashSector(int sector){
+  uint32_t addr = getFlashAddress(sector);
+  addr -= 0x08004000; // FLASH_SECTOR_1, eeprom base address
+  eeprom_unlock();
+  int ret = eeprom_erase(addr);
+  eeprom_lock();
+  if(ret != 0)
+    setErrorMessage(PROGRAM_ERROR, "Failed to erase flash sector");
+}
 
 extern "C" {
-  typedef void (*ProgramFunction)(void);
-  ProgramFunction programFunction = NULL;
+  void runManagerTask(void* p){
+    setup(); // call main OWL setup
+    program.runManager();
+  }
+
   void runProgramTask(void* p){
     if(patchdef != NULL){
       updateProgramVector(currentProgramVector);
@@ -75,9 +103,44 @@ extern "C" {
     setLed(RED);
     for(;;);
   }
-  void runManagerTask(void* p){
-    setup(); // call main OWL setup
-    program.runManager();
+
+  void programFlashTask(void* p){
+    int sector = flashSectorToWrite;
+    if(sector >= 0 && sector <= 4 && flashSizeToWrite <= 128*1024){
+      uint32_t addr = getFlashAddress(sector);
+      addr -= 0x08004000; // FLASH_SECTOR_1, eeprom base address
+      eeprom_unlock();
+      int ret = eeprom_erase(addr);
+      if(ret == 0)
+	ret = eeprom_write_block(addr, (uint8_t*)flashAddressToWrite, flashSizeToWrite);
+      eeprom_lock();
+      if(ret == 0){
+	// load and run program
+	program.loadDynamicProgram((uint8_t*)flashAddressToWrite, flashSizeToWrite);
+	program.startProgram();
+      }else{
+	setErrorMessage(PROGRAM_ERROR, "Failed to program flash sector");
+      }
+    }else{
+      setErrorMessage(PROGRAM_ERROR, "Invalid flash erase command");
+    }
+    registry.init();
+    vTaskDelete(NULL);
+  }
+
+  void eraseFlashTask(void* p){
+    int sector = flashSectorToWrite;
+    if(sector == -1){
+      for(int i=0; i<4; ++i)
+	eraseFlashSector(i);
+      settings.clearFlash();
+    }else if(sector >= 0 && sector <= 4){
+      eraseFlashSector(sector);
+    }else{
+      setErrorMessage(PROGRAM_ERROR, "Invalid flash erase command");
+    }
+    registry.init();
+    vTaskDelete(NULL);
   }
 }
 
@@ -304,15 +367,14 @@ void ProgramManager::runManager(){
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
 	// allow idle task to garbage collect if necessary
-	// vTaskDelay(100/portTICK_PERIOD_MS);
-	// vTaskDelay(20);
+	vTaskDelay(20);
       }
     }
-    if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // reset
-      // allow idle task to garbage collect if necessary
-      // vTaskDelay(100/portTICK_PERIOD_MS);
-      vTaskDelay(20);
-    }
+    // if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // reset
+    //   // allow idle task to garbage collect if necessary
+    //   // vTaskDelay(100/portTICK_PERIOD_MS);
+    //   vTaskDelay(20);
+    // }
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       if(xProgramHandle == NULL && patchdef != NULL){
 	BaseType_t ret;
@@ -330,6 +392,18 @@ void ProgramManager::runManager(){
 	}else{
 	  codec.start();
 	}
+      }
+    }else if(ulNotifiedValue == PROGRAM_FLASH_NOTIFICATION){ // program flash
+      BaseType_t ret = xTaskCreate(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
+      if(ret != pdPASS){
+	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Write task");
+	setLed(RED);
+      }
+    }else if(ulNotifiedValue == ERASE_FLASH_NOTIFICATION){ // erase flash
+      BaseType_t ret = xTaskCreate(eraseFlashTask, "Flash Erase", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
+      if(ret != pdPASS){
+	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Erase task");
+	setLed(RED);
       }
     }
   }
@@ -350,42 +424,22 @@ PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
   return NULL;
 }
 
-static uint32_t getFlashAddress(int sector){
-  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
-  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000
-  return addr;
+void ProgramManager::eraseProgramFromFlash(uint8_t sector){
+  flashSectorToWrite = sector;
+  uint32_t ulValue = ERASE_FLASH_NOTIFICATION;
+  BaseType_t xHigherPriorityTaskWoken = 0; 
+  xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
-bool ProgramManager::eraseProgramFromFlash(uint8_t sector){
-  if(getPatchDefinitionFromFlash(sector) == NULL)
-    return false;
-  uint32_t addr = getFlashAddress(sector);
-  addr -= 0x08004000; // FLASH_SECTOR_1, eeprom base address
-  if(addr < 0x3c000 || addr > 0xdc000)
-    return false;
-  eeprom_unlock();
-  int ret = eeprom_erase(addr);
-  eeprom_lock();
-  return ret == 0;
-}
-
-bool ProgramManager::saveProgramToFlash(uint8_t sector){
-  // save current dynamic program (program index 0)
-  if(sector > 4)
-    return false;
-  if(!dynamo.verify())
-    return false;
-  uint32_t addr = getFlashAddress(sector);
-  addr -= 0x08004000; // FLASH_SECTOR_1, eeprom base address
-  if(addr < 0x3c000 || addr > 0xdc000)
-    return false;
-  eeprom_unlock();
-  int ret = eeprom_erase(addr);
-  if(ret)
-    return false;
-  ret = eeprom_write_block(addr, (uint8_t*)dynamo.getLinkAddress(), dynamo.getProgramSize());
-  eeprom_lock();
-  return ret == 0;
+void ProgramManager::saveProgramToFlash(uint8_t sector, void* address, uint32_t length){
+  flashSectorToWrite = sector;
+  flashAddressToWrite = address;
+  flashSizeToWrite = length;
+  uint32_t ulValue = PROGRAM_FLASH_NOTIFICATION;
+  BaseType_t xHigherPriorityTaskWoken = 0;
+  xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 /*

@@ -19,13 +19,18 @@ private:
   uint32_t size;
   uint32_t index;
   uint32_t crc;
-
+  bool ready;
 public:
   void clear(){
     // free(buffer);
     buffer = NULL;
     index = 0;
     packageIndex = 0;
+    ready = false;
+  }
+
+  bool isReady(){
+    return ready;
   }
 
   int error(int code){
@@ -73,27 +78,23 @@ public:
       return error(-7); // out of sequence package
     int len = floor((length-offset)*7/8.0f);
     // wait for program to exit before writing to buffer
-    if(index+len < size){
+    if(index+len <= size){
       // mid package
       len = sysex_to_data(data+offset, buffer+index, length-offset);
       index += len;
       return 0;
+    }else if(index == size){
+      // last package: package index and checksum
+      // check crc
+      crc = crc32(buffer, size, 0);
+      // get checksum: last 4 bytes of buffer
+      uint32_t checksum = decodeInt(data+length-5);
+      if(crc != checksum)
+	return error(-5);
+      ready = true;
+      return index;
     }
-    // last package
-    len = floor((length-offset-5)*7/8.0f);
-    if(index+len != size)
-      return error(-3); // wrong size
-    len = sysex_to_data(data+offset, buffer+index, length-offset-5);
-    index += len;
-    if(index != size)
-      return error(-4); // size mismatch
-    // check crc
-    crc = crc32(buffer, size, 0);
-    // get checksum: last 4 bytes of buffer
-    uint32_t checksum = decodeInt(data+length-5);
-    if(crc != checksum)
-      return error(-5);
-    return index;
+    return error(-3); // wrong size
   }
 };
 
