@@ -71,8 +71,7 @@ void MidiController::sendPatchParameterName(PatchParameterId pid, const char* na
 }
 
 void MidiController::sendPatchNames(){
-  // +1 for the current / dynamic patch in slot 0
-  for(unsigned int i=0; i<registry.getNumberOfPatches()+1; ++i)
+  for(unsigned int i=0; i<registry.getNumberOfPatches(); ++i)
     sendPatchName(i);
 }
 

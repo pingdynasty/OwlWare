@@ -25,8 +25,8 @@ public:
 
   void handleProgramChange(uint8_t status, uint8_t pid){
     if(pid>0){
-      program.loadProgram(pid);
       program.reset();
+      program.loadProgram(pid);
     }
   }
 
@@ -143,12 +143,13 @@ public:
       break;
     case FACTORY_RESET:
       if(value == 127){
+	program.reset();
 	settings.reset();
 	settings.clearFlash();
-	codec.stop();
 	codec.init(settings);
-	codec.start();
-	program.reset();
+	for(int i=0; i<4; ++i)
+	  program.eraseProgramFromFlash(i);
+	registry.init();
       }
       break;
     }
@@ -158,17 +159,18 @@ public:
   }
 
   void updateCodecSettings(){
-    codec.stop();
-    codec.init(settings);
-    codec.start();
     program.reset();
+    codec.init(settings);
   }
 
   void handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
     if(size < 1)
       return;
     uint8_t slot = data[0];
-    program.saveProgramToFlash(slot);
+    if(program.saveProgramToFlash(slot))
+      registry.init();
+    else
+      setErrorMessage(PROGRAM_ERROR, "Failed to save program to flash");
   }
 
   void handleConfigurationCommand(uint8_t* data, uint16_t size){
@@ -201,20 +203,15 @@ public:
 
   FirmwareLoader loader;
   void handleFirmwareUploadCommand(uint8_t* data, uint16_t size){
-    // codec.stop();
     int32_t ret = loader.handleFirmwareUpload(data, size);
     if(ret < 0){
-      // firmware upload error
-      // midi.sendCc(DEVICE_STATUS, -ret);
+      setErrorMessage(PROGRAM_ERROR, "Program upload error");
       setLed(RED);
-      // program.reset();
-      // codec.start(); // doesn't synchronise the codec well
     }else if(ret > 0){
       // firmware upload complete
       // midi.sendCc(DEVICE_STATUS, 0x7f);
       setLed(NONE);
       program.loadDynamicProgram(loader.getData(), loader.getSize());
-      // if(program.verify())
       program.startProgram();
       loader.clear();
     }else{

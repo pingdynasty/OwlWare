@@ -38,7 +38,7 @@ public:
   uint32_t getProgramStackAllocation();
 
   bool saveProgramToFlash(uint8_t sector);
-  bool loadProgramFromFlash(uint8_t sector);
+  bool eraseProgramFromFlash(uint8_t sector);
   PatchDefinition* getPatchDefinitionFromFlash(uint8_t sector);
 
   uint32_t getCyclesPerBlock();

@@ -11,15 +11,10 @@ extern PatchRegistry registry;
 class PatchRegistry {
 public:
   PatchRegistry();
+  void init();
   void reset();
   const char* getName(unsigned int index);
-  PatchDefinition* getPatchDefinition(unsigned int index){
-    if(index == 0)
-      return dynamicPatchDefinition;
-    if(--index < nofPatches)
-      return defs[index];
-    return NULL;
-  }
+  PatchDefinition* getPatchDefinition(unsigned int index);
   unsigned int getNumberOfPatches();
   void registerPatch(PatchDefinition* def);
   void setDynamicPatchDefinition(PatchDefinition* def){
@@ -27,7 +22,6 @@ public:
   }
 private:
   PatchDefinition* defs[MAX_NUMBER_OF_PATCHES];
-  /* const char* names[MAX_NUMBER_OF_PATCHES]; */
   unsigned int nofPatches;
   PatchDefinition* dynamicPatchDefinition;
 };

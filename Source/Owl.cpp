@@ -99,9 +99,7 @@ void pushButtonCallback(){
 
 void exitProgram(){
   // disable audio processing
-  // codec.stop(); // codec.start() doesn't recover well
   program.exit();
-  // registry.reset();
   codec.clear();
   setLed(RED);
   registry.setDynamicPatchDefinition(NULL);
@@ -126,6 +124,13 @@ void updateProgramIndex(uint8_t index){
 #ifdef __cplusplus
  extern "C" {
 #endif
+
+   void setErrorMessage(int8_t err, char* msg){
+     setErrorStatus(err);
+     ProgramVector* vec = getProgramVector();
+     if(vec != NULL)
+       vec->message = msg;
+   }
 
    PatchDefinition dynamicPatchDefinition;
    void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
@@ -221,7 +226,7 @@ void setup(){
 
   settings.init();
   midi.init(MIDI_CHANNEL);
-  // patches.init();
+  registry.init();
 
 #ifdef EXPRESSION_PEDAL
 #ifndef OWLMODULAR
@@ -258,8 +263,6 @@ void setup(){
   configureDigitalOutput(GPIOB, GPIO_Pin_7);  // PB7 OWL Modular digital output
   setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
 #endif
-  // printString("startup\n");
-  updateBypassMode();
 
   // set pointer to smem in the backup ram
   // uint32_t pointer = (uint32_t)&smem;
@@ -269,11 +272,11 @@ void setup(){
 
   codec.setup();
   codec.init(settings);
-  codec.start();
 
   program.loadProgram(settings.program_index);
   program.startProgram();
 
+  updateBypassMode();
 }
 
 #ifdef __cplusplus

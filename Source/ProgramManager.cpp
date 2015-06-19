@@ -9,6 +9,7 @@
 #include "FreeRTOS.h"
 #include "PatchRegistry.h"
 #include "ApplicationSettings.h"
+#include "CodecController.h"
 
 // #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -21,12 +22,13 @@
 #include "semphr.h"
 #endif
 
-DynamicPatchDefinition dynamo;
-// #define JUMPTO(address) ((void (*)(void))address)();
-
 ProgramManager program;
 ProgramVector staticVector;
-ProgramVector* currentProgramVector = &staticVector;
+static ProgramVector* currentProgramVector = &staticVector;
+
+// #define JUMPTO(address) ((void (*)(void))address)();
+static DynamicPatchDefinition dynamo;
+static DynamicPatchDefinition flashPatches[4];
 
 ProgramVector* getProgramVector(){
   return currentProgramVector;
@@ -140,8 +142,8 @@ void ProgramManager::audioReady(){
 __attribute__ ((section (".coderam")))
 void ProgramManager::programReady(){
 #ifdef DEBUG_DWT
-  currentProgramVector->cycles_per_block = 
-    (*DWT_CYCCNT + currentProgramVector->cycles_per_block)>>1;
+  currentProgramVector->cycles_per_block = *DWT_CYCCNT;
+    // (*DWT_CYCCNT + currentProgramVector->cycles_per_block)>>1;
 #endif /* DEBUG_DWT */
 #ifdef DEBUG_AUDIO
   clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
@@ -297,19 +299,20 @@ void ProgramManager::runManager(){
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
 		    xMaxBlockTime ); 
     if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){ // stop      
+      codec.stop();
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
 	// allow idle task to garbage collect if necessary
 	// vTaskDelay(100/portTICK_PERIOD_MS);
-	vTaskDelay(20);
+	// vTaskDelay(20);
       }
     }
-    // if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // reset
-    //   // allow idle task to garbage collect if necessary
-    //   // vTaskDelay(100/portTICK_PERIOD_MS);
-    //   vTaskDelay(20);
-    // }
+    if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // reset
+      // allow idle task to garbage collect if necessary
+      // vTaskDelay(100/portTICK_PERIOD_MS);
+      vTaskDelay(20);
+    }
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       if(xProgramHandle == NULL && patchdef != NULL){
 	BaseType_t ret;
@@ -324,13 +327,14 @@ void ProgramManager::runManager(){
 	if(ret != pdPASS){
 	  setErrorStatus(PROGRAM_ERROR);
 	  setLed(RED);
+	}else{
+	  codec.start();
 	}
       }
     }
   }
 }
 
-DynamicPatchDefinition flashPatches[4];
 PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
   if(sector > 4)
     return NULL;
@@ -346,14 +350,32 @@ PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
   return NULL;
 }
 
+static uint32_t getFlashAddress(int sector){
+  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
+  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000
+  return addr;
+}
+
+bool ProgramManager::eraseProgramFromFlash(uint8_t sector){
+  if(getPatchDefinitionFromFlash(sector) == NULL)
+    return false;
+  uint32_t addr = getFlashAddress(sector);
+  addr -= 0x08004000; // FLASH_SECTOR_1, eeprom base address
+  if(addr < 0x3c000 || addr > 0xdc000)
+    return false;
+  eeprom_unlock();
+  int ret = eeprom_erase(addr);
+  eeprom_lock();
+  return ret == 0;
+}
+
 bool ProgramManager::saveProgramToFlash(uint8_t sector){
   // save current dynamic program (program index 0)
   if(sector > 4)
     return false;
   if(!dynamo.verify())
     return false;
-  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
-  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000
+  uint32_t addr = getFlashAddress(sector);
   addr -= 0x08004000; // FLASH_SECTOR_1, eeprom base address
   if(addr < 0x3c000 || addr > 0xdc000)
     return false;
@@ -364,16 +386,6 @@ bool ProgramManager::saveProgramToFlash(uint8_t sector){
   ret = eeprom_write_block(addr, (uint8_t*)dynamo.getLinkAddress(), dynamo.getProgramSize());
   eeprom_lock();
   return ret == 0;
-}
-
-bool ProgramManager::loadProgramFromFlash(uint8_t sector){
-  if(sector > 4)
-    return false;
-  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
-  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000  
-  uint32_t size = 80*1024; // todo: read program size (and name) from first few bytes
-  loadDynamicProgram((void*)addr, size);
-  return true;
 }
 
 /*

@@ -7,6 +7,7 @@
 #include "ProgramVector.h"
 
 extern ProgramVector staticVector;
+
 PatchProcessor *processor;
 PatchProcessor* getInitialisingPatchProcessor(){
   return processor;

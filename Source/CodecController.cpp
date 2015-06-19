@@ -83,6 +83,8 @@ void CodecController::init(ApplicationSettings& settings){
   // setActive(false);
   clear();
 
+  settings.audio_bitdepth = 16; // todo: fixme
+
   /* configure codec */
   setSamplingRate(settings.audio_samplingrate);
   setCodecMaster(settings.audio_codec_master);

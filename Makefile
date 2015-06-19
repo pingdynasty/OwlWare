@@ -10,11 +10,11 @@ ASFLAGS  = -g
 endif
 
 ifeq ($(CONFIG),Release)
-CFLAGS   = -O2 -flto
-# LDFLAGS  = -flto -Wl,--gc-sections
+CFLAGS   = -O2
+# CFLAGS   += -flto
 endif
 
-LDFLAGS += -flto -Wl,--gc-sections
+LDFLAGS += -Wl,--gc-sections
 
 CFLAGS  += --specs=nano.specs
 CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1
