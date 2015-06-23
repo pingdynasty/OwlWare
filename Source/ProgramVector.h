@@ -10,17 +10,13 @@
 #define OWL_PEDAL_HARDWARE    0x11
 #define OWL_MODULAR_HARDWARE  0x12
 
-
-#define OWL_SERVICE_ARM_RFFT_FAST_INIT_F32 0x100
-#define OWL_SERVICE_INVALID_ARGS -1
-
-typedef enum { 
-  AUDIO_IDLE_STATUS = 0, 
-  AUDIO_READY_STATUS, 
-  AUDIO_PROCESSED_STATUS, 
-  AUDIO_EXIT_STATUS, 
-  AUDIO_ERROR_STATUS 
-} ProgramVectorAudioStatus;
+   typedef enum { 
+     AUDIO_IDLE_STATUS = 0, 
+     AUDIO_READY_STATUS, 
+     AUDIO_PROCESSED_STATUS, 
+     AUDIO_EXIT_STATUS, 
+     AUDIO_ERROR_STATUS 
+   } ProgramVectorAudioStatus;
 
    typedef struct {
      uint8_t checksum;

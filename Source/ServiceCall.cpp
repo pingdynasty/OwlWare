@@ -4,10 +4,10 @@
 
 int serviceCall(int service, void** params, int len){
   switch(service){
-  case 1:
+  case OWL_SERVICE_VERSION:
     if(len > 0){
       int* value = (int*)params[0];
-      *value = 666;
+      *value = OWL_SERVICE_VERSION_V1;
       return 0;
     }
     break;
