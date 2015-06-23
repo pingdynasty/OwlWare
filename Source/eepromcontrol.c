@@ -43,11 +43,8 @@ uint8_t eeprom_read_byte(uint32_t address){
 }
 
 int eeprom_read_block(uint32_t address, uint8_t* data, uint32_t size){
-  address += EEPROM_FLASH_ADDRESS;
-  /* address = (uint32_t)eeprom_get_address(address); */
+  address = (uint32_t)eeprom_get_address(address);
   while(FLASH_GetStatus() == FLASH_BUSY);
-  /*      for(int i=0; i<size; ++i) */
-  /*        data[i] = *(uint8_t*)(address+i); */
   memcpy(data, (const void*)address, size);
   return FLASH_GetStatus();
 }

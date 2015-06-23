@@ -5,8 +5,15 @@
 #include "ProgramHeader.h"
 
 class DynamicPatchDefinition : public PatchDefinition {
+private:
   typedef void (*ProgramFunction)(void);
+  ProgramFunction programFunction;
+  uint32_t* linkAddress;
+  uint32_t* jumpAddress;
+  uint32_t* programAddress;
+  uint32_t programSize;
   ProgramHeader* header;
+  char programName[24];
 public:
   DynamicPatchDefinition() :
     PatchDefinition(programName, 2, 2) {}
@@ -27,6 +34,7 @@ public:
     programVector = header->programVector;
     strncpy(programName, header->programName, sizeof(programName));
     programFunction = (ProgramFunction)jumpAddress;
+    return true;
   }
   void copy(){
     /* copy program to ram */
@@ -61,8 +69,7 @@ public:
     if(linkAddress != programAddress)
       copy();
     if(verify())
-      programFunction(); // backloaded patch BusFaults here
-    // p/x flashPatches[0]->programFunction 0x20008029
+      programFunction();
   }
   uint32_t getProgramSize(){
     return programSize;
@@ -70,13 +77,6 @@ public:
   uint32_t* getLinkAddress(){
     return linkAddress;
   }
-private:
-  char programName[24];
-  ProgramFunction programFunction;
-  uint32_t* linkAddress;
-  uint32_t* jumpAddress;
-  uint32_t* programAddress;
-  uint32_t programSize;
 };
 
 

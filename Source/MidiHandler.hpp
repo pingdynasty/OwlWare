@@ -11,7 +11,8 @@
 #include "FirmwareLoader.hpp"
 #include "ProgramManager.h"
 
-uint16_t midi_values[NOF_ADC_VALUES];
+static uint16_t midi_values[NOF_ADC_VALUES];
+static FirmwareLoader loader;
 
 class MidiHandler : public MidiReader {
 private:
@@ -22,8 +23,11 @@ public:
   }
 
   void handleProgramChange(uint8_t status, uint8_t pid){
-    if(pid>0){
-      program.reset();
+    if(pid == 0 && loader.isReady()){
+      program.loadDynamicProgram(loader.getData(), loader.getSize());
+      loader.clear();
+      program.startProgram();
+    }else{
       program.loadProgram(pid);
     }
   }
@@ -141,10 +145,9 @@ public:
       break;
     case FACTORY_RESET:
       if(value == 127){
-	program.reset();
 	settings.reset();
-	codec.init(settings);
 	program.eraseProgramFromFlash(-1);
+	updateCodecSettings();
       }
       break;
     }
@@ -154,8 +157,11 @@ public:
   }
 
   void updateCodecSettings(){
-    program.reset();
+    codec.softMute(true);
+    codec.stop();
     codec.init(settings);
+    codec.start();
+    program.reset();
   }
 
   void handleConfigurationCommand(uint8_t* data, uint16_t size){
@@ -186,7 +192,6 @@ public:
     updateCodecSettings();
   }
 
-  FirmwareLoader loader;
   void handleFirmwareUploadCommand(uint8_t* data, uint16_t size){
     int32_t ret = loader.handleFirmwareUpload(data, size);
     if(ret < 0){

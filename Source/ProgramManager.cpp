@@ -284,34 +284,14 @@ void ProgramManager::reset(){
   portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-// extern "C" void program_setup(uint8_t pid);
-// extern "C" void program_run();
-// void runStaticProgramTask(void* p){
-//   program_run();
-//   for(;;);
-// }
-
 void ProgramManager::loadProgram(uint8_t pid){
-  // if(pid < MAX_FACTORY_PROGRAM){
-  // if(pid > 0 && pid < registry.getNumberOfPatches()){
   PatchDefinition* def = registry.getPatchDefinition(pid);
   if(def != NULL && def != patchdef){
-    program.loadStaticProgram(def);
+    patchdef = def;
+    currentProgramVector = def->getProgramVector();
     updateProgramIndex(pid);
+    reset();
   }
-  // }
-    // if(pid < MAX_FACTORY_PROGRAM)
-    //   loadFactoryPatch(pid);
-    // else
-    //   // time to erase 128kB flash sector, typ 875ms
-    //   // Program/erase parallelism
-    //   // (PSIZE) = x 32 : 1-2s
-    //   loadProgram(pid);
-}
-
-void ProgramManager::loadStaticProgram(PatchDefinition* def){
-  patchdef = def;
-  currentProgramVector = def->getProgramVector();
 }
 
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
@@ -362,7 +342,7 @@ void ProgramManager::runManager(){
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
 		    xMaxBlockTime ); 
     if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){ // stop      
-      codec.stop();
+      codec.softMute(true);
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
@@ -390,7 +370,7 @@ void ProgramManager::runManager(){
 	  setErrorStatus(PROGRAM_ERROR);
 	  setLed(RED);
 	}else{
-	  codec.start();
+	  codec.softMute(false);
 	}
       }
     }else if(ulNotifiedValue == PROGRAM_FLASH_NOTIFICATION){ // program flash

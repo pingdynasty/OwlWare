@@ -278,6 +278,8 @@ void setup(){
   program.startProgram();
 
   updateBypassMode();
+
+  codec.start();
 }
 
 #ifdef __cplusplus

@@ -34,9 +34,6 @@ bool ApplicationSettings::settingsInFlash(){
 
 void ApplicationSettings::loadFromFlash(){
   eeprom_read_block(APPLICATION_SETTINGS_OFFSET, (uint8_t*)this, sizeof(*this));
-  // // todo: remove workaround
-  // if(audio_blocksize == 0 || audio_blocksize > AUDIO_MAX_BLOCK_SIZE)
-  //   audio_blocksize = AUDIO_MAX_BLOCK_SIZE;
 }
 
 void ApplicationSettings::saveToFlash(){
