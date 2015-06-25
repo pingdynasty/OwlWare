@@ -180,7 +180,7 @@ void MidiController::sendProgramMessage(){
     char buffer[64];
     buffer[0] = SYSEX_PROGRAM_MESSAGE;
     char* p = &buffer[1];
-    p = stpncpy(p, pv->message, 63);
+    p = stpncpy(p, pv->message, 62);
     sendSysEx((uint8_t*)buffer, p-buffer);
     pv->message = NULL;
   }
