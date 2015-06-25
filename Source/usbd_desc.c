@@ -3,17 +3,18 @@
 #include "usbd_req.h"
 #include "usbd_conf.h"
 #include "usb_regs.h"
+#include "device.h"
 
-#define USBD_VID                        0x0483 /* STMicroelectronics */
-#define USBD_PID                        0x5740 /* STM32F407 */
+#define USBD_VID                        0x1209 /* pid.codes */
+#define USBD_PID                        0xDADA /* OWL */
 
 #define USBD_LANGID_STRING              0x409
 #define USBD_MANUFACTURER_STRING        "Rebel Tech"
 
-#define USBD_PRODUCT_HS_STRING          "OWL HS"
-#define USBD_SERIALNUMBER_HS_STRING     "00000000050B"
-#define USBD_PRODUCT_FS_STRING          "OWL FS"
-#define USBD_SERIALNUMBER_FS_STRING     "00000000050C"
+#define USBD_PRODUCT_HS_STRING          "OWL-MIDI"
+#define USBD_SERIALNUMBER_HS_STRING     "00000000010B"
+#define USBD_PRODUCT_FS_STRING          "OWL-MIDI"
+#define USBD_SERIALNUMBER_FS_STRING     "00000000010C"
 
 #define USBD_CONFIGURATION_FS_STRING    "AUDIO Config"
 #define USBD_INTERFACE_FS_STRING        "AUDIO Interface"
