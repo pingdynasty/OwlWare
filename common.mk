@@ -25,13 +25,10 @@ vpath %.cpp $(TEMPLATEROOT)/Source
 vpath %.c $(TEMPLATEROOT)/Source
 vpath %.s $(TEMPLATEROOT)/Source
 vpath %.c $(TEMPLATEROOT)/Libraries/syscalls
-vpath %.c $(CORE)
+# vpath %.c $(CORE)
 vpath %.c $(PERIPH_FILE)/src
 vpath %.c $(PERIPH_FILE)/inc
 vpath %.c $(DEVICE)
-vpath %.c $(SYSTEM_FILE)
-vpath %.s $(STARTUP_FILE)
-vpath %.c $(DISCOVERY_FILE)
 vpath %.c $(USB_DEVICE_FILE)/Core/src
 vpath %.c $(USB_OTG_FILE)/src/
 

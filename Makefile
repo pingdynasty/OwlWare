@@ -67,8 +67,8 @@ CFLAGS += -I$(TEMPLATEROOT)/Libraries/FreeRTOS/portable/GCC/ARM_CM4F
 # object files
 OBJS += $(PERIPH) 
 OBJS += $(BUILD)/startup.o
+OBJS += $(BUILD)/libnosys_gnu.o
 OBJS += $(USB_DEVICE) $(USB_OTG)
-OBJS += libnosys_gnu.o
 OBJS += $(DSPLIB)/FastMathFunctions/arm_sin_f32.o
 OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
 OBJS += $(DSPLIB)/CommonTables/arm_common_tables.o
