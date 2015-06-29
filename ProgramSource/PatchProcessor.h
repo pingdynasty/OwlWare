@@ -13,20 +13,13 @@ public:
   void clear();
   void setPatch(Patch* patch);
   void run();
-  void registerParameter(PatchParameterId pid, const char* name);
-  /* const char* getParameterName(PatchParameterId pid); */
   float getParameterValue(PatchParameterId pid);
-  int getBlockSize();
-  double getSampleRate();
   AudioBuffer* createMemoryBuffer(int channels, int samples);
   void setParameterValues(uint16_t *parameters);
-  /* void process(AudioBuffer& buffer); */
 private:
   Patch* patch;
-  // uint8_t index;
   SampleBuffer buffer;
   uint8_t bufferCount;
-  /* const char* parameterNames[NOF_ADC_VALUES]; */
   uint16_t parameterValues[NOF_ADC_VALUES];
   AudioBuffer* buffers[MAX_BUFFERS_PER_PATCH];
 };

@@ -40,11 +40,6 @@ void PatchProcessor::setPatch(Patch* p){
   patch = p;
 }
 
-void PatchProcessor::registerParameter(PatchParameterId pid, const char* name){
-  if(getProgramVector()->registerPatchParameter != NULL)
-    getProgramVector()->registerPatchParameter(pid, name);
-}
-
 AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
   MemoryBuffer* buf = new ManagedMemoryBuffer(channels, size);
   if(buf == NULL)
