@@ -30,7 +30,7 @@ void assert_failed(uint8_t* file, uint32_t line){
   __asm__("BKPT");
 #else
     /* NVIC_SystemReset(); */
-  exitProgram();
+  exitProgram(true);
 #endif
 }
 

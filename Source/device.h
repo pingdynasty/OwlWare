@@ -1,19 +1,18 @@
 #include <inttypes.h>
 
 /* #define OWLMODULAR */
-#define FIRMWARE_VERSION             "vector-02"
+#define FIRMWARE_VERSION             "vector-03"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
 
 /* #define SERIAL_PORT                  1 */
 
-#define DEBUG_AUDIO
+/* #define DEBUG_AUDIO */
 #define DEBUG_DWT
-/* #define DEBUG_STACK */
+#define DEBUG_STACK
 
-#define DEFAULT_PROGRAM              0
-/* #define MAX_FACTORY_PROGRAM          32 */
+#define DEFAULT_PROGRAM              1
 
 #define AUDIO_BIGEND
 /* #define AUDIO_SATURATE_SAMPLES // SATURATE adds almost 500 cycles to 24-bit mode */
@@ -25,10 +24,10 @@
 #define AUDIO_BITDEPTH               24    /* bits per sample */
 #define AUDIO_SAMPLINGRATE           48000
 #define AUDIO_BLOCK_SIZE             128   /* size in samples of a single channel audio block */
-#define AUDIO_MAX_BLOCK_SIZE         512
+#define AUDIO_MAX_BLOCK_SIZE         1024
 
 #define CCMRAM                      ((uint32_t)0x10000000)
-#define PATCHRAM                    ((uint32_t)0x20008000)
+#define PATCHRAM                    ((uint32_t)0x2000c000)
 #define EXTRAM                      ((uint32_t)0x68000000)
 
 #ifdef OWLMODULAR
@@ -50,8 +49,10 @@
 #define NOF_ADC_VALUES               5
 #define NOF_PARAMETERS               24
 #define MAX_BUFFERS_PER_PATCH        8
-#define MAX_NUMBER_OF_PATCHES        32
 #define MAX_SYSEX_FIRMWARE_SIZE      (80*1024)
+
+#define MAX_FACTORY_PATCHES          32
+#define MAX_NUMBER_OF_PATCHES        64
 
 /* I2C clock speed configuration (in Hz)  */
 #define I2C_SPEED                    100000
@@ -59,11 +60,11 @@
 #define USB_IRQ_PRIORITY             3
 #define USB_IRQ_SUBPRIORITY          0
 #define SWITCH_A_PRIORITY            2
-#define SWITCH_A_SUBPRIORITY         1
+#define SWITCH_A_SUBPRIORITY         0
 #define SWITCH_B_PRIORITY            3
-#define SWITCH_B_SUBPRIORITY         1
+#define SWITCH_B_SUBPRIORITY         0
 #define SERIAL_PORT_PRIORITY         3
-#define SERIAL_PORT_SUBPRIORITY      3
+#define SERIAL_PORT_SUBPRIORITY      0
 #define SYSTICK_PRIORITY             2
 #define SYSTICK_SUBPRIORITY          0
 
@@ -121,6 +122,10 @@
 #define USB_VBUS_GPIO_CLK            RCC_AHB1Periph_GPIOA
 
 #define WM8731_NUM_REGS 10
+
+#define PROGRAM_TASK_STACK_SIZE          (4*1024/sizeof(portSTACK_TYPE))
+#define MANAGER_TASK_STACK_SIZE          (1*1024/sizeof(portSTACK_TYPE))
+#define FLASH_TASK_STACK_SIZE            (4*1024/sizeof(portSTACK_TYPE))
 
 #ifdef  USE_FULL_ASSERT
 #ifdef __cplusplus

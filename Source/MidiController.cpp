@@ -98,14 +98,14 @@ void MidiController::sendDeviceInfo(){
 #ifndef abs
 #define abs(x) ((x)>0?(x):-(x))
 #endif /* abs */
-char* itoa(int val, int base){
+char* itoa(int val, int base, int pad=0){
   static char buf[13] = {0};
   int i = 11;
   unsigned int part = abs(val);
   do{
     buf[i--] = "0123456789abcdef"[part % base];
     part /= base;
-  }while(part && i);
+  }while(i && (--pad > 0 || part));
   if(val < 0)
     buf[i--] = '-';
   return &buf[i+1];
@@ -208,10 +208,11 @@ void MidiController::sendDeviceId(){
   char buffer[36];
   buffer[0] = SYSEX_DEVICE_ID;
   char* p = &buffer[1];
-  for(int i=0; i<3; i++){
-    p = stpcpy(p, itoa(deviceId[i], 16));
-    p = stpcpy(p, ".");
-  }
+  p = stpcpy(p, itoa(deviceId[0], 16, 8));
+  p = stpcpy(p, ":");
+  p = stpcpy(p, itoa(deviceId[1], 16, 8));
+  p = stpcpy(p, ":");
+  p = stpcpy(p, itoa(deviceId[2], 16, 8));
   sendSysEx((uint8_t*)buffer, p-buffer);
 }
 

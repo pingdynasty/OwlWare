@@ -26,9 +26,10 @@ public:
     if(pid == 0 && loader.isReady()){
       program.loadDynamicProgram(loader.getData(), loader.getSize());
       loader.clear();
-      program.startProgram();
+      program.startProgram(true);
     }else{
       program.loadProgram(pid);
+      program.resetProgram(true);
     }
   }
 
@@ -161,7 +162,7 @@ public:
     codec.stop();
     codec.init(settings);
     codec.start();
-    program.reset();
+    program.resetProgram(true);
   }
 
   void handleConfigurationCommand(uint8_t* data, uint16_t size){
@@ -209,7 +210,7 @@ public:
     if(loader.isReady()){
       program.loadDynamicProgram(loader.getData(), loader.getSize());
       loader.clear();
-      program.startProgram();
+      program.startProgram(true);
     }else{
       setErrorMessage(PROGRAM_ERROR, "No program to run");
     }      

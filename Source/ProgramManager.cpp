@@ -17,6 +17,12 @@
 // #define AUDIO_TASK_YIELD
 /* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
 
+// FreeRTOS low priority numbers denote low priority tasks. 
+// The idle task has priority zero (tskIDLE_PRIORITY).
+#define PROGRAM_TASK_PRIORITY            (2)
+#define MANAGER_TASK_PRIORITY            (4 | portPRIVILEGE_BIT)
+#define FLASH_TASK_PRIORITY              (3 | portPRIVILEGE_BIT)
+
 #include "task.h"
 #if defined AUDIO_TASK_SEMAPHORE
 #include "semphr.h"
@@ -50,18 +56,6 @@ TaskHandle_t xFlashTaskHandle = NULL;
 SemaphoreHandle_t xSemaphore = NULL;
 #endif // AUDIO_TASK_SEMAPHORE
 
-#define MANAGER_STACK_SIZE          (6*1024/sizeof(portSTACK_TYPE))
-// #define PROGRAM_STACK_SIZE          (46*1024/sizeof(portSTACK_TYPE))
-#define PROGRAM_STACK_SIZE          (32*1024/sizeof(portSTACK_TYPE))
-#define PROGRAM_PRIORITY            (2 | portPRIVILEGE_BIT)
-#define MANAGER_PRIORITY            (4 | portPRIVILEGE_BIT)
-// #define PROGRAM_PRIORITY            (2)
-// #define MANAGER_PRIORITY            (4)
-// FreeRTOS low priority numbers denote low priority tasks. 
-// The idle task has priority zero (tskIDLE_PRIORITY).
-
-#define FLASH_TASK_STACK_SIZE       (6*1024/sizeof(portSTACK_TYPE))
-#define FLASH_TASK_PRIORITY         (3 | portPRIVILEGE_BIT)
 
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 
@@ -117,7 +111,7 @@ extern "C" {
       if(ret == 0){
 	// load and run program
 	program.loadDynamicProgram((uint8_t*)flashAddressToWrite, flashSizeToWrite);
-	program.startProgram();
+	program.startProgram(false);
       }else{
 	setErrorMessage(PROGRAM_ERROR, "Failed to program flash sector");
       }
@@ -239,17 +233,14 @@ void ProgramManager::programStatus(int){
 
 void ProgramManager::startManager(){
   if(xManagerHandle == NULL)
-    xTaskCreate(runManagerTask, "Manager", MANAGER_STACK_SIZE, NULL, MANAGER_PRIORITY, &xManagerHandle);
+    xTaskCreate(runManagerTask, "Manager", MANAGER_TASK_STACK_SIZE, NULL, MANAGER_TASK_PRIORITY, &xManagerHandle);
 #if defined AUDIO_TASK_SEMAPHORE
   if(xSemaphore == NULL)
     xSemaphore = xSemaphoreCreateBinary();
 #endif // AUDIO_TASK_SEMAPHORE
 }
 
-void ProgramManager::startProgram(){
-  audioStatus = AUDIO_IDLE_STATUS;
-  // currentProgramVector->status = AUDIO_IDLE_STATUS;
-  uint32_t ulValue = START_PROGRAM_NOTIFICATION;
+void ProgramManager::notifyProgramFromISR(uint32_t ulValue){
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
     xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
@@ -260,28 +251,33 @@ void ProgramManager::startProgram(){
 #endif /* DEFINE_OWL_SYSTICK */
 }
 
-void ProgramManager::exit(){
-  audioStatus = AUDIO_EXIT_STATUS;
-  // currentProgramVector->status = AUDIO_EXIT_STATUS; // request program exit
-  uint32_t ulValue = STOP_PROGRAM_NOTIFICATION;
-  BaseType_t xHigherPriorityTaskWoken = 0; 
+void ProgramManager::notifyProgram(uint32_t ulValue){
   if(xManagerHandle != NULL)
-    xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-#ifdef DEFINE_OWL_SYSTICK
-  // vPortYield(); // can we call this from an interrupt?
-  // taskYIELD();
-#endif /* DEFINE_OWL_SYSTICK */
+    xTaskNotify(xManagerHandle, ulValue, eSetBits);
+}
+
+void ProgramManager::startProgram(bool isr){
+  audioStatus = AUDIO_IDLE_STATUS;
+  if(isr)
+    notifyProgramFromISR(START_PROGRAM_NOTIFICATION);
+  else
+    notifyProgram(START_PROGRAM_NOTIFICATION);
+}
+
+void ProgramManager::exitProgram(bool isr){
+  audioStatus = AUDIO_EXIT_STATUS;
+  if(isr)
+    notifyProgramFromISR(STOP_PROGRAM_NOTIFICATION);
+  else
+    notifyProgram(STOP_PROGRAM_NOTIFICATION);
 }
 
 /* exit and restart program */
-void ProgramManager::reset(){
-  // uint32_t ulValue = RESET_PROGRAM_NOTIFICATION;
-  uint32_t ulValue = STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION;
-  BaseType_t xHigherPriorityTaskWoken = 0; 
-  if(xManagerHandle != NULL)
-    xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
-  portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+void ProgramManager::resetProgram(bool isr){
+  if(isr)
+    notifyProgramFromISR(STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION);
+  else
+    notifyProgram(STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION);
 }
 
 void ProgramManager::loadProgram(uint8_t pid){
@@ -290,7 +286,6 @@ void ProgramManager::loadProgram(uint8_t pid){
     patchdef = def;
     currentProgramVector = def->getProgramVector();
     updateProgramIndex(pid);
-    reset();
   }
 }
 
@@ -361,10 +356,10 @@ void ProgramManager::runManager(){
 	if(patchdef->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
 	  ret = xTaskGenericCreate(runProgramTask, "Program", 
 				   patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
-				   NULL, PROGRAM_PRIORITY, &xProgramHandle, 
+				   NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle, 
 				   patchdef->getStackBase(), NULL);
 	}else{
-	  ret = xTaskCreate(runProgramTask, "Program", PROGRAM_STACK_SIZE, NULL, PROGRAM_PRIORITY, &xProgramHandle);
+	  ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
 	}
 	if(ret != pdPASS){
 	  setErrorStatus(PROGRAM_ERROR);

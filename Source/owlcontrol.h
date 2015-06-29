@@ -86,7 +86,7 @@
 
    bool hasExpressionPedal();
 
-   void exitProgram();
+   void exitProgram(bool isr);
 
    void updateProgramIndex(uint8_t index);
 

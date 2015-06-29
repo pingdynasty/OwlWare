@@ -24,7 +24,7 @@ void FactoryPatchDefinition::run(){
 
 #include "includes.h"
 
-#define STATIC_PROGRAM_STACK_SIZE   (32*1024)
+#define STATIC_PROGRAM_STACK_SIZE   (16*1024)
 
 template<class T> struct Register {
   static Patch* construct() {
@@ -32,10 +32,14 @@ template<class T> struct Register {
   }
 };
 
-#define REGISTER_PATCH(T, STR, IN, OUT) factorypatches[i++].setup((char*)STR, IN, OUT, Register<T>::construct)
+int FACTORY_PATCH_COUNT = 0;
+static FactoryPatchDefinition factorypatches[MAX_FACTORY_PATCHES];
+void registerPatch(char* nm, uint8_t ins, uint8_t outs, PatchCreator c){
+  if(FACTORY_PATCH_COUNT < MAX_FACTORY_PATCHES)
+    factorypatches[FACTORY_PATCH_COUNT++].setup(nm, ins, outs, c);
+}
 
-#define MAX_FACTORY_PATCHES 32
-FactoryPatchDefinition factorypatches[MAX_FACTORY_PATCHES];
+#define REGISTER_PATCH(T, STR, IN, OUT) registerPatch((char*)STR, IN, OUT, Register<T>::construct);
 
 // #undefine REGISTER_PATCH
 // #define REGISTER_PATCH(T, STR, IN, OUT) registerPatch(STR, IN, OUT, Register<T>::construct)
@@ -44,25 +48,21 @@ FactoryPatchDefinition factorypatches[MAX_FACTORY_PATCHES];
 // 		   PatchCreator creator){
 // }
 
-int FACTORY_PATCH_COUNT;
 void FactoryPatchDefinition::init(){
-  int i=0;
 #include "patches.cpp"
-  FACTORY_PATCH_COUNT = i;
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition() {
-  // stackBase = (uint32_t*)ucHeap;
   stackBase = NULL;
-  stackSize = STATIC_PROGRAM_STACK_SIZE;
+  stackSize = 0;
+  // stackSize = STATIC_PROGRAM_STACK_SIZE;
   programVector = &staticVector;
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition(char* name, uint8_t inputs, uint8_t outputs, PatchCreator c) :
   PatchDefinition(name, inputs, outputs), creator(c) {
-  // stackBase = (uint32_t*)ucHeap;
   stackBase = NULL;
-  stackSize = STATIC_PROGRAM_STACK_SIZE;
+  stackSize = 0;
   programVector = &staticVector;
 }
 

@@ -17,8 +17,6 @@ static void Handle_USBAsynchXfer (void *pdev);
 /*********************************************
    AUDIO Requests management functions
  *********************************************/
-//static void AUDIO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req);
-//static void AUDIO_Req_SetCurrent(void *pdev, USB_SETUP_REQ *req);
 static uint8_t  *USBD_audio_GetCfgDesc (uint8_t speed, uint16_t *length);
 
 __ALIGN_BEGIN uint8_t USB_Rx_Buffer   [MIDI_MAX_PACKET_SIZE] __ALIGN_END ;

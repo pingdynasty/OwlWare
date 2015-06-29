@@ -13,6 +13,8 @@ private:
   // uint32_t* programStackBase;
   // uint32_t programStackSize;
   // char programName[16];
+  void notifyProgram(uint32_t ulValue);
+  void notifyProgramFromISR(uint32_t ulValue);
 public:
   ProgramManager();
   /* bool isRunning(){ */
@@ -22,13 +24,12 @@ public:
   void loadProgram(uint8_t index);
   void loadStaticProgram(PatchDefinition* def);
   void loadDynamicProgram(void* address, uint32_t length);
-  /* bool verify(); */
-  void startProgram();
   void startManager();
   void runManager();
-  void exit();
+  void startProgram(bool isr);
+  void exitProgram(bool isr);
   /* exit and restart program */
-  void reset();
+  void resetProgram(bool isr);
 
   void audioReady();
   void programReady();

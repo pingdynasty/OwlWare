@@ -97,9 +97,9 @@ void pushButtonCallback(){
   }
 }
 
-void exitProgram(){
+void exitProgram(bool isr){
   // disable audio processing
-  program.exit();
+  program.exitProgram(isr);
   codec.clear();
   setLed(RED);
   registry.setDynamicPatchDefinition(NULL);
@@ -275,7 +275,7 @@ void setup(){
   codec.init(settings);
 
   program.loadProgram(settings.program_index);
-  program.startProgram();
+  program.startProgram(false);
 
   updateBypassMode();
 

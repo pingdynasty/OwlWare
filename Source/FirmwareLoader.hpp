@@ -64,7 +64,7 @@ public:
       if(length < 3+5+5)
 	return error(-1);
       // stop running program and free its memory
-      exitProgram();
+      exitProgram(true);
       // get firmware data size (decoded)
       size = decodeInt(data+offset);
       offset += 5; // it takes five 7-bit values to encode four bytes
