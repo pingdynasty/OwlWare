@@ -106,4 +106,4 @@ OBJS += $(BUILD)/basicmaths.o $(BUILD)/StompBox.o $(BUILD)/PatchProcessor.o # $(
 OBJS += $(BUILD)/sramalloc.o
 
 # include common make file
-include $(TEMPLATEROOT)/Makefile.f4
+include $(TEMPLATEROOT)/f4.mk
