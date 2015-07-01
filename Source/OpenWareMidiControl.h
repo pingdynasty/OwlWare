@@ -39,6 +39,7 @@ enum OpenWareMidiSysexCommand {
   SYSEX_FIRMWARE_UPLOAD           = 0x10,
   SYSEX_FIRMWARE_STORE            = 0x11,
   SYSEX_FIRMWARE_RUN              = 0x12,
+  SYSEX_FIRMWARE_FLASH            = 0x13,
   SYSEX_FIRMWARE_VERSION          = 0x20,
   SYSEX_DEVICE_ID                 = 0x21,
   SYSEX_PROGRAM_MESSAGE           = 0x22,

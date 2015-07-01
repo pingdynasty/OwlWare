@@ -27,6 +27,11 @@ public:
     index = 0;
     packageIndex = 0;
     ready = false;
+    crc = -1;
+  }
+
+  uint32_t getChecksum(){
+    return crc;
   }
 
   bool isReady(){

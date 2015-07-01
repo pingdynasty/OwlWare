@@ -216,6 +216,20 @@ public:
     }      
   }
 
+  void handleFirmwareFlashCommand(uint8_t* data, uint16_t size){
+    if(loader.isReady() && size == 5){
+      uint32_t checksum = loader.decodeInt(data);
+      if(checksum == loader.getChecksum()){
+	program.saveProgramToFlash(-1, loader.getData(), loader.getSize());
+	loader.clear();
+      }else{
+	setErrorMessage(PROGRAM_ERROR, "Invalid FLASH checksum");
+      }
+    }else{
+      setErrorMessage(PROGRAM_ERROR, "Invalid FLASH command");
+    }
+  }
+
   void handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
     if(loader.isReady() && size >= 1){
       uint8_t slot = data[0];
@@ -241,11 +255,14 @@ public:
     case SYSEX_FIRMWARE_UPLOAD:
       handleFirmwareUploadCommand(data, size);
       break;
+    case SYSEX_FIRMWARE_RUN:
+      handleFirmwareRunCommand(data+3, size-3);
+      break;
     case SYSEX_FIRMWARE_STORE:
       handleFirmwareStoreCommand(data+3, size-3);
       break;
-    case SYSEX_FIRMWARE_RUN:
-      handleFirmwareRunCommand(data+3, size-3);
+    case SYSEX_FIRMWARE_FLASH:
+      handleFirmwareFlashCommand(data+3, size-3);
       break;
     }
   }

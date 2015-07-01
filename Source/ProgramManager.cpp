@@ -44,7 +44,7 @@ ProgramVector* getProgramVector(){
 }
 
 static uint32_t getFlashAddress(int sector){
-  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
+  uint32_t addr = ADDR_FLASH_SECTOR_11;
   addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000
   return addr;
 }
@@ -72,7 +72,6 @@ volatile uint32_t flashSizeToWrite;
 
 static void eraseFlashSector(int sector){
   uint32_t addr = getFlashAddress(sector);
-  addr -= 0x08004000; // FLASH_SECTOR_1, eeprom base address
   eeprom_unlock();
   int ret = eeprom_erase(addr);
   eeprom_lock();
@@ -99,26 +98,47 @@ extern "C" {
   }
 
   void programFlashTask(void* p){
+    const int FLASH_SECTOR_SIZE = 128*1024;
     int sector = flashSectorToWrite;
-    if(sector >= 0 && sector <= 4 && flashSizeToWrite <= 128*1024){
+    uint32_t size = flashSizeToWrite;
+    uint8_t* source = (uint8_t*)flashAddressToWrite;
+    if(sector >= 0 && sector <= 4 && size <= 128*1024){
       uint32_t addr = getFlashAddress(sector);
-      addr -= 0x08004000; // FLASH_SECTOR_1, eeprom base address
       eeprom_unlock();
       int ret = eeprom_erase(addr);
       if(ret == 0)
-	ret = eeprom_write_block(addr, (uint8_t*)flashAddressToWrite, flashSizeToWrite);
+	ret = eeprom_write_block(addr, source, size);
       eeprom_lock();
       if(ret == 0){
+	registry.init();
 	// load and run program
-	program.loadDynamicProgram((uint8_t*)flashAddressToWrite, flashSizeToWrite);
+	// if we knew the PC we could run from flash
+	program.loadDynamicProgram(source, size);
 	program.startProgram(false);
       }else{
 	setErrorMessage(PROGRAM_ERROR, "Failed to program flash sector");
       }
+    }else if(sector == -1 && size < FLASH_SECTOR_SIZE*2){
+      // program firmware
+      eeprom_unlock();
+      uint32_t addr = ADDR_FLASH_SECTOR_2;
+      int ret = eeprom_erase(addr);
+      if(ret != 0){
+	setErrorMessage(PROGRAM_ERROR, "Failed to erase firmware");
+      }else if(size > FLASH_SECTOR_SIZE){
+	eeprom_write_block(addr, source, FLASH_SECTOR_SIZE);
+	addr = ADDR_FLASH_SECTOR_3;
+	source += FLASH_SECTOR_SIZE;
+	eeprom_erase(addr);
+	eeprom_write_block(addr, source, size-FLASH_SECTOR_SIZE);
+      }else{
+	eeprom_write_block(addr, source, size);
+      }
+      eeprom_lock();
+      NVIC_SystemReset();
     }else{
       setErrorMessage(PROGRAM_ERROR, "Invalid flash erase command");
     }
-    registry.init();
     vTaskDelete(NULL);
   }
 

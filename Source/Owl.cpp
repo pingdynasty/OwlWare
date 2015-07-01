@@ -99,27 +99,17 @@ void pushButtonCallback(){
 
 void exitProgram(bool isr){
   // disable audio processing
-  program.exitProgram(isr);
+  codec.softMute(true);
   codec.clear();
-  setLed(RED);
+  program.exitProgram(isr);
   registry.setDynamicPatchDefinition(NULL);
+  setLed(RED);
 }
 
 void updateProgramIndex(uint8_t index){
   settings.program_index = index;
   midi.sendPc(index);
 }
-
-// void resetProgram(){
-//   program.reset();
-//   registry.setDynamicPatchDefinition(NULL);
-// }
-
-// void run(){
-//   program.load((uint32_t*)PATCHFLASH, 64*1024);
-//   program.run(); // never returns
-//   // for(;;);
-// }
 
 #ifdef __cplusplus
  extern "C" {

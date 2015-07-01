@@ -9,7 +9,7 @@ static PatchDefinition emptyPatch("---", 0, 0);
 PatchRegistry::PatchRegistry() : nofPatches(0) {}
 
 void PatchRegistry::init() {
-  reset();
+  nofPatches = 0;
   FactoryPatchDefinition::init();
   PatchDefinition* def;
   for(int i=0; i<4; ++i){

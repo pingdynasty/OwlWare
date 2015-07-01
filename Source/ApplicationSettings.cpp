@@ -2,7 +2,7 @@
 #include "eepromcontrol.h"
 #include "device.h"
 
-#define APPLICATION_SETTINGS_OFFSET 0
+#define APPLICATION_SETTINGS_ADDR ADDR_FLASH_SECTOR_1
 
 void ApplicationSettings::init(){
   if(settingsInFlash())
@@ -29,22 +29,22 @@ void ApplicationSettings::reset(){
 
 bool ApplicationSettings::settingsInFlash(){
   checksum = sizeof(*this);
-  return eeprom_read_byte(APPLICATION_SETTINGS_OFFSET) == checksum;
+  return eeprom_read_byte(APPLICATION_SETTINGS_ADDR) == checksum;
 }
 
 void ApplicationSettings::loadFromFlash(){
-  eeprom_read_block(APPLICATION_SETTINGS_OFFSET, (uint8_t*)this, sizeof(*this));
+  eeprom_read_block(APPLICATION_SETTINGS_ADDR, (uint8_t*)this, sizeof(*this));
 }
 
 void ApplicationSettings::saveToFlash(){
   eeprom_unlock();
-  if(eeprom_erase(APPLICATION_SETTINGS_OFFSET) == 0)
-    eeprom_write_block(APPLICATION_SETTINGS_OFFSET, (uint8_t*)this, sizeof(*this));
+  if(eeprom_erase(APPLICATION_SETTINGS_ADDR) == 0)
+    eeprom_write_block(APPLICATION_SETTINGS_ADDR, (uint8_t*)this, sizeof(*this));
   eeprom_lock();
 }
 
 void ApplicationSettings::clearFlash(){
   eeprom_unlock();
-  eeprom_erase(APPLICATION_SETTINGS_OFFSET);
+  eeprom_erase(APPLICATION_SETTINGS_ADDR);
   eeprom_lock();
 }
