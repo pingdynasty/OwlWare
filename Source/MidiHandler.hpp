@@ -231,8 +231,8 @@ public:
   }
 
   void handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
-    if(loader.isReady() && size >= 1){
-      uint8_t slot = data[0];
+    if(loader.isReady() && size == 5){
+      uint32_t slot = loader.decodeInt(data);
       program.saveProgramToFlash(slot, loader.getData(), loader.getSize());
       loader.clear();
     }else{
