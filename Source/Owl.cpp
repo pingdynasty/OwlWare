@@ -255,12 +255,6 @@ void setup(){
   setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
 #endif
 
-  // set pointer to smem in the backup ram
-  // uint32_t pointer = (uint32_t)&smem;
-  // memcpy(BKPSRAM_GetMemoryAddress(), &pointer, 4);
-  // ProgramVector* smemp = (ProgramVector*)BKPSRAM_GetMemoryAddress();
-  // smemp = &smem;
-
   codec.setup();
   codec.init(settings);
 

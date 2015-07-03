@@ -37,7 +37,7 @@ static ProgramVector* currentProgramVector = &staticVector;
 
 // #define JUMPTO(address) ((void (*)(void))address)();
 static DynamicPatchDefinition dynamo;
-static DynamicPatchDefinition flashPatches[4];
+static DynamicPatchDefinition flashPatches[MAX_USER_PATCHES];
 
 ProgramVector* getProgramVector(){
   return currentProgramVector;
@@ -102,7 +102,7 @@ extern "C" {
     int sector = flashSectorToWrite;
     uint32_t size = flashSizeToWrite;
     uint8_t* source = (uint8_t*)flashAddressToWrite;
-    if(sector >= 0 && sector <= 4 && size <= 128*1024){
+    if(sector >= 0 && sector < MAX_USER_PATCHES && size <= 128*1024){
       uint32_t addr = getFlashAddress(sector);
       eeprom_unlock();
       int ret = eeprom_erase(addr);
@@ -137,7 +137,7 @@ extern "C" {
       eeprom_lock();
       NVIC_SystemReset();
     }else{
-      setErrorMessage(PROGRAM_ERROR, "Invalid flash erase command");
+      setErrorMessage(PROGRAM_ERROR, "Invalid flash program command");
     }
     vTaskDelete(NULL);
   }
@@ -145,10 +145,10 @@ extern "C" {
   void eraseFlashTask(void* p){
     int sector = flashSectorToWrite;
     if(sector == -1){
-      for(int i=0; i<4; ++i)
+      for(int i=0; i<MAX_USER_PATCHES; ++i)
 	eraseFlashSector(i);
       settings.clearFlash();
-    }else if(sector >= 0 && sector <= 4){
+    }else if(sector >= 0 && sector < MAX_USER_PATCHES){
       eraseFlashSector(sector);
     }else{
       setErrorMessage(PROGRAM_ERROR, "Invalid flash erase command");
@@ -170,25 +170,6 @@ ProgramManager::ProgramManager() { //: patchdef(NULL) {
   *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
 #endif /* DEBUG_DWT */
 }
-
-#ifdef DEBUG_STACK
-unsigned long pH = 0;
-unsigned long mH = 0;
-unsigned long tH = 0;
-
-void stats(){
-  if(xProgramHandle != NULL){
-    pH = uxTaskGetStackHighWaterMark(xProgramHandle);
-  }
-  if(xManagerHandle != NULL){
-    mH = uxTaskGetStackHighWaterMark(xManagerHandle);
-  }
-  UBaseType_t high;
-  high = uxTaskGetNumberOfTasks();
-  if(high > tH)
-    tH = high;
-}
-#endif /* DEBUG_STACK */
 
 #if defined AUDIO_TASK_DIRECT
 volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
@@ -317,19 +298,33 @@ void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
 }
 
 #ifdef DEBUG_STACK
-uint32_t ProgramManager::getProgramStackSize(){
+uint32_t ProgramManager::getProgramStackUsed(){
   if(xProgramHandle == NULL)
     return 0;
-  pH = uxTaskGetStackHighWaterMark(xProgramHandle);
-  return pH*sizeof(portSTACK_TYPE);
+  uint32_t ph = uxTaskGetStackHighWaterMark(xProgramHandle);
+  return getProgramStackAllocation() - ph*sizeof(portSTACK_TYPE);
 }
-#endif /* DEBUG_STACK */
 
 uint32_t ProgramManager::getProgramStackAllocation(){
+  uint32_t ss = 0;
   if(patchdef != NULL)
-    return patchdef->getStackSize();
-  return 0;
+    ss = patchdef->getStackSize();
+  if(ss == 0)
+    ss = PROGRAM_TASK_STACK_SIZE*sizeof(portSTACK_TYPE);
+  return ss;
 }
+
+uint32_t ProgramManager::getManagerStackUsed(){
+  if(xManagerHandle == NULL)
+    return 0;
+  uint32_t mh = uxTaskGetStackHighWaterMark(xManagerHandle);
+  return getManagerStackAllocation() - mh*sizeof(portSTACK_TYPE);
+}
+
+uint32_t ProgramManager::getManagerStackAllocation(){
+  return MANAGER_TASK_STACK_SIZE*sizeof(portSTACK_TYPE);
+}
+#endif /* DEBUG_STACK */
 
 uint32_t ProgramManager::getCyclesPerBlock(){
   return currentProgramVector->cycles_per_block;
@@ -345,9 +340,6 @@ void ProgramManager::runManager(){
   TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
   setLed(GREEN);
   for(;;){
-#ifdef DEBUG_STACK
-    stats();
-#endif /* DEBUG_STACK */
     /* Block indefinitely (without a timeout, so no need to check the function's
        return value) to wait for a notification.
        Bits in this RTOS task's notification value are set by the notifying
@@ -405,7 +397,7 @@ void ProgramManager::runManager(){
 }
 
 PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
-  if(sector > 4)
+  if(sector >= MAX_USER_PATCHES)
     return NULL;
   uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
   addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000  

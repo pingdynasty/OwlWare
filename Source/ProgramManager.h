@@ -35,8 +35,10 @@ public:
   void programReady();
   void programStatus(int);
 
-  uint32_t getProgramStackSize();
+  uint32_t getProgramStackUsed();
   uint32_t getProgramStackAllocation();
+  uint32_t getManagerStackUsed();
+  uint32_t getManagerStackAllocation();
 
   void eraseProgramFromFlash(uint8_t sector);
   void saveProgramToFlash(uint8_t sector, void* address, uint32_t length);

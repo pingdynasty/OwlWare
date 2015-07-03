@@ -115,11 +115,11 @@ char* itoa(int val, int base, int pad=0){
 
 void MidiController::sendDeviceStats(){
 #ifdef DEBUG_STACK
-  char buffer[64];
+  char buffer[32];
   buffer[0] = SYSEX_DEVICE_STATS;
   char* p = &buffer[1];
   p = stpcpy(p, (const char*)"Program stack: ");
-  p = stpcpy(p, itoa(program.getProgramStackSize(), 10));
+  p = stpcpy(p, itoa(program.getProgramStackUsed(), 10));
   p = stpcpy(p, (const char*)"/");
   p = stpcpy(p, itoa(program.getProgramStackAllocation(), 10));
   sendSysEx((uint8_t*)buffer, p-buffer);
@@ -133,13 +133,22 @@ void MidiController::sendProgramStats(){
   uint8_t err = getErrorStatus();
   switch(err & 0xf0){
   case NO_ERROR: {
-    p = stpcpy(p, (const char*)"CPU ");
-    float percent = (program.getCyclesPerBlock()/settings.audio_blocksize) / (float)3500;
+#ifdef DEBUG_DWT
+    p = stpcpy(p, (const char*)"CPU: ");
+    float percent = (program.getCyclesPerBlock()/settings.audio_blocksize) / (float)ARM_CYCLES_PER_SAMPLE;
     p = stpcpy(p, itoa(ceilf(percent*100), 10));
-    p = stpcpy(p, (const char*)"% Heap ");
-    percent = program.getHeapMemoryUsed()/(float)(1024*1024);
-    p = stpcpy(p, itoa(ceilf(percent*100), 10));
-    p = stpcpy(p, (const char*)"%");
+    p = stpcpy(p, (const char*)"% ");
+#endif /* DEBUG_DWT */
+#ifdef DEBUG_STACK
+    p = stpcpy(p, (const char*)"Stack: ");
+    int stack = program.getProgramStackUsed();
+    p = stpcpy(p, itoa(stack, 10));
+    p = stpcpy(p, (const char*)" Heap: ");
+#else
+    p = stpcpy(p, (const char*)"Heap: ");
+#endif /* DEBUG_STACK */
+    int mem = program.getHeapMemoryUsed();
+    p = stpcpy(p, itoa(mem, 10));
     break;
   }
   case MEM_ERROR:
@@ -187,7 +196,7 @@ void MidiController::sendProgramMessage(){
 }
 
 void MidiController::sendFirmwareVersion(){
-  char buffer[64];
+  char buffer[32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
   char* p = &buffer[1];
   p = stpcpy(p, getFirmwareVersion());
@@ -205,7 +214,7 @@ void MidiController::sendConfigurationSetting(const char* name, uint32_t value){
 
 void MidiController::sendDeviceId(){
   uint32_t* deviceId = getDeviceId();
-  char buffer[36];
+  char buffer[32];
   buffer[0] = SYSEX_DEVICE_ID;
   char* p = &buffer[1];
   p = stpcpy(p, itoa(deviceId[0], 16, 8));

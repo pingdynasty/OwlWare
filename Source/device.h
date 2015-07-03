@@ -52,7 +52,8 @@
 #define MAX_SYSEX_FIRMWARE_SIZE      (80*1024)
 
 #define MAX_FACTORY_PATCHES          32
-#define MAX_NUMBER_OF_PATCHES        64
+#define MAX_USER_PATCHES             4
+#define MAX_NUMBER_OF_PATCHES        (MAX_FACTORY_PATCHES+MAX_USER_PATCHES+1)
 
 /* I2C clock speed configuration (in Hz)  */
 #define I2C_SPEED                    100000
@@ -126,6 +127,7 @@
 #define PROGRAM_TASK_STACK_SIZE          (4*1024/sizeof(portSTACK_TYPE))
 #define MANAGER_TASK_STACK_SIZE          (1*1024/sizeof(portSTACK_TYPE))
 #define FLASH_TASK_STACK_SIZE            (4*1024/sizeof(portSTACK_TYPE))
+#define ARM_CYCLES_PER_SAMPLE            3500 /* 168MHz / 48kHz */
 
 #ifdef  USE_FULL_ASSERT
 #ifdef __cplusplus

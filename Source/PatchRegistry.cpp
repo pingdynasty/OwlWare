@@ -12,17 +12,13 @@ void PatchRegistry::init() {
   nofPatches = 0;
   FactoryPatchDefinition::init();
   PatchDefinition* def;
-  for(int i=0; i<4; ++i){
+  for(int i=0; i<MAX_USER_PATCHES; ++i){
     def = program.getPatchDefinitionFromFlash(i);
     if(def == NULL)
       registerPatch(&emptyPatch);
     else
       registerPatch(def);
   }
-}
-
-void PatchRegistry::reset(){
-  nofPatches = 0;
 }
 
 const char* PatchRegistry::getName(unsigned int index){

@@ -12,7 +12,6 @@ class PatchRegistry {
 public:
   PatchRegistry();
   void init();
-  void reset();
   const char* getName(unsigned int index);
   PatchDefinition* getPatchDefinition(unsigned int index);
   unsigned int getNumberOfPatches();
