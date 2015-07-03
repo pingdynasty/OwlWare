@@ -56,7 +56,6 @@ TaskHandle_t xFlashTaskHandle = NULL;
 SemaphoreHandle_t xSemaphore = NULL;
 #endif // AUDIO_TASK_SEMAPHORE
 
-
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 
 #define START_PROGRAM_NOTIFICATION  0x01
@@ -97,6 +96,7 @@ extern "C" {
     for(;;);
   }
 
+__attribute__ ((section (".coderam")))
   void programFlashTask(void* p){
     const int FLASH_SECTOR_SIZE = 128*1024;
     int sector = flashSectorToWrite;
@@ -118,24 +118,26 @@ extern "C" {
       }else{
 	setErrorMessage(PROGRAM_ERROR, "Failed to program flash sector");
       }
-    }else if(sector == -1 && size < FLASH_SECTOR_SIZE*2){
+    }else if(sector == 0xff && size < FLASH_SECTOR_SIZE*2){
       // program firmware
       eeprom_unlock();
       uint32_t addr = ADDR_FLASH_SECTOR_2;
-      int ret = eeprom_erase(addr);
-      if(ret != 0){
-	setErrorMessage(PROGRAM_ERROR, "Failed to erase firmware");
-      }else if(size > FLASH_SECTOR_SIZE){
-	eeprom_write_block(addr, source, FLASH_SECTOR_SIZE);
-	addr = ADDR_FLASH_SECTOR_3;
-	source += FLASH_SECTOR_SIZE;
-	eeprom_erase(addr);
-	eeprom_write_block(addr, source, size-FLASH_SECTOR_SIZE);
-      }else{
+      int ret = eeprom_erase(ADDR_FLASH_SECTOR_2);
+      if(ret == 0 && size > 16*1024)
+	ret |= eeprom_erase(ADDR_FLASH_SECTOR_3);
+      if(ret == 0 && size > (16+16)*1024)
+	ret |= eeprom_erase(ADDR_FLASH_SECTOR_4);
+      if(ret == 0 && size > (16+16+64)*1024)
+	ret |= eeprom_erase(ADDR_FLASH_SECTOR_5);
+      if(ret == 0 && size > (16+16+64+128)*1024)
+	ret |= eeprom_erase(ADDR_FLASH_SECTOR_6);
+      if(ret == 0)
 	eeprom_write_block(addr, source, size);
-      }
+      else
+	setErrorMessage(PROGRAM_ERROR, "Flash erase failed");
       eeprom_lock();
-      NVIC_SystemReset();
+      if(ret == 0)
+	NVIC_SystemReset();
     }else{
       setErrorMessage(PROGRAM_ERROR, "Invalid flash program command");
     }
@@ -144,7 +146,7 @@ extern "C" {
 
   void eraseFlashTask(void* p){
     int sector = flashSectorToWrite;
-    if(sector == -1){
+    if(sector == 0xff){
       for(int i=0; i<MAX_USER_PATCHES; ++i)
 	eraseFlashSector(i);
       settings.clearFlash();
