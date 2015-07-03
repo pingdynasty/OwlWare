@@ -49,6 +49,7 @@ void registerPatch(char* nm, uint8_t ins, uint8_t outs, PatchCreator c){
 // }
 
 void FactoryPatchDefinition::init(){
+  FACTORY_PATCH_COUNT = 0;
 #include "patches.cpp"
 }
 
