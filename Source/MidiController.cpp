@@ -62,11 +62,11 @@ void MidiController::sendPatchParameterNames(){
 }
 
 void MidiController::sendPatchParameterName(PatchParameterId pid, const char* name){
-  uint8_t size = strlen(name);
-  uint8_t buffer[size+3];
+  uint8_t size = strnlen(name, 24);
+  uint8_t buffer[size+2];
   buffer[0] = SYSEX_PARAMETER_NAME_COMMAND;
   buffer[1] = pid;
-  memcpy(buffer+2, name, size+1);
+  memcpy(buffer+2, name, size);
   sendSysEx(buffer, sizeof(buffer));
 }
 
@@ -78,12 +78,11 @@ void MidiController::sendPatchNames(){
 void MidiController::sendPatchName(uint8_t index){
   const char* name = registry.getName(index);
   if(name != NULL){
-    uint8_t size = strlen(name);
-    // uint8_t size = strnlen(name, 16);
-    uint8_t buffer[size+3];
+    uint8_t size = strnlen(name, 24);
+    uint8_t buffer[size+2];
     buffer[0] = SYSEX_PRESET_NAME_COMMAND;
     buffer[1] = index;
-    memcpy(buffer+2, name, size+1);
+    memcpy(buffer+2, name, size);
     sendSysEx(buffer, sizeof(buffer));
   }
 }
@@ -115,13 +114,19 @@ char* itoa(int val, int base, int pad=0){
 
 void MidiController::sendDeviceStats(){
 #ifdef DEBUG_STACK
-  char buffer[32];
+  char buffer[64];
   buffer[0] = SYSEX_DEVICE_STATS;
   char* p = &buffer[1];
-  p = stpcpy(p, (const char*)"Program stack: ");
+  p = stpcpy(p, (const char*)"Stack: Program ");
   p = stpcpy(p, itoa(program.getProgramStackUsed(), 10));
   p = stpcpy(p, (const char*)"/");
   p = stpcpy(p, itoa(program.getProgramStackAllocation(), 10));
+  p = stpcpy(p, (const char*)" Manager ");
+  p = stpcpy(p, itoa(program.getManagerStackUsed(), 10));
+  p = stpcpy(p, (const char*)"/");
+  p = stpcpy(p, itoa(program.getManagerStackAllocation(), 10));
+  p = stpcpy(p, (const char*)" Free ");
+  p = stpcpy(p, itoa(program.getFreeHeapSize(), 10));
   sendSysEx((uint8_t*)buffer, p-buffer);
 #endif /* DEBUG_STACK */
 }

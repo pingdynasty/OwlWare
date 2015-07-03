@@ -92,6 +92,7 @@ void pushButtonCallback(){
   DEBOUNCE(pushbutton, 200);
   if(isPushButtonPressed()){
     setButton(PUSHBUTTON, true);
+    toggleActiveSlot();
   }else{
     setButton(PUSHBUTTON, false);
   }

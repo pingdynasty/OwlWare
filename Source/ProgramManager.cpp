@@ -324,6 +324,10 @@ uint32_t ProgramManager::getManagerStackUsed(){
 uint32_t ProgramManager::getManagerStackAllocation(){
   return MANAGER_TASK_STACK_SIZE*sizeof(portSTACK_TYPE);
 }
+
+uint32_t ProgramManager::getFreeHeapSize(){
+  return xPortGetFreeHeapSize();
+}
 #endif /* DEBUG_STACK */
 
 uint32_t ProgramManager::getCyclesPerBlock(){

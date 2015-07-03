@@ -12,7 +12,7 @@ enum I2SProtocol {
 
 class ApplicationSettings {
 public:
-  uint8_t checksum;
+  uint32_t checksum;
   uint32_t audio_samplingrate;
   uint8_t audio_bitdepth;
   uint16_t audio_blocksize;

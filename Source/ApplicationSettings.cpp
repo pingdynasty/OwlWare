@@ -28,7 +28,7 @@ void ApplicationSettings::reset(){
 }
 
 bool ApplicationSettings::settingsInFlash(){
-  checksum = sizeof(*this);
+  checksum = sizeof(*this) ^ 0xffffffff;
   return eeprom_read_byte(APPLICATION_SETTINGS_ADDR) == checksum;
 }
 

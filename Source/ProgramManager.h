@@ -39,6 +39,7 @@ public:
   uint32_t getProgramStackAllocation();
   uint32_t getManagerStackUsed();
   uint32_t getManagerStackAllocation();
+  uint32_t getFreeHeapSize();
 
   void eraseProgramFromFlash(uint8_t sector);
   void saveProgramToFlash(uint8_t sector, void* address, uint32_t length);
