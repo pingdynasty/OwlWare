@@ -1,7 +1,7 @@
 #include <inttypes.h>
 
 /* #define OWLMODULAR */
-#define FIRMWARE_VERSION             "vector-04"
+#define FIRMWARE_VERSION             "flash-02"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -50,6 +50,7 @@
 #define NOF_PARAMETERS               24
 #define MAX_BUFFERS_PER_PATCH        8
 #define MAX_SYSEX_FIRMWARE_SIZE      ((16+16+64+128+128)*1024) // FLASH sectors 2-6
+#define MAX_SYSEX_PROGRAM_SIZE       (128*1024) // 128k, one flash sector
 
 #define MAX_FACTORY_PATCHES          32
 #define MAX_USER_PATCHES             4

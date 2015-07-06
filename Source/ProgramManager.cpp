@@ -69,7 +69,7 @@ volatile int flashSectorToWrite;
 volatile void* flashAddressToWrite;
 volatile uint32_t flashSizeToWrite;
 
-static void eraseFlashSector(int sector){
+static void eraseFlashProgram(int sector){
   uint32_t addr = getFlashAddress(sector);
   eeprom_unlock();
   int ret = eeprom_erase(addr);
@@ -96,9 +96,29 @@ extern "C" {
     for(;;);
   }
 
-__attribute__ ((section (".coderam")))
-  void programFlashTask(void* p){
+  /*
+   * re-program firmware: this entire function and all subroutines must run from RAM
+   */
+  __attribute__ ((section (".coderam")))
+  static void flashFirmware(uint8_t* source, uint32_t size){
+    taskDISABLE_INTERRUPTS();
     const int FLASH_SECTOR_SIZE = 128*1024;
+    eeprom_unlock();
+    eeprom_erase(ADDR_FLASH_SECTOR_2);
+    if(size > 16*1024)
+      eeprom_erase(ADDR_FLASH_SECTOR_3);
+    if(size > (16+16)*1024)
+      eeprom_erase(ADDR_FLASH_SECTOR_4);
+    if(size > (16+16+64)*1024)
+      eeprom_erase(ADDR_FLASH_SECTOR_5);
+    if(size > (16+16+64+128)*1024)
+      eeprom_erase(ADDR_FLASH_SECTOR_6);
+      eeprom_write_block(ADDR_FLASH_SECTOR_2, source, size);
+    eeprom_lock();
+    NVIC_SystemReset(); // static inline
+  }
+
+  void programFlashTask(void* p){
     int sector = flashSectorToWrite;
     uint32_t size = flashSizeToWrite;
     uint8_t* source = (uint8_t*)flashAddressToWrite;
@@ -112,32 +132,16 @@ __attribute__ ((section (".coderam")))
       if(ret == 0){
 	registry.init();
 	// load and run program
+	int pc = registry.getNumberOfPatches()-sector-1;
+	program.loadProgram(pc);
 	// if we knew the PC we could run from flash
-	program.loadDynamicProgram(source, size);
+	// program.loadDynamicProgram(source, size);
 	program.startProgram(false);
       }else{
 	setErrorMessage(PROGRAM_ERROR, "Failed to program flash sector");
       }
-    }else if(sector == 0xff && size < FLASH_SECTOR_SIZE*2){
-      // program firmware
-      eeprom_unlock();
-      uint32_t addr = ADDR_FLASH_SECTOR_2;
-      int ret = eeprom_erase(ADDR_FLASH_SECTOR_2);
-      if(ret == 0 && size > 16*1024)
-	ret |= eeprom_erase(ADDR_FLASH_SECTOR_3);
-      if(ret == 0 && size > (16+16)*1024)
-	ret |= eeprom_erase(ADDR_FLASH_SECTOR_4);
-      if(ret == 0 && size > (16+16+64)*1024)
-	ret |= eeprom_erase(ADDR_FLASH_SECTOR_5);
-      if(ret == 0 && size > (16+16+64+128)*1024)
-	ret |= eeprom_erase(ADDR_FLASH_SECTOR_6);
-      if(ret == 0)
-	eeprom_write_block(addr, source, size);
-      else
-	setErrorMessage(PROGRAM_ERROR, "Flash erase failed");
-      eeprom_lock();
-      if(ret == 0)
-	NVIC_SystemReset();
+    }else if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
+      flashFirmware(source, size);
     }else{
       setErrorMessage(PROGRAM_ERROR, "Invalid flash program command");
     }
@@ -148,10 +152,10 @@ __attribute__ ((section (".coderam")))
     int sector = flashSectorToWrite;
     if(sector == 0xff){
       for(int i=0; i<MAX_USER_PATCHES; ++i)
-	eraseFlashSector(i);
+	eraseFlashProgram(i);
       settings.clearFlash();
     }else if(sector >= 0 && sector < MAX_USER_PATCHES){
-      eraseFlashSector(sector);
+      eraseFlashProgram(sector);
     }else{
       setErrorMessage(PROGRAM_ERROR, "Invalid flash erase command");
     }
