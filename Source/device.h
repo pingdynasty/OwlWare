@@ -1,7 +1,7 @@
 #include <inttypes.h>
 
 /* #define OWLMODULAR */
-#define FIRMWARE_VERSION             "flash-02"
+#define FIRMWARE_VERSION             "vector-06"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */

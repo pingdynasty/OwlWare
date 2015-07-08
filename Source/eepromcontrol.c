@@ -26,7 +26,7 @@ void eeprom_lock(){
 
 __attribute__ ((section (".coderam")))
 int eeprom_wait(){ 
-  volatile FLASH_Status status = FLASH_BUSY;
+  FLASH_Status status = FLASH_BUSY;
   /* Wait for the FLASH operation to complete by polling on BUSY flag to be reset.
      Even if the FLASH operation fails, the BUSY flag will be reset and an error
      flag will be set */
@@ -61,9 +61,9 @@ int eeprom_erase_sector(uint32_t sector) {
 
 __attribute__ ((section (".coderam")))
 int eeprom_write_block(uint32_t address, void* data, uint32_t size){
-  volatile uint32_t* src = (uint32_t*)data;
+  uint32_t* src = (uint32_t*)data;
   volatile uint32_t* dest = (volatile uint32_t*)address;
-  volatile FLASH_Status status = eeprom_wait();
+  FLASH_Status status = eeprom_wait();
   for(uint32_t i=0; i<size && status == FLASH_COMPLETE; i+=4){
     /* when the previous operation is completed, proceed to program the new data */
     FLASH->CR &= CR_PSIZE_MASK;
