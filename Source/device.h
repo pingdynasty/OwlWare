@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-/* #define OWLMODULAR */
+#define OWLMODULAR
 #define FIRMWARE_VERSION             "vector-06"
 
 /* #define DEFINE_OWL_SYSTICK */

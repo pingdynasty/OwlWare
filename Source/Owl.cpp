@@ -75,7 +75,7 @@ void footSwitchCallback(){
   updateBypassMode();
 }
 
-void toggleActiveSlot(){
+void togglePushButton(){
   if(getLed() == GREEN){
     setLed(RED);
     setButton(RED_BUTTON, true);
@@ -92,7 +92,7 @@ void pushButtonCallback(){
   DEBOUNCE(pushbutton, 200);
   if(isPushButtonPressed()){
     setButton(PUSHBUTTON, true);
-    toggleActiveSlot();
+    togglePushButton();
   }else{
     setButton(PUSHBUTTON, false);
   }
@@ -155,6 +155,11 @@ __attribute__ ((section (".coderam")))
 #ifdef __cplusplus
 }
 #endif
+
+void setParameterValues(uint16_t* values, int size){
+  getProgramVector()->parameters = values;
+  getProgramVector()->parameters_size = size;
+}
 
 void updateProgramVector(ProgramVector* smem){
   smem->checksum = sizeof(ProgramVector);

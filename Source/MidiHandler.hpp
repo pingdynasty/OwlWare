@@ -11,7 +11,8 @@
 #include "FirmwareLoader.hpp"
 #include "ProgramManager.h"
 
-static uint16_t midi_values[NOF_ADC_VALUES];
+#define NOF_MIDI_PARAMETERS NOF_PARAMETERS
+static uint16_t midi_values[NOF_MIDI_PARAMETERS];
 static FirmwareLoader loader;
 
 class MidiHandler : public MidiReader {
@@ -19,7 +20,7 @@ private:
   uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
 public:
   MidiHandler() : MidiReader(buffer, sizeof(buffer)) {
-    memset(midi_values, 0, sizeof(midi_values));
+    memset(midi_values, 0, NOF_MIDI_PARAMETERS*sizeof(uint16_t));
   }
 
   void handleProgramChange(uint8_t status, uint8_t pid){
@@ -53,15 +54,15 @@ public:
       break;
     case PATCH_CONTROL:
       if(value == 127){
-	memcpy(midi_values, getAnalogValues(), sizeof(midi_values));
-	// patches.setParameterValues(midi_values);
+	memcpy(midi_values, getAnalogValues(), NOF_MIDI_PARAMETERS*sizeof(uint16_t));
+	setParameterValues(midi_values, NOF_MIDI_PARAMETERS);
       }else{
-	// patches.setParameterValues(getAnalogValues());
+	setParameterValues(getAnalogValues(), NOF_PARAMETERS);
       }
       break;
     case PATCH_BUTTON:
       if(value == 127)
-	// patches.toggleActiveSlot();
+	togglePushButton();
       break;
     case LED:
       if(value < 42){
@@ -233,8 +234,12 @@ public:
   void handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
     if(loader.isReady() && size == 5){
       uint32_t slot = loader.decodeInt(data);
-      program.saveProgramToFlash(slot, loader.getData(), loader.getSize());
-      loader.clear();
+      if(slot >= 0 && slot < MAX_USER_PATCHES){
+	program.saveProgramToFlash(slot, loader.getData(), loader.getSize());
+	loader.clear();
+      }else{
+	setErrorMessage(PROGRAM_ERROR, "Invalid program slot");
+      }
     }else{
       setErrorMessage(PROGRAM_ERROR, "No program to store");
     }
