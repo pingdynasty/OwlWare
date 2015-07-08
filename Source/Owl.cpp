@@ -52,7 +52,6 @@ void updateLed(){
     setLed(RED);
   else
     setLed(NONE);
-  midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
 void updateBypassMode(){
@@ -86,6 +85,7 @@ void toggleActiveSlot(){
     setButton(GREEN_BUTTON, true);
     setButton(RED_BUTTON, false);
   }
+  midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
 void pushButtonCallback(){
