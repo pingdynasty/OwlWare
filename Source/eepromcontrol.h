@@ -24,9 +24,13 @@
    void eeprom_lock();
    void eeprom_unlock();
    uint8_t eeprom_read_byte(uint32_t address);
-   int eeprom_read_block(uint32_t address, uint8_t* data, uint32_t size);
-   int eeprom_write_block(uint32_t address, uint8_t* data, uint32_t size);
+   int eeprom_read_block(uint32_t address, void* data, uint32_t size);
+   int eeprom_write_block(uint32_t address, void* data, uint32_t size);
    int eeprom_erase(uint32_t address);
+
+   int eeprom_wait();
+   int eeprom_get_status();
+   int eeprom_erase_sector(uint32_t sector);
 
 #ifdef __cplusplus
 }

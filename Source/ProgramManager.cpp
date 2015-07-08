@@ -11,6 +11,8 @@
 #include "ApplicationSettings.h"
 #include "CodecController.h"
 
+// #include "stm32f4xx.h" // for FLASH_SECTOR defs
+
 // #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
 #define AUDIO_TASK_DIRECT
@@ -100,22 +102,24 @@ extern "C" {
    * re-program firmware: this entire function and all subroutines must run from RAM
    */
   __attribute__ ((section (".coderam")))
-  static void flashFirmware(uint8_t* source, uint32_t size){
-    taskDISABLE_INTERRUPTS();
-    const int FLASH_SECTOR_SIZE = 128*1024;
+  void flashFirmware(uint8_t* source, uint32_t size){
+    __disable_irq(); // Disable ALL interrupts. Can only be executed in Privileged modes.
+    // taskDISABLE_INTERRUPTS();
     eeprom_unlock();
-    eeprom_erase(ADDR_FLASH_SECTOR_2);
-    if(size > 16*1024)
-      eeprom_erase(ADDR_FLASH_SECTOR_3);
-    if(size > (16+16)*1024)
-      eeprom_erase(ADDR_FLASH_SECTOR_4);
-    if(size > (16+16+64)*1024)
-      eeprom_erase(ADDR_FLASH_SECTOR_5);
-    if(size > (16+16+64+128)*1024)
-      eeprom_erase(ADDR_FLASH_SECTOR_6);
-      eeprom_write_block(ADDR_FLASH_SECTOR_2, source, size);
+    // if(size > (16+16+64+128)*1024)
+      eeprom_erase_sector(FLASH_Sector_6);
+    // if(size > (16+16+64)*1024)
+      eeprom_erase_sector(FLASH_Sector_5);
+    // if(size > (16+16)*1024)
+      eeprom_erase_sector(FLASH_Sector_4);
+    // if(size > 16*1024)
+      eeprom_erase_sector(FLASH_Sector_3);
+    eeprom_erase_sector(FLASH_Sector_2);
+    eeprom_write_block(ADDR_FLASH_SECTOR_2, source, size);
     eeprom_lock();
-    NVIC_SystemReset(); // static inline
+    eeprom_wait();
+    // __enable_irq(); // enable interrupts (always inline)
+    NVIC_SystemReset(); // (static inline)
   }
 
   void programFlashTask(void* p){
