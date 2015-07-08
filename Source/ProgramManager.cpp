@@ -105,14 +105,15 @@ extern "C" {
   void flashFirmware(uint8_t* source, uint32_t size){
     __disable_irq(); // Disable ALL interrupts. Can only be executed in Privileged modes.
     // taskDISABLE_INTERRUPTS();
+    setLed(RED);
     eeprom_unlock();
-    // if(size > (16+16+64+128)*1024)
+    if(size > (16+16+64+128)*1024)
       eeprom_erase_sector(FLASH_Sector_6);
-    // if(size > (16+16+64)*1024)
+    if(size > (16+16+64)*1024)
       eeprom_erase_sector(FLASH_Sector_5);
-    // if(size > (16+16)*1024)
+    if(size > (16+16)*1024)
       eeprom_erase_sector(FLASH_Sector_4);
-    // if(size > 16*1024)
+    if(size > 16*1024)
       eeprom_erase_sector(FLASH_Sector_3);
     eeprom_erase_sector(FLASH_Sector_2);
     eeprom_write_block(ADDR_FLASH_SECTOR_2, source, size);

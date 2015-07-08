@@ -39,8 +39,7 @@ int eeprom_wait(){
 __attribute__ ((section (".coderam")))
 int eeprom_erase_sector(uint32_t sector) {
   /* Wait for last operation to be completed */
-  volatile FLASH_Status status = eeprom_wait();
-  while(eeprom_get_status() == FLASH_BUSY);
+  FLASH_Status status = eeprom_wait();
   if(status == FLASH_COMPLETE){ 
     /* if the previous operation is completed, proceed to erase the sector */
     FLASH->CR &= CR_PSIZE_MASK;
@@ -49,14 +48,12 @@ int eeprom_erase_sector(uint32_t sector) {
     FLASH->CR |= FLASH_CR_SER | sector;
     FLASH->CR |= FLASH_CR_STRT;    
     /* Wait for last operation to be completed */
-  while(eeprom_get_status() == FLASH_BUSY);
-    /* status = eeprom_wait();     */
+    status = eeprom_wait();
     /* When the erase operation is completed, disable the SER Bit */
     FLASH->CR &= (~FLASH_CR_SER);
     FLASH->CR &= EEPROM_SECTOR_MASK; 
     /* Wait for last operation to be completed */
-  while(eeprom_get_status() == FLASH_BUSY);
-    /* status = eeprom_wait(); */
+    status = eeprom_wait();
   }
   /* Return the Erase Status */
   return status;
@@ -66,24 +63,21 @@ __attribute__ ((section (".coderam")))
 int eeprom_write_block(uint32_t address, void* data, uint32_t size){
   volatile uint32_t* src = (uint32_t*)data;
   volatile uint32_t* dest = (volatile uint32_t*)address;
-  while(eeprom_get_status() == FLASH_BUSY);
-  /* volatile FLASH_Status status = eeprom_wait(); */
-  for(uint32_t i=0; i<size; i+=4){
+  volatile FLASH_Status status = eeprom_wait();
+  for(uint32_t i=0; i<size && status == FLASH_COMPLETE; i+=4){
     /* when the previous operation is completed, proceed to program the new data */
     FLASH->CR &= CR_PSIZE_MASK;
     FLASH->CR |= FLASH_PSIZE_WORD;
     FLASH->CR |= FLASH_CR_PG;
     *dest++ = *src++;
-  while(eeprom_get_status() == FLASH_BUSY);
-    /* /\* Wait for last operation to be completed *\/ */
-    /* status = eeprom_wait(); */
+    /* Wait for last operation to be completed */
+    status = eeprom_wait();
     /* if the program operation is completed, disable the PG Bit */
     FLASH->CR &= (~FLASH_CR_PG);
     /* Wait for last operation to be completed */
-  while(eeprom_get_status() == FLASH_BUSY);
-    /* status = eeprom_wait(); */
+    status = eeprom_wait();
   }
-  return eeprom_get_status() == FLASH_COMPLETE ? 0 : -1;
+  return status == FLASH_COMPLETE ? 0 : -1;
 }
 
 void eeprom_unlock(){
