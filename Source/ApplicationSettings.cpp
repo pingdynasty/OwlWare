@@ -33,13 +33,13 @@ bool ApplicationSettings::settingsInFlash(){
 }
 
 void ApplicationSettings::loadFromFlash(){
-  eeprom_read_block(APPLICATION_SETTINGS_ADDR, (uint8_t*)this, sizeof(*this));
+  eeprom_read_block(APPLICATION_SETTINGS_ADDR, this, sizeof(*this));
 }
 
 void ApplicationSettings::saveToFlash(){
   eeprom_unlock();
   if(eeprom_erase(APPLICATION_SETTINGS_ADDR) == 0)
-    eeprom_write_block(APPLICATION_SETTINGS_ADDR, (uint8_t*)this, sizeof(*this));
+    eeprom_write_block(APPLICATION_SETTINGS_ADDR, this, sizeof(*this));
   eeprom_lock();
 }
 
