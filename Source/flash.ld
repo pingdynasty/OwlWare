@@ -14,21 +14,21 @@ _Min_Stack_Size = 0x800; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-  BOOTLOADER (rw)  : ORIGIN = 0x08000000, LENGTH = 16K    /* Sector 0 */
-  EEPROM (rw)      : ORIGIN = 0x08004000, LENGTH = 16K    /* Sector 1 */
+  BOOTLOADER (r)   : ORIGIN = 0x08000000, LENGTH = 16K    /* Sector 0 */
+  EEPROM (r)       : ORIGIN = 0x08004000, LENGTH = 16K    /* Sector 1 */
   FLASH (rx)       : ORIGIN = 0x08008000, LENGTH = 352K   /* Sector 2-6 */
   PATCHFLASH (rx)  : ORIGIN = 0x08060000, LENGTH = 128K   /* Sector 7 */
-  PROGRAM3 (rx)    : ORIGIN = 0x08080000, LENGTH = 128K   /* Sector 8 */
-  PROGRAM2 (rx)    : ORIGIN = 0x080a0000, LENGTH = 128K   /* Sector 9 */
-  PROGRAM1 (rx)    : ORIGIN = 0x080c0000, LENGTH = 128K   /* Sector 10 */
-  PROGRAM0 (rx)    : ORIGIN = 0x080e0000, LENGTH = 128K   /* Sector 11 */ /* total Flash memory is 1Mb */
+  PROGRAM3 (r)     : ORIGIN = 0x08080000, LENGTH = 128K   /* Sector 8 */
+  PROGRAM2 (r)     : ORIGIN = 0x080a0000, LENGTH = 128K   /* Sector 9 */
+  PROGRAM1 (r)     : ORIGIN = 0x080c0000, LENGTH = 128K   /* Sector 10 */
+  PROGRAM0 (r)     : ORIGIN = 0x080e0000, LENGTH = 128K   /* Sector 11 */ /* total Flash memory is 1Mb */
+  CCMRAM (rw)      : ORIGIN = 0x10000000, LENGTH = 16K    /* Closely Coupled Memory */
   RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 48K
   PATCHRAM (rwx)   : ORIGIN = 0x2000c000, LENGTH = 64K    /* total RAM is 112kb */
-  CCMRAM (rwx)     : ORIGIN = 0x10000000, LENGTH = 16K    /* Closely Coupled Memory */
-  BANK1_SRAM1 (rx) : ORIGIN = 0x60000000, LENGTH = 0K
-  BANK1_SRAM2 (rx) : ORIGIN = 0x64000000, LENGTH = 0K
-  BANK1_SRAM3 (rx) : ORIGIN = 0x68000000, LENGTH = 1M
-  BANK1_SRAM4 (rx) : ORIGIN = 0x6c000000, LENGTH = 0K
+  BANK1_SRAM1 (rwx): ORIGIN = 0x60000000, LENGTH = 0K
+  BANK1_SRAM2 (rwx): ORIGIN = 0x64000000, LENGTH = 0K
+  BANK1_SRAM3 (rwx): ORIGIN = 0x68000000, LENGTH = 1M
+  BANK1_SRAM4 (rwx): ORIGIN = 0x6c000000, LENGTH = 0K
 }
 
 /* Define output sections */
@@ -63,11 +63,11 @@ SECTIONS
 
 .fastcode : /* AT(LOADADDR(.startup) + SIZEOF(.startup)) */
 {
+    . = ALIGN(8);
    _fastcode_start = .;
 /* functions with __attribute__ ((section (".coderam")))*/
    *(.coderam)
-   *(.text.arm_cos_f32);
-   *(.text.arm_sin_f32);
+    . = ALIGN(8);
    _fastcode_end = .;
   } >RAM AT>FLASH
 _fastcode_load = LOADADDR (.fastcode);
