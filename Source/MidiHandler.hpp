@@ -196,15 +196,12 @@ public:
 
   void handleFirmwareUploadCommand(uint8_t* data, uint16_t size){
     int32_t ret = loader.handleFirmwareUpload(data, size);
-    if(ret < 0){
-      setErrorMessage(PROGRAM_ERROR, "Program upload error");
-    }else if(ret > 0){
-      // firmware upload complete
-      // midi.sendCc(DEVICE_STATUS, 0x7f);
+    if(ret > 0){
+      // firmware upload complete: wait for run or store
       setLed(NONE);
-    }else{
+    }else if(ret == 0){
       toggleLed();
-    }
+    }// else error
   }
 
   void handleFirmwareRunCommand(uint8_t* data, uint16_t size){
