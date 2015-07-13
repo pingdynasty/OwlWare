@@ -22,7 +22,7 @@ void FactoryPatchDefinition::run(){
   processor->run();
 }
 
-#include "includes.h"
+#include "factory.h"
 
 #define STATIC_PROGRAM_STACK_SIZE   (16*1024)
 
@@ -50,7 +50,7 @@ void registerPatch(char* nm, uint8_t ins, uint8_t outs, PatchCreator c){
 
 void FactoryPatchDefinition::init(){
   FACTORY_PATCH_COUNT = 0;
-#include "patches.cpp"
+#include "factory.cpp"
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition() {
