@@ -14,6 +14,10 @@ CFLAGS   = -O2
 # CFLAGS   += -flto
 endif
 
+ifeq ($(PLATFORM),Modular)
+CFLAGS   += -DOWLMODULAR
+endif
+
 LDFLAGS += -Wl,--gc-sections
 
 CFLAGS  += --specs=nano.specs
