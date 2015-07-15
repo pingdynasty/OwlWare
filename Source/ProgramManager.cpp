@@ -11,6 +11,11 @@
 #include "ApplicationSettings.h"
 #include "CodecController.h"
 
+#ifdef BUTTON_PROGRAM_CHANGE
+#define PROGRAM_CHANGE_PUSHBUTTON_MS 2000
+#include "clock.h"
+#endif /* BUTTON_PROGRAM_CHANGE */
+
 // #include "stm32f4xx.h" // for FLASH_SECTOR defs
 
 // #define AUDIO_TASK_SUSPEND
@@ -24,6 +29,7 @@
 #define PROGRAM_TASK_PRIORITY            (2)
 #define MANAGER_TASK_PRIORITY            (4 | portPRIVILEGE_BIT)
 #define FLASH_TASK_PRIORITY              (3 | portPRIVILEGE_BIT)
+#define PC_TASK_PRIORITY                 (2)
 
 #include "task.h"
 #if defined AUDIO_TASK_SEMAPHORE
@@ -65,6 +71,7 @@ uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
 #define RESET_PROGRAM_NOTIFICATION  0x03
 #define PROGRAM_FLASH_NOTIFICATION  0x04
 #define ERASE_FLASH_NOTIFICATION    0x08
+#define PROGRAM_CHANGE_NOTIFICATION 0x10
 
 PatchDefinition* patchdef = NULL;
 volatile int flashSectorToWrite;
@@ -175,16 +182,36 @@ extern "C" {
     registry.init();
     vTaskDelete(NULL);
   }
+
+#ifdef BUTTON_PROGRAM_CHANGE
+  void programChangeTask(void* p){
+    setLed(RED);
+    int pc = 0;
+    do{
+      int bank = getAnalogValue(0) >> 10;
+      int program = getAnalogValue(1) >> 9;
+      if(pc != bank*8+program+1){
+	toggleLed();
+	pc = bank*8+program+1;
+      }
+      // vTaskDelay(20);
+    }while(isPushButtonPressed() || pc < 1 || pc >= (int)registry.getNumberOfPatches());
+    program.loadProgram(pc);
+    program.resetProgram(false);
+    setLed(GREEN);
+    for(;;); // wait for program manager to delete this task
+  }
+#endif /* BUTTON_PROGRAM_CHANGE */
 }
 
 #ifdef DEBUG_DWT
 volatile uint32_t *DWT_CYCCNT = (volatile uint32_t *)0xE0001004; //address of the register
 #endif /* DEBUG_DWT */
-ProgramManager::ProgramManager() { //: patchdef(NULL) {
+ProgramManager::ProgramManager() {
 #ifdef DEBUG_DWT
   // initialise DWT cycle counter
-  volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
-  volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; //address of the register
+  volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; // address of the register
+  volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; // address of the register
   *SCB_DEMCR = *SCB_DEMCR | 0x01000000;
   *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
 #endif /* DEBUG_DWT */
@@ -215,6 +242,7 @@ void ProgramManager::audioReady(){
 #endif
 }
 
+
 /* called by the program when a block has been processed */
 __attribute__ ((section (".coderam")))
 void ProgramManager::programReady(){
@@ -225,17 +253,26 @@ void ProgramManager::programReady(){
 #ifdef DEBUG_AUDIO
   clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
 #endif
+
+#ifdef BUTTON_PROGRAM_CHANGE
+  extern volatile uint32_t pushButtonPressed;
+  if(pushButtonPressed && getSysTicks() > pushButtonPressed+PROGRAM_CHANGE_PUSHBUTTON_MS){
+    setLed(NONE);
+    pushButtonPressed = 0; // prevent re-trigger
+    program.startProgramChange(true);
+  }
+#endif /* BUTTON_PROGRAM_CHANGE */
+
 #ifdef AUDIO_TASK_SUSPEND
   vTaskSuspend(xProgramHandle);
 #elif defined AUDIO_TASK_SEMAPHORE
   xSemaphoreTake(xSemaphore, 0);
 #elif defined AUDIO_TASK_YIELD
   taskYIELD(); // this will only suspend the task if another is ready to run
-#else /* AUDIO_TASK_DIRECT */
-  // while(currentProgramVector->status != AUDIO_READY_STATUS);
-  // currentProgramVector->status = AUDIO_PROCESSED_STATUS;
+#elif defined AUDIO_TASK_DIRECT
   while(audioStatus != AUDIO_READY_STATUS);
-  audioStatus = AUDIO_PROCESSED_STATUS;
+#else
+  #error "Invalid AUDIO_TASK setting"
 #endif
 #ifdef DEBUG_DWT
   *DWT_CYCCNT = 0; // reset the performance counter
@@ -300,6 +337,13 @@ void ProgramManager::resetProgram(bool isr){
     notifyProgram(STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION);
 }
 
+void ProgramManager::startProgramChange(bool isr){
+  if(isr)
+    notifyProgramFromISR(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
+  else
+    notifyProgram(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
+}
+
 void ProgramManager::loadProgram(uint8_t pid){
   PatchDefinition* def = registry.getPatchDefinition(pid);
   if(def != NULL && def != patchdef){
@@ -361,7 +405,6 @@ void ProgramManager::runManager(){
   uint32_t ulNotifiedValue = 0;
   // TickType_t xMaxBlockTime = pdMS_TO_TICKS( 1000 );
   TickType_t xMaxBlockTime = portMAX_DELAY;  /* Block indefinitely. */
-  setLed(GREEN);
   for(;;){
     /* Block indefinitely (without a timeout, so no need to check the function's
        return value) to wait for a notification.
@@ -380,11 +423,6 @@ void ProgramManager::runManager(){
 	vTaskDelay(20);
       }
     }
-    // if(ulNotifiedValue & RESET_PROGRAM_NOTIFICATION){ // reset
-    //   // allow idle task to garbage collect if necessary
-    //   // vTaskDelay(100/portTICK_PERIOD_MS);
-    //   vTaskDelay(20);
-    // }
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       if(xProgramHandle == NULL && patchdef != NULL){
 	BaseType_t ret;
@@ -403,6 +441,16 @@ void ProgramManager::runManager(){
 	  codec.softMute(false);
 	}
       }
+#ifdef BUTTON_PROGRAM_CHANGE
+    }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
+      if(xProgramHandle == NULL){
+	BaseType_t ret = xTaskCreate(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &xProgramHandle);
+	if(ret != pdPASS){
+	  setErrorMessage(PROGRAM_ERROR, "Failed to start Program Change task");
+	  setLed(RED);
+	}
+      }
+#endif /* BUTTON_PROGRAM_CHANGE */
     }else if(ulNotifiedValue == PROGRAM_FLASH_NOTIFICATION){ // program flash
       BaseType_t ret = xTaskCreate(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
       if(ret != pdPASS){
@@ -422,8 +470,7 @@ void ProgramManager::runManager(){
 PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
   if(sector >= MAX_USER_PATCHES)
     return NULL;
-  uint32_t addr = (uint32_t)0x080E0000; // ADDR_FLASH_SECTOR_11
-  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000  
+  uint32_t addr = getFlashAddress(sector);
   ProgramHeader* header = (ProgramHeader*)addr;
   DynamicPatchDefinition* def = &flashPatches[sector];
   uint32_t size = (uint32_t)header->endAddress - (uint32_t)header->linkAddress;

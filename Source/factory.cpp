@@ -5,8 +5,10 @@
                 numberOutputChannels);
  
 */
+// sed 's/^REGISTER_PATCH.*"\(.*\)".*/\1/g' < Source/factory.cpp
 
-REGISTER_PATCH(FreeVerbPatch, "FreeVerb", 1, 1);
+REGISTER_PATCH(FaustVerbPatch, "Faust/FreeVerb", 1, 1);
+// REGISTER_PATCH(FreeVerbPatch, "FreeVerb", 1, 1);
 REGISTER_PATCH(PlateVerbPatch, "Plate Reverb", 1, 1);
 REGISTER_PATCH(JotReverbPatch,"Jot Reverb", 2, 2);
 REGISTER_PATCH(MoogStereoPatch, "Moog Drive", 2, 2);

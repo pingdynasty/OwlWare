@@ -21,8 +21,6 @@
 #define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; \
 if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
 
-#define PATCHFLASH ((uint32_t)0x08040000)
-
 CodecController codec;
 MidiController midi;
 ApplicationSettings settings;
@@ -88,12 +86,15 @@ void togglePushButton(){
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
+volatile uint32_t pushButtonPressed;
 void pushButtonCallback(){
-  DEBOUNCE(pushbutton, 200);
+  DEBOUNCE(pushbutton, 100);
   if(isPushButtonPressed()){
+    pushButtonPressed = getSysTicks();
     setButton(PUSHBUTTON, true);
     togglePushButton();
   }else{
+    pushButtonPressed = 0;
     setButton(PUSHBUTTON, false);
   }
 }
@@ -136,11 +137,9 @@ void updateProgramIndex(uint8_t index){
      midi.sendPatchParameterName((PatchParameterId)id, name);
    }
 
-   // volatile bool doProcessAudio = false;
 __attribute__ ((section (".coderam")))
    void programReady(){
-     // doProcessAudio = false;
-     // audioStatus = AUDIO_READY_STATUS;
+     // while(audioStatus != AUDIO_READY_STATUS);
      program.programReady();
    }
 
@@ -277,7 +276,6 @@ void setup(){
 #endif
 
 extern volatile ProgramVectorAudioStatus audioStatus;
-
 __attribute__ ((section (".coderam")))
 void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
@@ -285,9 +283,8 @@ void audioCallback(int16_t *src, int16_t *dst){
 #endif
   getProgramVector()->audio_input = src;
   getProgramVector()->audio_output = dst;
-  // doProcessAudio = false;
-  audioStatus = AUDIO_READY_STATUS;
   // program.audioReady();
+  audioStatus = AUDIO_READY_STATUS;
 }
 
 #ifdef __cplusplus

@@ -30,6 +30,7 @@ public:
   void exitProgram(bool isr);
   /* exit and restart program */
   void resetProgram(bool isr);
+  void startProgramChange(bool isr);
 
   void audioReady();
   void programReady();

@@ -166,5 +166,7 @@ standard names. */
 #define xPortPendSVHandler PendSV_Handler
 #define xPortSysTickHandler SysTick_Handler
 
+void assert_failed(uint8_t* file, uint32_t line);
+
 #endif /* FREERTOS_CONFIG_H */
 

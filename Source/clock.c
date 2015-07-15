@@ -2,7 +2,7 @@
 #include "device.h"
 #include "stm32f4xx.h"
 
-__IO uint32_t systicks = 0;
+volatile uint32_t systicks = 0;
 
 void clockSetup(){
 #ifdef DEFINE_OWL_SYSTICK
@@ -19,10 +19,6 @@ void vApplicationTickHook(void) {
   systicks++;
 }
 #endif /* DEFINE_OWL_SYSTICK */
-
-uint32_t getSysTicks(){
-  return systicks;
-}
 
 #ifdef DEFINE_OWL_SYSTICK
 void SysTick_Handler(void){

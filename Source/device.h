@@ -1,11 +1,9 @@
 #include <inttypes.h>
 
-/* #define OWLMODULAR */
-#define FIRMWARE_VERSION             "vector-06"
+#define FIRMWARE_VERSION             "vector-07"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
-
 /* #define SERIAL_PORT                  1 */
 
 /* #define DEBUG_AUDIO */
@@ -128,6 +126,7 @@
 #define PROGRAM_TASK_STACK_SIZE          (4*1024/sizeof(portSTACK_TYPE))
 #define MANAGER_TASK_STACK_SIZE          (1*1024/sizeof(portSTACK_TYPE))
 #define FLASH_TASK_STACK_SIZE            (4*1024/sizeof(portSTACK_TYPE))
+#define PC_TASK_STACK_SIZE               (1*1024/sizeof(portSTACK_TYPE))
 #define ARM_CYCLES_PER_SAMPLE            3500 /* 168MHz / 48kHz */
 
 #ifdef  USE_FULL_ASSERT

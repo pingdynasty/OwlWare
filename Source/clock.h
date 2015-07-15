@@ -7,9 +7,15 @@
  extern "C" {
 #endif
 
-void clockSetup();
-void delay(uint32_t ms);
-uint32_t getSysTicks();
+   volatile extern uint32_t systicks;
+
+   void clockSetup();
+   void delay(uint32_t ms);
+
+/* uint32_t getSysTicks(){ */
+/*   return systicks; */
+/* } */
+#define getSysTicks() (systicks)
 
 #ifdef __cplusplus
 }
