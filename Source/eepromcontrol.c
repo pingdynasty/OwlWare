@@ -56,7 +56,7 @@ int eeprom_erase_sector(uint32_t sector) {
     status = eeprom_wait();
   }
   /* Return the Erase Status */
-  return status;
+  return status == FLASH_COMPLETE ? 0 : -1;
 }
 
 __attribute__ ((section (".coderam")))
