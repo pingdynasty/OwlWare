@@ -271,6 +271,7 @@ void ProgramManager::programReady(){
   taskYIELD(); // this will only suspend the task if another is ready to run
 #elif defined AUDIO_TASK_DIRECT
   while(audioStatus != AUDIO_READY_STATUS);
+  audioStatus = AUDIO_PROCESSING_STATUS;
 #else
   #error "Invalid AUDIO_TASK setting"
 #endif
