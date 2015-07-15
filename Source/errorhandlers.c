@@ -47,6 +47,10 @@ void MemManage_Handler(void){
   volatile unsigned int cfsr = SCB->CFSR;
   volatile unsigned int msp = __get_MSP();
   volatile unsigned int psp = __get_PSP();
+  (void)hfsr;
+  (void)cfsr;
+  (void)msp;
+  (void)psp;
   /* __builtin_trap(); */
 #endif
   assert_failed(0, 0);
@@ -59,6 +63,10 @@ void BusFault_Handler(void){
   volatile unsigned int cfsr = SCB->CFSR;
   volatile unsigned int msp = __get_MSP();
   volatile unsigned int psp = __get_PSP();
+  (void)hfsr;
+  (void)cfsr;
+  (void)msp;
+  (void)psp;
   __asm__("BKPT");
   /* __builtin_trap(); */
 #endif
@@ -71,6 +79,9 @@ void UsageFault_Handler(void){
   volatile unsigned int cfsr = SCB->CFSR;
   volatile unsigned int msp = __get_MSP();
   volatile unsigned int psp = __get_PSP();
+  (void)cfsr;
+  (void)msp;
+  (void)psp;
   __asm__("BKPT");
   /* __builtin_trap(); */
 #endif
@@ -184,6 +195,10 @@ void HardFault_Handler(void){
   volatile unsigned int cfsr = SCB->CFSR;
   volatile unsigned int msp = __get_MSP();
   volatile unsigned int psp = __get_PSP();
+  (void)hfsr;
+  (void)cfsr;
+  (void)msp;
+  (void)psp;
   __asm__("BKPT");
   /* __builtin_trap(); */
 #endif
