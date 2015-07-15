@@ -100,34 +100,33 @@ int _read(int file, char *ptr, int len)
   return 0;
 }
 
-#define Bank1_SRAM3_ADDR 0x68000000
+/* #define Bank1_SRAM3_ADDR 0x68000000 */
+/* caddr_t _sbrk(int incr) */
+/* { */
+/*   extern char end;		/\* Defined by the linker *\/ */
+/*   static char *heap_end; */
+/*   char *prev_heap_end; */
 
-caddr_t _sbrk(int incr)
-{
-  extern char end;		/* Defined by the linker */
-  static char *heap_end;
-  char *prev_heap_end;
+/*   if (heap_end == 0) */
+/*   { */
+/*     /\* use the entire external memory for heap *\/ */
+/*     heap_end = (char*)Bank1_SRAM3_ADDR; // &end; */
+/*     /\* heap_end = &end; *\/ */
+/*     /\* give 16KB area for stacks and use the rest of memory for heap*\/ */
+/*     /\* heap_end += 0x4000; *\/ */
+/*   } */
+/*   prev_heap_end = heap_end; */
 
-  if (heap_end == 0)
-  {
-    /* use the entire external memory for heap */
-    heap_end = (char*)Bank1_SRAM3_ADDR; // &end;
-    /* heap_end = &end; */
-    /* give 16KB area for stacks and use the rest of memory for heap*/
-    /* heap_end += 0x4000; */
-  }
-  prev_heap_end = heap_end;
+/*   if (heap_end+incr > (char*)(Bank1_SRAM3_ADDR+1024*1024)) */
+/*   /\* if (heap_end+incr > &end) *\/ */
+/*   { */
+/*     errno = ENOMEM; */
+/*     return (caddr_t) -1; */
+/*   } */
 
-  if (heap_end+incr > (char*)(Bank1_SRAM3_ADDR+1024*1024))
-  /* if (heap_end+incr > &end) */
-  {
-    errno = ENOMEM;
-    return (caddr_t) -1;
-  }
-
-  heap_end += incr;
-  return (caddr_t) prev_heap_end;
-}
+/*   heap_end += incr; */
+/*   return (caddr_t) prev_heap_end; */
+/* } */
 
 int _stat(char *file, struct stat *st)
 {
