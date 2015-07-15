@@ -149,16 +149,15 @@ extern "C" {
       if(ret == 0)
 	ret = eeprom_write_block(addr, source, size);
       eeprom_lock();
+      registry.init();
       if(ret == 0){
-	registry.init();
 	// load and run program
-	int pc = registry.getNumberOfPatches()-sector-1;
+	int pc = registry.getNumberOfPatches()-sector;
 	program.loadProgram(pc);
-	// if we knew the PC we could run from flash
 	// program.loadDynamicProgram(source, size);
-	program.startProgram(false);
+	program.resetProgram(false);
       }else{
-	setErrorMessage(PROGRAM_ERROR, "Failed to program flash sector");
+	setErrorMessage(PROGRAM_ERROR, "Failed to write program to flash");
       }
     }else if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
       flashFirmware(source, size);
@@ -420,9 +419,9 @@ void ProgramManager::runManager(){
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
-	// allow idle task to garbage collect if necessary
-	vTaskDelay(20);
       }
+      // allow idle task to garbage collect if necessary
+      vTaskDelay(20);
     }
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       if(xProgramHandle == NULL && patchdef != NULL){
