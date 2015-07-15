@@ -27,6 +27,7 @@ void assert_failed(uint8_t* file, uint32_t line){
   for(delayCounter = 0; delayCounter < 4000000; delayCounter++);
   setLed(RED);
 #ifdef DEBUG
+  /* __builtin_trap(); */
   __asm__("BKPT");
 #else
     /* NVIC_SystemReset(); */
@@ -51,7 +52,6 @@ void MemManage_Handler(void){
   (void)cfsr;
   (void)msp;
   (void)psp;
-  /* __builtin_trap(); */
 #endif
   assert_failed(0, 0);
 }
@@ -67,8 +67,6 @@ void BusFault_Handler(void){
   (void)cfsr;
   (void)msp;
   (void)psp;
-  __asm__("BKPT");
-  /* __builtin_trap(); */
 #endif
   assert_failed(0, 0);
 }
@@ -82,10 +80,8 @@ void UsageFault_Handler(void){
   (void)cfsr;
   (void)msp;
   (void)psp;
-  __asm__("BKPT");
-  /* __builtin_trap(); */
 #endif
-  for(;;);
+  assert_failed(0, 0);
 }
 
 void DebugMon_Handler(void){ 
@@ -140,13 +136,6 @@ static void HardFault_Handler(void) {
 }
 #endif
 
-void WWDG_IRQHandler(void) {
-  for(;;);
-}
-void PVD_IRQHandler(void) {
-  for(;;);
-}
-
 /*
   HardFault_Handler from http://blog.frankvh.com/2011/12/07/cortex-m3-m4-hard-fault-handler/
 */
@@ -199,8 +188,6 @@ void HardFault_Handler(void){
   (void)cfsr;
   (void)msp;
   (void)psp;
-  __asm__("BKPT");
-  /* __builtin_trap(); */
 #endif
   assert_failed(0, 0);
 }
@@ -216,6 +203,14 @@ void PendSV_Handler(void){
 */
 
 /*
+void WWDG_IRQHandler(void) {
+  for(;;);
+}
+
+void PVD_IRQHandler(void) {
+  for(;;);
+}
+
 void FPU_IRQHandler(void){
   for(;;);
 }
