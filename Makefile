@@ -5,32 +5,37 @@ ifndef CONFIG
 endif
 
 ifeq ($(CONFIG),Debug)
-CFLAGS   = -g -Wall -Wcpp -Wunused-function -DDEBUG -DUSE_FULL_ASSERT
+CPPFLAGS   = -g -Wall -Wcpp -Wunused-function -DDEBUG -DUSE_FULL_ASSERT
 ASFLAGS  = -g
 endif
 
 ifeq ($(CONFIG),Release)
-CFLAGS   = -O2
-# CFLAGS   += -flto
+CPPFLAGS   = -O2
+# CFLAGS  += -flto
+# LDFLAGS += -flto
+endif
+
+ifndef PLATFORM
+  PLATFORM=Pedal
 endif
 
 ifeq ($(PLATFORM),Modular)
-CFLAGS   += -DOWLMODULAR
+  CPPFLAGS   += -DOWLMODULAR
 endif
 
 LDFLAGS += -Wl,--gc-sections
 
-CFLAGS  += --specs=nano.specs
-CFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1
-CFLAGS  += -DEXTERNAL_SRAM 
-# CFLAGS  += -fpic -fpie
-CFLAGS  += -fdata-sections
-CFLAGS  += -ffunction-sections
-# CFLAGS  += -fno-omit-frame-pointer
-CFLAGS  += -fno-builtin
-CFLAGS  += -nostdlib -nostartfiles -ffreestanding
-CFLAGS  += -mtune=cortex-m4
-CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 $(CFLAGS) 
+CPPFLAGS  += --specs=nano.specs
+CPPFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1
+CPPFLAGS  += -DEXTERNAL_SRAM 
+# CPPFLAGS  += -fpic -fpie
+CPPFLAGS  += -fdata-sections
+CPPFLAGS  += -ffunction-sections
+# CPPFLAGS  += -fno-omit-frame-pointer
+CPPFLAGS  += -fno-builtin
+CPPFLAGS  += -nostdlib -nostartfiles -ffreestanding
+CPPFLAGS  += -mtune=cortex-m4
+CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11 # $(CFLAGS) 
 CFLAGS  += -std=gnu99
 
 # LDLIBS   = -L$(BUILD) -lowl 
@@ -65,8 +70,8 @@ OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o) $(FREERTOS_SRC:%.c=Buil
 vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/
 vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/portable/GCC/ARM_CM4F
 vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/portable/MemMang
-CFLAGS += -I$(TEMPLATEROOT)/Libraries/FreeRTOS/include
-CFLAGS += -I$(TEMPLATEROOT)/Libraries/FreeRTOS/portable/GCC/ARM_CM4F
+CPPFLAGS += -I$(TEMPLATEROOT)/Libraries/FreeRTOS/include
+CPPFLAGS += -I$(TEMPLATEROOT)/Libraries/FreeRTOS/portable/GCC/ARM_CM4F
 
 # object files
 OBJS += $(PERIPH) 
@@ -103,8 +108,8 @@ OBJS += $(DSPLIB)/SupportFunctions/arm_q15_to_float.o
 
 vpath %.c $(TEMPLATEROOT)/ProgramSource
 vpath %.cpp $(TEMPLATEROOT)/ProgramSource
-CFLAGS += -I$(TEMPLATEROOT)/ProgramSource
-CFLAGS += -I$(TEMPLATEROOT)/Libraries/OwlPatches
+CPPFLAGS += -I$(TEMPLATEROOT)/ProgramSource
+CPPFLAGS += -I$(TEMPLATEROOT)/Libraries/OwlPatches
 
 OBJS += $(BUILD)/basicmaths.o $(BUILD)/StompBox.o $(BUILD)/PatchProcessor.o # $(BUILD)/OwlProgram.o
 OBJS += $(BUILD)/sramalloc.o

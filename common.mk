@@ -35,33 +35,33 @@ vpath %.c $(USB_OTG_FILE)/src/
 all: bin
 
 # Build executable 
-$(ELF) : $(OBJS) $(LDSCRIPT) $(TANN_LIB)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+$(ELF) : $(OBJS) $(LDSCRIPT)
+	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 # compile and generate dependency info
 $(BUILD)/%.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
-	$(CC) -MM -MT"$@" $(CFLAGS) $< > $(@:.o=.d)
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+	@$(CC) -MM -MT"$@" $(CPPFLAGS) $(CFLAGS) $< > $(@:.o=.d)
 
 $(BUILD)/%.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) $< -o $@
-	$(CXX) -MM -MT"$@" $(CXXFLAGS) $< > $(@:.o=.d)
+	@$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+	@$(CXX) -MM -MT"$@" $(CPPFLAGS) $(CXXFLAGS) $< > $(@:.o=.d)
 
 $(BUILD)/%.o: %.s
-	$(CC) -c $(CFLAGS) $< -o $@
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 $(BUILD)/%.s: %.c
-	$(CC) -S $(CFLAGS) $< -o $@
+	@$(CC) -S $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 $(BUILD)/%.s: %.cpp
-	$(CXX) -S $(CXXFLAGS) $< -o $@
+	@$(CXX) -S $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 $(BUILD)/%.bin: $(BUILD)/%.elf
-	$(OBJCOPY) -O binary $< $@
-	@echo Successfully built OWL firmware $@
+	@$(OBJCOPY) -O binary $< $@
+	@echo Successfully built OWL $(PLATFORM) $(CONFIG) firmware in $@
 
 clean:
-	rm -f $(OBJS) $(BUILD)/*.d $(ELF) $(CLEANOTHER) $(BIN) $(ELF:.elf=.s) $(OBJS:.o=.s) gdbscript
+	@rm -f $(OBJS) $(BUILD)/*.d $(ELF) $(CLEANOTHER) $(BIN) $(ELF:.elf=.s) $(OBJS:.o=.s) gdbscript
 
 debug: $(ELF)
 	echo "target extended localhost:4242" > gdbscript
@@ -83,9 +83,11 @@ etags:
 	find $(DISCOVERY_FILE) -type f -iname "*.[ch]" | xargs etags --append
 	find . -type f -iname "*.[ch]" | xargs etags --append
 
-bin: $(BIN)
+bin: 
+	@echo Building $(CONFIG) firmware for OWL $(PLATFORM)
+	make $(BIN)
 
-map : $(OBJS) $(LDSCRIPT) $(TANN_LIB)
+map : $(OBJS) $(LDSCRIPT)
 	$(LD) $(LDFLAGS) -Wl,-Map=$(ELF:.elf=.map) $(OBJS) $(LDLIBS)
 
 as: $(ELF)
