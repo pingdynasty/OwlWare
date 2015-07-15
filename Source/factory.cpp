@@ -18,13 +18,13 @@ REGISTER_PATCH(MdaBandistoPatch, "Bandisto", 2, 2);
 REGISTER_PATCH(OverdrivePatch, "Overdrive", 2, 2);
 REGISTER_PATCH(StereoWahPatch, "StereoWah", 2, 2);
 REGISTER_PATCH(PitchShifterPatch, "Pitch Shifter", 1, 1);
-REGISTER_PATCH(DualTremoloPatch, "DualTremolo", 2, 2);
 REGISTER_PATCH(PhaserPatch, "Phaser", 1, 1);
 REGISTER_PATCH(SmoothDelayPatch, "SmoothDelay", 1, 1);
 REGISTER_PATCH(LpfDelayPatch, "Lowpass Delay", 1, 1);
 REGISTER_PATCH(SimpleStereoDelayPatch, "Stereo Delay", 2, 2);
 REGISTER_PATCH(PsycheFilterPatch, "Psyche Filter", 2, 2);
-REGISTER_PATCH(GuitarixPhaserPatch, "Guitarix/Phaser", 2, 2);
+REGISTER_PATCH(QompressionPatch, "Qompression", 2, 2);
+// REGISTER_PATCH(GuitarixPhaserPatch, "Guitarix/Phaser", 2, 2);
 REGISTER_PATCH(GuitarixOverdrivePatch, "Guitarix/Overdrive", 1, 1);
 REGISTER_PATCH(GuitarixOscTubePatch, "Guitarix/OscTube", 1, 1);
 REGISTER_PATCH(GuitarixDistortion1Patch, "Guitarix/Distortion1", 1, 1);
@@ -40,6 +40,7 @@ REGISTER_PATCH(DroneBoxPatch, "OL/DroneBox", 2, 2);
 REGISTER_PATCH(ThruZeroFlangerPatch, "OL/Thru Zero Flanger", 2, 2);
 REGISTER_PATCH(DigitalMayhemPatch, "RS/Digital Mayhem", 1, 1);
 REGISTER_PATCH(ReverseReverbPatch, "RS/Reverse Reverb", 1, 1);
+REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
 
 // REGISTER_PATCH(GhostNotePatch,"RS/GhostNote", 1, 1); /* 102% */
 // REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
