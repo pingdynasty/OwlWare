@@ -7,6 +7,7 @@
 #include "usbd_audio_core.h"
 #include "usbd_usr.h"
 #include "usbd_desc.h"
+#include "usb_dcd_int.h"
 
 __ALIGN_BEGIN USB_OTG_CORE_HANDLE    USB_OTG_dev __ALIGN_END;
 
