@@ -11,6 +11,7 @@
 #define DEBUG_STACK
 
 #define DEFAULT_PROGRAM              1
+#define BUTTON_PROGRAM_CHANGE
 
 #define AUDIO_BIGEND
 /* #define AUDIO_SATURATE_SAMPLES // SATURATE adds almost 500 cycles to 24-bit mode */

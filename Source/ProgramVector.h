@@ -13,7 +13,7 @@
    typedef enum { 
      AUDIO_IDLE_STATUS = 0, 
      AUDIO_READY_STATUS, 
-     AUDIO_PROCESSED_STATUS, 
+     AUDIO_PROCESSING_STATUS, 
      AUDIO_EXIT_STATUS, 
      AUDIO_ERROR_STATUS 
    } ProgramVectorAudioStatus;
