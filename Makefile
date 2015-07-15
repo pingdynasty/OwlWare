@@ -5,13 +5,13 @@ ifndef CONFIG
 endif
 
 ifeq ($(CONFIG),Debug)
-CPPFLAGS   = -g -Wall -Wcpp -Wunused-function -DDEBUG -DUSE_FULL_ASSERT
-ASFLAGS  = -g
+  CPPFLAGS   = -g -Wall -Wcpp -Wunused-function -DDEBUG -DUSE_FULL_ASSERT
+  ASFLAGS  = -g
 endif
 
 ifeq ($(CONFIG),Release)
-CPPFLAGS   = -O2
-# CFLAGS  += -flto
+  CPPFLAGS   = -O2
+# CPPFLAGS += -flto
 # LDFLAGS += -flto
 endif
 
