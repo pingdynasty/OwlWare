@@ -152,7 +152,7 @@ extern "C" {
       registry.init();
       if(ret == 0){
 	// load and run program
-	int pc = registry.getNumberOfPatches()-sector;
+	int pc = registry.getNumberOfPatches()-(MAX_USER_PATCHES-sector);
 	program.loadProgram(pc);
 	// program.loadDynamicProgram(source, size);
 	program.resetProgram(false);
