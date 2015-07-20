@@ -110,11 +110,7 @@ void adcSetup(){
 
 uint16_t getAnalogValue(uint8_t index){
   /* assert_param(index < sizeof(adc_values)); */
-#ifdef OWLMODULAR
-  return 0x1000 - adc_values[index];
-#else
   return adc_values[index];
-#endif
 }
 
 uint16_t* getAnalogValues(){
@@ -190,7 +186,6 @@ void setupSwitchB(void (*f)()){
   EXTI_StructInit(&EXTI_InitStructure);
   EXTI_InitStructure.EXTI_Line = SWITCH_B_PIN_LINE;
   EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-  /* EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling; */
   EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
   EXTI_InitStructure.EXTI_LineCmd = ENABLE;
   EXTI_Init(&EXTI_InitStructure);

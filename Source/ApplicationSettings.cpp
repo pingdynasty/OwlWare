@@ -19,6 +19,7 @@ void ApplicationSettings::reset(){
   audio_codec_protocol = AUDIO_PROTOCOL;
   audio_samplingrate = AUDIO_SAMPLINGRATE;
   audio_bitdepth = AUDIO_BITDEPTH;
+  audio_dataformat = AUDIO_DATAFORMAT;
   audio_blocksize = AUDIO_BLOCK_SIZE;
   inputGainLeft = AUDIO_INPUT_GAIN_LEFT;
   inputGainRight = AUDIO_INPUT_GAIN_RIGHT;

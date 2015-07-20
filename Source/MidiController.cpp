@@ -40,7 +40,8 @@ void MidiController::sendSettings(){
   sendCc(BYPASS, codec.getBypass() ? 127 : 0);
 
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_RATE, settings.audio_samplingrate);
-  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_WIDTH, settings.audio_bitdepth);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_BITDEPTH, settings.audio_bitdepth);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_DATAFORMAT, settings.audio_dataformat);
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_BLOCKSIZE, settings.audio_blocksize);
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_MASTER, settings.audio_codec_master);
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_PROTOCOL, settings.audio_codec_protocol);

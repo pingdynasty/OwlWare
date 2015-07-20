@@ -172,13 +172,13 @@ public:
     char* p = (char*)data;
     uint32_t value = strtol(p+2, NULL, 16);
     if(strncmp(SYSEX_CONFIGURATION_AUDIO_RATE, p, 2) == 0){
-      // uint32_t freq = strntol(data+2, &data, 16);
-      // settings.audio_samplingrate = freq;
       settings.audio_samplingrate = value;
     }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_BLOCKSIZE, p, 2) == 0){
       settings.audio_blocksize = value;
-    }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_WIDTH, p, 2) == 0){
+    }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_BITDEPTH, p, 2) == 0){
       settings.audio_bitdepth = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_DATAFORMAT, p, 2) == 0){
+      settings.audio_dataformat = value;
     }else if(strncmp(SYSEX_CONFIGURATION_CODEC_PROTOCOL, p, 2) == 0){
       settings.audio_codec_protocol = (I2SProtocol)value;
     }else if(strncmp(SYSEX_CONFIGURATION_CODEC_MASTER, p, 2) == 0){

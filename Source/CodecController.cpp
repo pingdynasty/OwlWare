@@ -66,12 +66,6 @@ void CodecController::setup(){
   /* Load default values */
   for(int i=0;i<WM8731_NUM_REGS-1;i++)
     writeRegister(i, wm8731_init_data[i]);
-
-//   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // DEBUG
-//   configureDigitalOutput(GPIOA, GPIO_Pin_6); // PA6 DEBUG
-//   configureDigitalOutput(GPIOA, GPIO_Pin_7); // PA7 DEBUG
-//   clearPin(GPIOA, GPIO_Pin_6); // PA6 DEBUG
-//   clearPin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 }
 
 void CodecController::clear(){
@@ -83,8 +77,6 @@ void CodecController::init(ApplicationSettings& settings){
   // setActive(false);
   clear();
 
-  settings.audio_bitdepth = 16; // todo: fixme
-
   /* configure codec */
   setSamplingRate(settings.audio_samplingrate);
   setCodecMaster(settings.audio_codec_master);
@@ -93,7 +85,7 @@ void CodecController::init(ApplicationSettings& settings){
 
   /* Configure the I2S peripheral */
   if(Codec_AudioInterface_Init(settings.audio_samplingrate, settings.audio_codec_master, 
-			       settings.audio_codec_protocol, settings.audio_bitdepth) != 0)
+			       settings.audio_codec_protocol, settings.audio_dataformat) != 0)
     assert_param(false);
 
   setInputGainLeft(settings.inputGainLeft);

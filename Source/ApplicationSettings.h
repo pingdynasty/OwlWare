@@ -15,6 +15,7 @@ public:
   uint32_t checksum;
   uint32_t audio_samplingrate;
   uint8_t audio_bitdepth;
+  uint8_t audio_dataformat;
   uint16_t audio_blocksize;
   uint8_t inputGainLeft;
   uint8_t inputGainRight;
