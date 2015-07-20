@@ -28,19 +28,19 @@ PatchRegistry registry;
 volatile bool bypass = false;
 
 // uint16_t getParameterValue(PatchParameterId pid){
-//   return getProgramVector()->parameters[pid];
+//   return programVector->parameters[pid];
 // }
 
 bool getButton(PatchButtonId bid){
-  return getProgramVector()->buttons & (1<<bid);
+  return programVector->buttons & (1<<bid);
   // return false;
 }
 
 void setButton(PatchButtonId bid, bool on){
   if(on)
-    getProgramVector()->buttons |= 1<<bid;
+    programVector->buttons |= 1<<bid;
   else
-    getProgramVector()->buttons &= ~(1<<bid);
+    programVector->buttons &= ~(1<<bid);
 }
 
 void updateLed(){
@@ -69,7 +69,7 @@ void updateBypassMode(){
 }
 
 void footSwitchCallback(){
-  DEBOUNCE(bypass, 200);
+  DEBOUNCE(bypass, BYPASS_DEBOUNCE);
   updateBypassMode();
 }
 
@@ -88,7 +88,7 @@ void togglePushButton(){
 
 volatile uint32_t pushButtonPressed;
 void pushButtonCallback(){
-  DEBOUNCE(pushbutton, 100);
+  DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
   if(isPushButtonPressed()){
     pushButtonPressed = getSysTicks();
     setButton(PUSHBUTTON, true);
@@ -109,8 +109,10 @@ void exitProgram(bool isr){
 }
 
 void updateProgramIndex(uint8_t index){
-  settings.program_index = index;
-  midi.sendPc(index);
+  if(settings.program_index != index){
+    settings.program_index = index;
+    midi.sendPc(index);
+  }
 }
 
 #ifdef __cplusplus
@@ -120,7 +122,7 @@ void updateProgramIndex(uint8_t index){
    void setErrorMessage(int8_t err, const char* msg){
      setErrorStatus(err);
      setLed(RED);
-     ProgramVector* vec = getProgramVector();
+     ProgramVector* vec = programVector;
      if(vec != NULL)
        vec->message = (char*)msg;
    }
@@ -156,8 +158,8 @@ __attribute__ ((section (".coderam")))
 #endif
 
 void setParameterValues(uint16_t* values, int size){
-  getProgramVector()->parameters = values;
-  getProgramVector()->parameters_size = size;
+  programVector->parameters = values;
+  programVector->parameters_size = size;
 }
 
 void updateProgramVector(ProgramVector* smem){
@@ -204,7 +206,7 @@ void setup(){
   NVIC_SetPriority(ADC_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 3, 0));
   NVIC_SetPriority(OTG_FS_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 5, 0));
 
-  updateProgramVector(getProgramVector());
+  updateProgramVector(programVector);
 
   ledSetup();
   setLed(RED);
@@ -281,8 +283,8 @@ void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  getProgramVector()->audio_input = src;
-  getProgramVector()->audio_output = dst;
+  programVector->audio_input = src;
+  programVector->audio_output = dst;
   // program.audioReady();
   audioStatus = AUDIO_READY_STATUS;
 }

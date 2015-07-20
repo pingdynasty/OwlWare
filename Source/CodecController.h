@@ -9,7 +9,7 @@
 class CodecController;
 extern CodecController codec;
 
-// extern void audioCallback(int16_t *src, int16_t *dst, int16_t sz);
+#define WM8731_NUM_REGS 10
 
 class CodecController {
 private:

@@ -18,11 +18,11 @@ void PatchProcessor::run(){
   if(patch == NULL)
     return;
   for(;;){
-    getProgramVector()->programReady();
-    buffer.split(getProgramVector()->audio_input, getProgramVector()->audio_blocksize);
-    setParameterValues(getProgramVector()->parameters);
+    programVector->programReady();
+    buffer.split(programVector->audio_input, programVector->audio_blocksize);
+    setParameterValues(programVector->parameters);
     patch->processAudio(buffer);
-    buffer.comb(getProgramVector()->audio_output);
+    buffer.comb(programVector->audio_output);
   }
 }
 

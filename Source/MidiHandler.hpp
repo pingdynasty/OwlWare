@@ -190,6 +190,8 @@ public:
     }else if(strncmp(SYSEX_CONFIGURATION_CODEC_HALFSPEED, p, 2) == 0){
       settings.audio_codec_halfspeed = value;
       // settings.audio_codec_halfspeed = (p[2] == '1' ? true : false);
+    }else if(strncmp(SYSEX_CONFIGURATION_PC_BUTTON, p, 2) == 0){
+      settings.program_change_button = value;
     }
     updateCodecSettings();
   }

@@ -15,7 +15,9 @@ PatchProcessor* getInitialisingPatchProcessor(){
 
 void FactoryPatchDefinition::run(){
   sram_init((char*)EXTRAM, 1024*1024);
-  processor = new PatchProcessor();
+  PatchProcessor proc; // 4kb : create on stack
+  processor = &proc;
+  // processor = new PatchProcessor();
   Patch* patch = create();
   processor->setPatch(patch);
   getProgramVector()->heap_bytes_used = sram_used();
@@ -54,16 +56,16 @@ void FactoryPatchDefinition::init(){
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition() {
-  stackBase = NULL;
-  stackSize = 0;
-  // stackSize = STATIC_PROGRAM_STACK_SIZE;
+  stackBase = (uint32_t*)CCMRAM;
+  stackSize = STATIC_PROGRAM_STACK_SIZE;
   programVector = &staticVector;
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition(char* name, uint8_t inputs, uint8_t outputs, PatchCreator c) :
   PatchDefinition(name, inputs, outputs), creator(c) {
-  stackBase = NULL;
-  stackSize = 0;
+  stackBase = (uint32_t*)CCMRAM;
+  stackSize = STATIC_PROGRAM_STACK_SIZE;
+  // stackSize = 0;
   programVector = &staticVector;
 }
 

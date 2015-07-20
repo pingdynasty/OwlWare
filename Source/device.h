@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "vector-07"
+#define FIRMWARE_VERSION             "vector-08"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -16,7 +16,7 @@
 #define AUDIO_BIGEND
 /* #define AUDIO_SATURATE_SAMPLES // SATURATE adds almost 500 cycles to 24-bit mode */
 #define AUDIO_PROTOCOL               I2S_PROTOCOL_PHILIPS
-#define AUDIO_BITDEPTH               16    /* bits per sample */
+#define AUDIO_BITDEPTH               24    /* bits per sample */
 #define AUDIO_DATAFORMAT             24
 #define AUDIO_CODEC_MASTER           true
 #define AUDIO_CHANNELS               2
@@ -107,6 +107,9 @@
 #define SWITCH_B_IRQ                 EXTI2_IRQn
 #define SWITCH_B_HANDLER             EXTI2_IRQHandler
 
+#define BYPASS_DEBOUNCE              200
+#define PUSHBUTTON_DEBOUNCE          80
+
 #define LED_PORT                     GPIOE
 #define LED_GREEN                    GPIO_Pin_5
 #define LED_RED                      GPIO_Pin_3
@@ -121,12 +124,10 @@
 #define USB_VBUS_GPIO_PORT           GPIOA
 #define USB_VBUS_GPIO_CLK            RCC_AHB1Periph_GPIOA
 
-#define WM8731_NUM_REGS 10
-
-#define PROGRAM_TASK_STACK_SIZE          (4*1024/sizeof(portSTACK_TYPE))
-#define MANAGER_TASK_STACK_SIZE          (1*1024/sizeof(portSTACK_TYPE))
-#define FLASH_TASK_STACK_SIZE            (4*1024/sizeof(portSTACK_TYPE))
-#define PC_TASK_STACK_SIZE               (1*1024/sizeof(portSTACK_TYPE))
+#define PROGRAM_TASK_STACK_SIZE          (1*1024/sizeof(portSTACK_TYPE))
+#define MANAGER_TASK_STACK_SIZE          (512/sizeof(portSTACK_TYPE))
+#define FLASH_TASK_STACK_SIZE            (512/sizeof(portSTACK_TYPE))
+#define PC_TASK_STACK_SIZE               (512/sizeof(portSTACK_TYPE))
 #define ARM_CYCLES_PER_SAMPLE            3500 /* 168MHz / 48kHz */
 
 #ifdef  USE_FULL_ASSERT

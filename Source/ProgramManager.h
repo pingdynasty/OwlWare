@@ -7,20 +7,10 @@
 
 class ProgramManager {
 private:
-  /* bool running = false; */
-  // uint32_t* programAddress;
-  // uint32_t programLength;
-  // uint32_t* programStackBase;
-  // uint32_t programStackSize;
-  // char programName[16];
-  void notifyProgram(uint32_t ulValue);
-  void notifyProgramFromISR(uint32_t ulValue);
+  void notifyManager(uint32_t ulValue);
+  void notifyManagerFromISR(uint32_t ulValue);
 public:
   ProgramManager();
-  /* bool isRunning(){ */
-  /*   return running; */
-  /* } */
-  // void load(PatchDefinition* def);
   void loadProgram(uint8_t index);
   void loadStaticProgram(PatchDefinition* def);
   void loadDynamicProgram(void* address, uint32_t length);

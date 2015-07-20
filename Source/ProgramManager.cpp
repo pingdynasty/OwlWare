@@ -16,8 +16,6 @@
 #include "clock.h"
 #endif /* BUTTON_PROGRAM_CHANGE */
 
-// #include "stm32f4xx.h" // for FLASH_SECTOR defs
-
 // #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
 #define AUDIO_TASK_DIRECT
@@ -41,15 +39,11 @@ extern void updateProgramVector(ProgramVector*);
 
 ProgramManager program;
 ProgramVector staticVector;
-static ProgramVector* currentProgramVector = &staticVector;
+ProgramVector* programVector = &staticVector;
 
 // #define JUMPTO(address) ((void (*)(void))address)();
 static DynamicPatchDefinition dynamo;
 static DynamicPatchDefinition flashPatches[MAX_USER_PATCHES];
-
-ProgramVector* getProgramVector(){
-  return currentProgramVector;
-}
 
 static uint32_t getFlashAddress(int sector){
   uint32_t addr = ADDR_FLASH_SECTOR_11;
@@ -64,11 +58,10 @@ TaskHandle_t xFlashTaskHandle = NULL;
 SemaphoreHandle_t xSemaphore = NULL;
 #endif // AUDIO_TASK_SEMAPHORE
 
-uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] CCM;
+uint8_t ucHeap[configTOTAL_HEAP_SIZE];
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
-#define RESET_PROGRAM_NOTIFICATION  0x03
 #define PROGRAM_FLASH_NOTIFICATION  0x04
 #define ERASE_FLASH_NOTIFICATION    0x08
 #define PROGRAM_CHANGE_NOTIFICATION 0x10
@@ -94,8 +87,8 @@ extern "C" {
   }
 
   void runProgramTask(void* p){
-    if(patchdef != NULL){
-      updateProgramVector(currentProgramVector);
+    if(patchdef != NULL && programVector != NULL){
+      updateProgramVector(programVector);
       setErrorStatus(NO_ERROR);
       setLed(GREEN);
       patchdef->run();
@@ -187,7 +180,7 @@ extern "C" {
     setLed(RED);
     int pc = 0;
     do{
-      int bank = getAnalogValue(0) >> 10;
+      int bank = (getAnalogValue(0)*5)/4096;
       int program = getAnalogValue(1) >> 9;
       if(pc != bank*8+program+1){
 	toggleLed();
@@ -237,28 +230,33 @@ void ProgramManager::audioReady(){
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 #else /* AUDIO_TASK_DIRECT */
   audioStatus = AUDIO_READY_STATUS;
-  // currentProgramVector->status = AUDIO_READY_STATUS;
+  // programVector->status = AUDIO_READY_STATUS;
 #endif
 }
 
+
+#ifdef BUTTON_PROGRAM_CHANGE
+  extern volatile uint32_t pushButtonPressed;
+#endif /* BUTTON_PROGRAM_CHANGE */
 
 /* called by the program when a block has been processed */
 __attribute__ ((section (".coderam")))
 void ProgramManager::programReady(){
 #ifdef DEBUG_DWT
-  currentProgramVector->cycles_per_block = *DWT_CYCCNT;
-    // (*DWT_CYCCNT + currentProgramVector->cycles_per_block)>>1;
+  programVector->cycles_per_block = *DWT_CYCCNT;
+    // (*DWT_CYCCNT + programVector->cycles_per_block)>>1;
 #endif /* DEBUG_DWT */
 #ifdef DEBUG_AUDIO
   clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
 #endif
 
 #ifdef BUTTON_PROGRAM_CHANGE
-  extern volatile uint32_t pushButtonPressed;
-  if(pushButtonPressed && getSysTicks() > pushButtonPressed+PROGRAM_CHANGE_PUSHBUTTON_MS){
+  uint32_t pb = pushButtonPressed;
+  if(pb && (getSysTicks() > pb+PROGRAM_CHANGE_PUSHBUTTON_MS)
+    && settings.program_change_button){
     setLed(NONE);
     pushButtonPressed = 0; // prevent re-trigger
-    program.startProgramChange(true);
+    program.startProgramChange(false);
   }
 #endif /* BUTTON_PROGRAM_CHANGE */
 
@@ -297,7 +295,7 @@ void ProgramManager::startManager(){
 #endif // AUDIO_TASK_SEMAPHORE
 }
 
-void ProgramManager::notifyProgramFromISR(uint32_t ulValue){
+void ProgramManager::notifyManagerFromISR(uint32_t ulValue){
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
     xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
@@ -308,7 +306,7 @@ void ProgramManager::notifyProgramFromISR(uint32_t ulValue){
 #endif /* DEFINE_OWL_SYSTICK */
 }
 
-void ProgramManager::notifyProgram(uint32_t ulValue){
+void ProgramManager::notifyManager(uint32_t ulValue){
   if(xManagerHandle != NULL)
     xTaskNotify(xManagerHandle, ulValue, eSetBits);
 }
@@ -316,48 +314,50 @@ void ProgramManager::notifyProgram(uint32_t ulValue){
 void ProgramManager::startProgram(bool isr){
   audioStatus = AUDIO_IDLE_STATUS;
   if(isr)
-    notifyProgramFromISR(START_PROGRAM_NOTIFICATION);
+    notifyManagerFromISR(START_PROGRAM_NOTIFICATION);
   else
-    notifyProgram(START_PROGRAM_NOTIFICATION);
+    notifyManager(START_PROGRAM_NOTIFICATION);
 }
 
 void ProgramManager::exitProgram(bool isr){
   audioStatus = AUDIO_EXIT_STATUS;
   if(isr)
-    notifyProgramFromISR(STOP_PROGRAM_NOTIFICATION);
+    notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION);
   else
-    notifyProgram(STOP_PROGRAM_NOTIFICATION);
+    notifyManager(STOP_PROGRAM_NOTIFICATION);
 }
 
 /* exit and restart program */
 void ProgramManager::resetProgram(bool isr){
   if(isr)
-    notifyProgramFromISR(STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION);
+    notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION);
   else
-    notifyProgram(STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION);
+    notifyManager(STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION);
 }
 
 void ProgramManager::startProgramChange(bool isr){
   if(isr)
-    notifyProgramFromISR(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
+    notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
   else
-    notifyProgram(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
+    notifyManager(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
 }
 
 void ProgramManager::loadProgram(uint8_t pid){
   PatchDefinition* def = registry.getPatchDefinition(pid);
-  if(def != NULL && def != patchdef){
+  if(def != NULL && def != patchdef && def->getProgramVector() != NULL){
     patchdef = def;
-    currentProgramVector = def->getProgramVector();
+    programVector = def->getProgramVector();
     updateProgramIndex(pid);
   }
 }
 
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   dynamo.load(address, length);
-  patchdef = &dynamo;
-  currentProgramVector = dynamo.getProgramVector();
-  updateProgramIndex(0);
+  if(dynamo.getProgramVector() != NULL){
+    patchdef = &dynamo;
+    programVector = dynamo.getProgramVector();
+    updateProgramIndex(0);
+  }
 }
 
 #ifdef DEBUG_STACK
@@ -394,11 +394,11 @@ uint32_t ProgramManager::getFreeHeapSize(){
 #endif /* DEBUG_STACK */
 
 uint32_t ProgramManager::getCyclesPerBlock(){
-  return currentProgramVector->cycles_per_block;
+  return programVector->cycles_per_block;
 }
 
 uint32_t ProgramManager::getHeapMemoryUsed(){
-  return currentProgramVector->heap_bytes_used;
+  return programVector->heap_bytes_used;
 }
 
 void ProgramManager::runManager(){
@@ -426,7 +426,8 @@ void ProgramManager::runManager(){
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       if(xProgramHandle == NULL && patchdef != NULL){
 	BaseType_t ret;
-	if(patchdef->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
+	if(patchdef->getStackBase() != 0 && 
+	   patchdef->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
 	  ret = xTaskGenericCreate(runProgramTask, "Program", 
 				   patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
 				   NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle, 
@@ -451,13 +452,13 @@ void ProgramManager::runManager(){
 	}
       }
 #endif /* BUTTON_PROGRAM_CHANGE */
-    }else if(ulNotifiedValue == PROGRAM_FLASH_NOTIFICATION){ // program flash
+    }else if(ulNotifiedValue & PROGRAM_FLASH_NOTIFICATION){ // program flash
       BaseType_t ret = xTaskCreate(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
       if(ret != pdPASS){
 	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Write task");
 	setLed(RED);
       }
-    }else if(ulNotifiedValue == ERASE_FLASH_NOTIFICATION){ // erase flash
+    }else if(ulNotifiedValue & ERASE_FLASH_NOTIFICATION){ // erase flash
       BaseType_t ret = xTaskCreate(eraseFlashTask, "Flash Erase", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
       if(ret != pdPASS){
 	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Erase task");
@@ -483,20 +484,14 @@ PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
 
 void ProgramManager::eraseProgramFromFlash(uint8_t sector){
   flashSectorToWrite = sector;
-  uint32_t ulValue = ERASE_FLASH_NOTIFICATION;
-  BaseType_t xHigherPriorityTaskWoken = 0; 
-  xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|ERASE_FLASH_NOTIFICATION);
 }
 
 void ProgramManager::saveProgramToFlash(uint8_t sector, void* address, uint32_t length){
   flashSectorToWrite = sector;
   flashAddressToWrite = address;
   flashSizeToWrite = length;
-  uint32_t ulValue = PROGRAM_FLASH_NOTIFICATION;
-  BaseType_t xHigherPriorityTaskWoken = 0;
-  xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|PROGRAM_FLASH_NOTIFICATION);
 }
 
 /*

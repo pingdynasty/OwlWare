@@ -4,12 +4,12 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-/* _estack = 0x2000c000;    /\* end of loader RAM *\/ */
-_estack = 0x10004000;    /* end of CCM RAM */
+_estack = 0x2000c000;    /* end of firmware RAM */
+/* _estack = 0x10004000;    /\* end of CCM RAM *\/ */
 
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size  = 0x000; /* required amount of heap  */
-_Min_Stack_Size = 0x800; /* required amount of stack */
+_Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Specify the memory areas */
 MEMORY
@@ -139,15 +139,6 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     __bss_end__ = _ebss;
   } >RAM
 
-  /* CCM section, vars must be located here explicitly */
-  /* Example: int foo __attribute__ ((section (".ccmdata"))); */
-  .ccmdata (NOLOAD) :
-  {
-    . = ALIGN(4);
-    *(.ccmdata)
-    . = ALIGN(4);
-  } >CCMRAM
-
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
@@ -156,6 +147,15 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     PROVIDE ( _end = . );
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
+    . = ALIGN(4);
+  } >RAM
+
+  /* CCM section, vars must be located here explicitly */
+  /* Example: int foo __attribute__ ((section (".ccmdata"))); */
+  .ccmdata (NOLOAD) :
+  {
+    . = ALIGN(4);
+    *(.ccmdata)
     . = ALIGN(4);
   } >CCMRAM
 

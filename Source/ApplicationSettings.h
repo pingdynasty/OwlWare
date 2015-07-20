@@ -27,6 +27,7 @@ public:
   bool audio_codec_halfspeed;
   uint8_t audio_codec_protocol;
   uint8_t program_index;
+  bool program_change_button;
 public:
   void init();
   void reset();

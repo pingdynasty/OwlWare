@@ -44,7 +44,7 @@
 #define OUT_OF_MEMORY_ERROR_STATUS -20
 #define CONFIGURATION_ERROR_STATUS -30
 
-   ProgramVector* getProgramVector();
+   extern ProgramVector* programVector;
 
 #ifdef __cplusplus
 }
