@@ -22,6 +22,8 @@
 // #define AUDIO_TASK_YIELD
 /* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
 
+#define PC_TASK_STACK_BASE  ((uint32_t*)CCMRAM)
+
 // FreeRTOS low priority numbers denote low priority tasks. 
 // The idle task has priority zero (tskIDLE_PRIORITY).
 #define PROGRAM_TASK_PRIORITY            (2)
@@ -145,7 +147,7 @@ extern "C" {
       registry.init();
       if(ret == 0){
 	// load and run program
-	int pc = registry.getNumberOfPatches()-(MAX_USER_PATCHES-sector);
+	int pc = registry.getNumberOfPatches()-MAX_USER_PATCHES+sector;
 	program.loadProgram(pc);
 	// program.loadDynamicProgram(source, size);
 	program.resetProgram(false);
@@ -253,7 +255,7 @@ void ProgramManager::programReady(){
 #ifdef BUTTON_PROGRAM_CHANGE
   uint32_t pb = pushButtonPressed;
   if(pb && (getSysTicks() > pb+PROGRAM_CHANGE_PUSHBUTTON_MS)
-    && settings.program_change_button){
+    && settings.program_change_button && isPushButtonPressed()){
     setLed(NONE);
     pushButtonPressed = 0; // prevent re-trigger
     program.startProgramChange(false);
@@ -436,7 +438,7 @@ void ProgramManager::runManager(){
 	  ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
 	}
 	if(ret != pdPASS){
-	  setErrorStatus(PROGRAM_ERROR);
+	  setErrorMessage(PROGRAM_ERROR, "Failed to start program task");
 	  setLed(RED);
 	}else{
 	  codec.softMute(false);
@@ -445,7 +447,11 @@ void ProgramManager::runManager(){
 #ifdef BUTTON_PROGRAM_CHANGE
     }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
       if(xProgramHandle == NULL){
-	BaseType_t ret = xTaskCreate(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &xProgramHandle);
+	BaseType_t ret = xTaskGenericCreate(programChangeTask, "Program Change", 
+					    PC_TASK_STACK_SIZE, NULL,
+					    PC_TASK_PRIORITY, &xProgramHandle,
+					    PC_TASK_STACK_BASE, NULL);
+	// BaseType_t ret = xTaskCreate(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &xProgramHandle);
 	if(ret != pdPASS){
 	  setErrorMessage(PROGRAM_ERROR, "Failed to start Program Change task");
 	  setLed(RED);

@@ -125,9 +125,9 @@
 #define USB_VBUS_GPIO_CLK            RCC_AHB1Periph_GPIOA
 
 #define PROGRAM_TASK_STACK_SIZE          (1*1024/sizeof(portSTACK_TYPE))
-#define MANAGER_TASK_STACK_SIZE          (512/sizeof(portSTACK_TYPE))
-#define FLASH_TASK_STACK_SIZE            (512/sizeof(portSTACK_TYPE))
-#define PC_TASK_STACK_SIZE               (512/sizeof(portSTACK_TYPE))
+#define MANAGER_TASK_STACK_SIZE          (256/sizeof(portSTACK_TYPE))
+#define FLASH_TASK_STACK_SIZE            (256/sizeof(portSTACK_TYPE))
+#define PC_TASK_STACK_SIZE               (256/sizeof(portSTACK_TYPE))
 #define ARM_CYCLES_PER_SAMPLE            3500 /* 168MHz / 48kHz */
 
 #ifdef  USE_FULL_ASSERT

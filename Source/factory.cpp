@@ -17,13 +17,15 @@ REGISTER_PATCH(ParametricEqPatch, "Parametric EQ", 2, 2);
 REGISTER_PATCH(MdaBandistoPatch, "Bandisto", 2, 2);
 REGISTER_PATCH(OverdrivePatch, "Overdrive", 2, 2);
 REGISTER_PATCH(StereoWahPatch, "StereoWah", 2, 2);
-REGISTER_PATCH(PitchShifterPatch, "Pitch Shifter", 1, 1);
+REGISTER_PATCH(PitchShifterPatch, "Pitch Shifter", 2, 2);
 REGISTER_PATCH(PhaserPatch, "Phaser", 1, 1);
+REGISTER_PATCH(EnvelopeFilterPatch, "Envelope Filter", 2, 2);
 REGISTER_PATCH(SmoothDelayPatch, "SmoothDelay", 1, 1);
 REGISTER_PATCH(LpfDelayPatch, "Lowpass Delay", 1, 1);
 REGISTER_PATCH(SimpleStereoDelayPatch, "Stereo Delay", 2, 2);
 REGISTER_PATCH(PsycheFilterPatch, "Psyche Filter", 2, 2);
 REGISTER_PATCH(QompressionPatch, "Qompression", 2, 2);
+REGISTER_PATCH(AutoWahPatch, "AutoWah", 1, 1);
 // REGISTER_PATCH(GuitarixPhaserPatch, "Guitarix/Phaser", 2, 2);
 REGISTER_PATCH(GuitarixOverdrivePatch, "Guitarix/Overdrive", 1, 1);
 REGISTER_PATCH(GuitarixOscTubePatch, "Guitarix/OscTube", 1, 1);
@@ -39,8 +41,9 @@ REGISTER_PATCH(WeirdPhaserPatch, "OL/Weird Phaser", 2, 2);
 REGISTER_PATCH(DroneBoxPatch, "OL/DroneBox", 2, 2);
 REGISTER_PATCH(ThruZeroFlangerPatch, "OL/Thru Zero Flanger", 2, 2);
 REGISTER_PATCH(DigitalMayhemPatch, "RS/Digital Mayhem", 1, 1);
-REGISTER_PATCH(ReverseReverbPatch, "RS/Reverse Reverb", 1, 1);
+// REGISTER_PATCH(ReverseReverbPatch, "RS/Reverse Reverb", 1, 1);
 REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
+REGISTER_PATCH(HarpAutoPatch, "Faust/AutoHarp", 0, 1);
 
 // REGISTER_PATCH(GhostNotePatch,"RS/GhostNote", 1, 1); /* 102% */
 // REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
@@ -94,8 +97,8 @@ REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
 
 /* TO BE WORKED ON */
 // REGISTER_PATCH(ConnyPatch, "Contest/ConnyPatch", 2, 2);
-// REGISTER_PATCH(QompanderPatch, "Faust/Qompander", 1, 1); // 8851 ARM cycles
-// REGISTER_PATCH(AutoWahPatch, "Faust/AutoWah", 1, 1); // 4003 ARM cycles
+// REGISTER_PATCH(QompanderPatch, "Faust/Qompander", 1, 1); // 208%
+// REGISTER_PATCH(SweepWahPatch, "Faust/SweepWah", 1, 1);
 // REGISTER_PATCH(SimpleDriveDelayPatch, "Drive Delay", 1, 1);
 // REGISTER_PATCH(AutotalentPatch, "AutoTalent", 2, 2);
 // REGISTER_PATCH(EnvelopeFilterPatch, "Envelope Filter", 1, 1);

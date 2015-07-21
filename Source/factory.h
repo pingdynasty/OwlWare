@@ -23,8 +23,8 @@
 #include "SynthPatch.hpp"
 #include "FourBandsEqPatch.hpp"
 #include "JotReverbPatch.hpp"
-#include "Contest/BiasedDelayPatch.hpp"
-#include "Contest/DualTremoloPatch.hpp"
+/* #include "Contest/BiasedDelayPatch.hpp" */
+/* #include "Contest/DualTremoloPatch.hpp" */
 #include "mdaPorts/MdaBandistoPatch.cpp"
 #include "mdaPorts/MdaStereoPatch.cpp"
 #include "mdaPorts/MdaTransientPatch.cpp"
@@ -61,7 +61,7 @@
 #include "Guitarix/GuitarixPhaserPatch.hpp"
 #include "Guitarix/GuitarixMoogPatch.hpp"
 #include "Guitarix/GuitarixOverdrivePatch.hpp"
-#include "Guitarix/GuitarixPhaserMonoPatch.hpp"
+/* #include "Guitarix/GuitarixPhaserMonoPatch.hpp" */
 #include "Guitarix/GuitarixOscTubePatch.hpp"
 #include "Guitarix/GuitarixFlangerGXPatch.hpp"
 #include "Guitarix/GuitarixDunwahPatch.hpp"
@@ -70,14 +70,14 @@
 #include "Guitarix/GuitarixDistortion1Patch.hpp"
 
 #include "Contest/SirenPatch.hpp"
+#include "EnvelopeFilterPatch.hpp"
 
 // #include "Contest/ConnyPatch.hpp"
-// #include "Faust/AutoWahPatch.hpp"
+#include "Faust/AutoWahPatch.hpp"
 // #include "Faust/QompanderPatch.hpp"
 // #include "SimpleDriveDelayPatch.hpp"
 // #include "Autotalent/AutotalentPatch.hpp"
 // #include "TemplatePatch.hpp"
-// #include "EnvelopeFilterPatch.hpp" /* too cpu intensive (sqrt...) */
 // #include "TemplatePatch.hpp"
 // #include "Contest/JumpDelay.hpp" /* uses calloc and free */
 // #include "Contest/SampleJitterPatch.hpp" /* requires juce::Random */
