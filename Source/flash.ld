@@ -37,15 +37,15 @@ SECTIONS
   /* The startup code goes first into FLASH */
   .isr_vector :
   {
-    . = ALIGN(4);
+    . = ALIGN(8);
     KEEP(*(.isr_vector)) /* Startup code */
-    . = ALIGN(4);
+    . = ALIGN(8);
   } >FLASH
 
   /* The program code and other data goes into FLASH */
   .text :
   {
-    . = ALIGN(4);
+    . = ALIGN(8);
     *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
@@ -57,7 +57,7 @@ SECTIONS
     KEEP (*(.init))
     KEEP (*(.fini))
 
-    . = ALIGN(4);
+    . = ALIGN(8);
     _etext = .;        /* define a global symbols at end of code */
   } >FLASH
 
@@ -103,9 +103,9 @@ _fastcode_size = _fastcode_end - _fastcode_start;
 
 /*   .eeprom (NOLOAD) : */
 /*     { */
-/*     . = ALIGN(4); */
+/*     . = ALIGN(8); */
 /*         *(.eeprom) */
-/*     . = ALIGN(4); */
+/*     . = ALIGN(8); */
 /*     } >EEPROM */
 
   /* used by the startup to initialize data */
@@ -114,17 +114,17 @@ _fastcode_size = _fastcode_end - _fastcode_start;
   /* Initialized data sections goes into RAM, load LMA copy after code */
   .data : AT ( _sidata )
   {
-    . = ALIGN(4);
+    . = ALIGN(8);
     _sdata = .;        /* create a global symbol at data start */
     *(.data)           /* .data sections */
     *(.data*)          /* .data* sections */
 
-    . = ALIGN(4);
+    . = ALIGN(8);
     _edata = .;        /* define a global symbol at data end */
   } >RAM
 
   /* Uninitialized data section */
-  . = ALIGN(4);
+  . = ALIGN(8);
   .bss :
   {
     /* This is used by the startup in order to initialize the .bss secion */
@@ -134,7 +134,7 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     *(.bss*)
     *(COMMON)
 
-    . = ALIGN(4);
+    . = ALIGN(8);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
   } >RAM
@@ -142,39 +142,30 @@ _fastcode_size = _fastcode_end - _fastcode_start;
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
-    . = ALIGN(4);
+    . = ALIGN(8);
     PROVIDE ( end = . );
     PROVIDE ( _end = . );
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
-    . = ALIGN(4);
+    . = ALIGN(8);
   } >RAM
 
   /* CCM section, vars must be located here explicitly */
   /* Example: int foo __attribute__ ((section (".ccmdata"))); */
   .ccmdata (NOLOAD) :
   {
-    . = ALIGN(4);
+    . = ALIGN(8);
     *(.ccmdata)
-    . = ALIGN(4);
+    . = ALIGN(8);
   } >CCMRAM
-
-/* /\* Shared RAM section, vars must be located here explicitly *\/ */
-/* /\* Example: int foo __attribute__ ((section (".sharedram"))); *\/ */
-/* .sharedram (NOLOAD) : */
-/* { */
-/*   . = ALIGN(4); */
-/*   *(.sharedram) */
-/*   . = ALIGN(4); */
-/* } >SHAREDRAM */
 
   /* External SRAM, vars must be located here explicitly */
   /* Example: int foo __attribute__ ((section (".extdata"))); */
 /* .extdata (NOLOAD) : */
 /* { */
-/*   . = ALIGN(4); */
+/*   . = ALIGN(8); */
 /*   *(.extdata) */
-/*   . = ALIGN(4); */
+/*   . = ALIGN(8); */
 /* } >BANK1_SRAM3 */
 
   /* Remove information from the standard libraries */
