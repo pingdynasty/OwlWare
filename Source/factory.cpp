@@ -7,8 +7,7 @@
 */
 // sed 's/^REGISTER_PATCH.*"\(.*\)".*/\1/g' < Source/factory.cpp
 
-REGISTER_PATCH(JotReverbPatch,"Jot Reverb", 2, 2);
-// REGISTER_PATCH(FaustVerbPatch, "FreeVerb", 1, 1);
+REGISTER_PATCH(JotReverbPatch, "Jot Reverb", 2, 2);
 REGISTER_PATCH(FreeVerbPatch, "FreeVerb", 1, 1);
 REGISTER_PATCH(PlateVerbPatch, "Plate Reverb", 1, 1);
 REGISTER_PATCH(MoogStereoPatch, "Moog Drive", 2, 2);
@@ -20,13 +19,12 @@ REGISTER_PATCH(StereoWahPatch, "StereoWah", 2, 2);
 REGISTER_PATCH(PitchShifterPatch, "Pitch Shifter", 2, 2);
 REGISTER_PATCH(PhaserPatch, "Phaser", 1, 1);
 REGISTER_PATCH(EnvelopeFilterPatch, "Envelope Filter", 2, 2);
-REGISTER_PATCH(SmoothDelayPatch, "SmoothDelay", 1, 1);
+REGISTER_PATCH(SmoothDelayPatch, "Smooth Delay", 1, 1);
 REGISTER_PATCH(LpfDelayPatch, "Lowpass Delay", 1, 1);
 REGISTER_PATCH(SimpleStereoDelayPatch, "Stereo Delay", 2, 2);
 REGISTER_PATCH(PsycheFilterPatch, "Psyche Filter", 2, 2);
 REGISTER_PATCH(QompressionPatch, "Qompression", 2, 2);
 REGISTER_PATCH(AutoWahPatch, "AutoWah", 1, 1);
-// REGISTER_PATCH(GuitarixPhaserPatch, "Guitarix/Phaser", 2, 2);
 REGISTER_PATCH(GuitarixOverdrivePatch, "Guitarix/Overdrive", 1, 1);
 REGISTER_PATCH(GuitarixOscTubePatch, "Guitarix/OscTube", 1, 1);
 REGISTER_PATCH(GuitarixDistortion1Patch, "Guitarix/Distortion1", 1, 1);
@@ -36,14 +34,23 @@ REGISTER_PATCH(GuitarixDunwahPatch, "Guitarix/Dunwah", 1, 1);
 REGISTER_PATCH(GuitarixMoogPatch, "Guitarix/Moog Filter", 1, 1);
 REGISTER_PATCH(GuitarixFlangerGXPatch, "Guitarix/FlangerGX", 1, 1);
 REGISTER_PATCH(GuitarixTonePatch, "Guitarix/Tone", 1, 1);
-REGISTER_PATCH(DualPitchShifterPatch, "OL/Dual Pitch Shifter", 2, 2);
-REGISTER_PATCH(WeirdPhaserPatch, "OL/Weird Phaser", 2, 2);
 REGISTER_PATCH(DroneBoxPatch, "OL/DroneBox", 2, 2);
+REGISTER_PATCH(DualPitchShifterPatch, "OL/Dual Pitch Shifter", 2, 2);
 REGISTER_PATCH(ThruZeroFlangerPatch, "OL/Thru Zero Flanger", 2, 2);
+REGISTER_PATCH(BlipperPatch, "OL/Blipper", 2, 2); // PC-2 emulation
+REGISTER_PATCH(WeirdPhaserPatch, "OL/Weird Phaser", 2, 2);
+REGISTER_PATCH(LogisticFunctionPatch, "MK/Complexor", 2, 2);
 REGISTER_PATCH(DigitalMayhemPatch, "RS/Digital Mayhem", 1, 1);
-// REGISTER_PATCH(ReverseReverbPatch, "RS/Reverse Reverb", 1, 1);
-REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
 REGISTER_PATCH(HarpAutoPatch, "Faust/AutoHarp", 0, 1);
+REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
+
+// REGISTER_PATCH(XFMPatch, "OL/XFM Oscillator", 2, 2);
+// REGISTER_PATCH(DualFreqShifterPatch, "OL/Dual Frequency Shifter", 2, 2);
+// REGISTER_PATCH(StereoFreqShifterPatch, "OL/Stereo Frequency Shifter", 2, 2);
+
+// REGISTER_PATCH(ReverseReverbPatch, "RS/Reverse Reverb", 1, 1);
+// REGISTER_PATCH(GuitarixPhaserPatch, "Guitarix/Phaser", 2, 2);
+// REGISTER_PATCH(FaustVerbPatch, "FreeVerb", 1, 1);
 
 // REGISTER_PATCH(GhostNotePatch,"RS/GhostNote", 1, 1); /* 102% */
 // REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
@@ -57,11 +64,6 @@ REGISTER_PATCH(HarpAutoPatch, "Faust/AutoHarp", 0, 1);
 
 // REGISTER_PATCH(DroneBoxPatch, "Contest/DroneBox", 1, 1);
 // REGISTER_PATCH(PatchSelectorPatch, "Patch Selector", 0, 0);
-// REGISTER_PATCH(BlipperPatch, "OL/Blipper", 2, 2); // PC-2 emulation
-// REGISTER_PATCH(DualFreqShifterPatch, "OL/Dual Frequency Shifter", 2, 2);
-// REGISTER_PATCH(StereoFreqShifterPatch, "OL/Stereo Frequency Shifter", 2, 2);
-// REGISTER_PATCH(ThruZeroFlangerPatch, "OL/Thru Zero Flanger", 2, 2);
-// REGISTER_PATCH(XFMPatch, "OL/XFM Oscillator", 2, 2);
 
 // REGISTER_PATCH(GainPatch, "Gain", 2, 2);
 // REGISTER_PATCH(StateVariableFilterPatch, "State Variable Filter", 1, 1);
