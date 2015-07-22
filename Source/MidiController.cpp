@@ -48,7 +48,6 @@ void MidiController::sendSettings(){
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_BYPASS, settings.audio_codec_bypass);
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_HALFSPEED, settings.audio_codec_halfspeed);
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_SWAP, settings.audio_codec_swaplr);
-
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_PC_BUTTON, settings.program_change_button);
 }
 
@@ -74,7 +73,7 @@ void MidiController::sendPatchParameterName(PatchParameterId pid, const char* na
 }
 
 void MidiController::sendPatchNames(){
-  for(unsigned int i=0; i<registry.getNumberOfPatches(); ++i)
+  for(uint8_t i=0; i<registry.getNumberOfPatches(); ++i)
     sendPatchName(i);
 }
 

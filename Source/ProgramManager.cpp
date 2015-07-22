@@ -10,11 +10,7 @@
 #include "PatchRegistry.h"
 #include "ApplicationSettings.h"
 #include "CodecController.h"
-
-#ifdef BUTTON_PROGRAM_CHANGE
-#define PROGRAM_CHANGE_PUSHBUTTON_MS 2000
-#include "clock.h"
-#endif /* BUTTON_PROGRAM_CHANGE */
+#include "MidiController.h"
 
 // #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -89,7 +85,8 @@ extern "C" {
   }
 
   void runProgramTask(void* p){
-    if(patchdef != NULL && programVector != NULL){
+    if(patchdef != NULL && patchdef->getProgramVector() != NULL){
+      programVector = patchdef->getProgramVector();
       updateProgramVector(programVector);
       setErrorStatus(NO_ERROR);
       setLed(GREEN);
@@ -177,6 +174,11 @@ extern "C" {
     vTaskDelete(NULL);
   }
 
+  void sendPatchNamesTask(void* p){
+    midi.sendPatchNames();
+    vTaskDelete(NULL);    
+  }
+
 #ifdef BUTTON_PROGRAM_CHANGE
   void programChangeTask(void* p){
     setLed(RED);
@@ -187,8 +189,9 @@ extern "C" {
       if(pc != bank*8+program+1){
 	toggleLed();
 	pc = bank*8+program+1;
+	updateProgramIndex(pc);
+	vTaskDelay(20);
       }
-      // vTaskDelay(20);
     }while(isPushButtonPressed() || pc < 1 || pc >= (int)registry.getNumberOfPatches());
     program.loadProgram(pc);
     program.resetProgram(false);
@@ -236,11 +239,6 @@ void ProgramManager::audioReady(){
 #endif
 }
 
-
-#ifdef BUTTON_PROGRAM_CHANGE
-  extern volatile uint32_t pushButtonPressed;
-#endif /* BUTTON_PROGRAM_CHANGE */
-
 /* called by the program when a block has been processed */
 __attribute__ ((section (".coderam")))
 void ProgramManager::programReady(){
@@ -251,16 +249,6 @@ void ProgramManager::programReady(){
 #ifdef DEBUG_AUDIO
   clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
 #endif
-
-#ifdef BUTTON_PROGRAM_CHANGE
-  uint32_t pb = pushButtonPressed;
-  if(pb && (getSysTicks() > pb+PROGRAM_CHANGE_PUSHBUTTON_MS)
-    && settings.program_change_button && isPushButtonPressed()){
-    setLed(NONE);
-    pushButtonPressed = 0; // prevent re-trigger
-    program.startProgramChange(false);
-  }
-#endif /* BUTTON_PROGRAM_CHANGE */
 
 #ifdef AUDIO_TASK_SUSPEND
   vTaskSuspend(xProgramHandle);
@@ -297,6 +285,13 @@ void ProgramManager::startManager(){
 #endif // AUDIO_TASK_SEMAPHORE
 }
 
+
+void ProgramManager::sendPatchNames(){
+  codec.softMute(true);
+  TaskHandle_t handle = NULL;
+  xTaskCreate(sendPatchNamesTask, "MIDI", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &handle);
+}
+
 void ProgramManager::notifyManagerFromISR(uint32_t ulValue){
   BaseType_t xHigherPriorityTaskWoken = 0; 
   if(xManagerHandle != NULL)
@@ -322,6 +317,7 @@ void ProgramManager::startProgram(bool isr){
 }
 
 void ProgramManager::exitProgram(bool isr){
+  codec.softMute(true);
   audioStatus = AUDIO_EXIT_STATUS;
   if(isr)
     notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION);
@@ -331,6 +327,7 @@ void ProgramManager::exitProgram(bool isr){
 
 /* exit and restart program */
 void ProgramManager::resetProgram(bool isr){
+  codec.softMute(true);
   if(isr)
     notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION);
   else
@@ -338,6 +335,7 @@ void ProgramManager::resetProgram(bool isr){
 }
 
 void ProgramManager::startProgramChange(bool isr){
+  codec.softMute(true);
   if(isr)
     notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
   else
@@ -348,7 +346,6 @@ void ProgramManager::loadProgram(uint8_t pid){
   PatchDefinition* def = registry.getPatchDefinition(pid);
   if(def != NULL && def != patchdef && def->getProgramVector() != NULL){
     patchdef = def;
-    programVector = def->getProgramVector();
     updateProgramIndex(pid);
   }
 }
@@ -357,8 +354,10 @@ void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   dynamo.load(address, length);
   if(dynamo.getProgramVector() != NULL){
     patchdef = &dynamo;
-    programVector = dynamo.getProgramVector();
+    registry.setDynamicPatchDefinition(patchdef);
     updateProgramIndex(0);
+  }else{
+    registry.setDynamicPatchDefinition(NULL);
   }
 }
 
@@ -447,11 +446,11 @@ void ProgramManager::runManager(){
 #ifdef BUTTON_PROGRAM_CHANGE
     }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
       if(xProgramHandle == NULL){
-	BaseType_t ret = xTaskGenericCreate(programChangeTask, "Program Change", 
-					    PC_TASK_STACK_SIZE, NULL,
-					    PC_TASK_PRIORITY, &xProgramHandle,
-					    PC_TASK_STACK_BASE, NULL);
-	// BaseType_t ret = xTaskCreate(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &xProgramHandle);
+	// BaseType_t ret = xTaskGenericCreate(programChangeTask, "Program Change", 
+	// 				    PC_TASK_STACK_SIZE, NULL,
+	// 				    PC_TASK_PRIORITY, &xProgramHandle,
+	// 				    PC_TASK_STACK_BASE, NULL);
+	BaseType_t ret = xTaskCreate(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &xProgramHandle);
 	if(ret != pdPASS){
 	  setErrorMessage(PROGRAM_ERROR, "Failed to start Program Change task");
 	  setLed(RED);

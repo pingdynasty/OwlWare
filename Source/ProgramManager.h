@@ -36,6 +36,8 @@ public:
   void saveProgramToFlash(uint8_t sector, void* address, uint32_t length);
   PatchDefinition* getPatchDefinitionFromFlash(uint8_t sector);
 
+  void sendPatchNames();
+
   uint32_t getCyclesPerBlock();
   uint32_t getHeapMemoryUsed();
   uint8_t getProgramIndex();

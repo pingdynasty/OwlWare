@@ -50,7 +50,7 @@
 #define MAX_SYSEX_FIRMWARE_SIZE      ((16+16+64+128+128)*1024) // FLASH sectors 2-6
 #define MAX_SYSEX_PROGRAM_SIZE       (128*1024) // 128k, one flash sector
 
-#define MAX_FACTORY_PATCHES          32
+#define MAX_FACTORY_PATCHES          36
 #define MAX_USER_PATCHES             4
 #define MAX_NUMBER_OF_PATCHES        (MAX_FACTORY_PATCHES+MAX_USER_PATCHES+1)
 
@@ -108,7 +108,7 @@
 #define SWITCH_B_HANDLER             EXTI2_IRQHandler
 
 #define BYPASS_DEBOUNCE              200
-#define PUSHBUTTON_DEBOUNCE          80
+#define PUSHBUTTON_DEBOUNCE          100
 
 #define LED_PORT                     GPIOE
 #define LED_GREEN                    GPIO_Pin_5
@@ -125,7 +125,7 @@
 #define USB_VBUS_GPIO_CLK            RCC_AHB1Periph_GPIOA
 
 #define PROGRAM_TASK_STACK_SIZE          (1*1024/sizeof(portSTACK_TYPE))
-#define MANAGER_TASK_STACK_SIZE          (256/sizeof(portSTACK_TYPE))
+#define MANAGER_TASK_STACK_SIZE          (300/sizeof(portSTACK_TYPE))
 #define FLASH_TASK_STACK_SIZE            (256/sizeof(portSTACK_TYPE))
 #define PC_TASK_STACK_SIZE               (256/sizeof(portSTACK_TYPE))
 #define ARM_CYCLES_PER_SAMPLE            3500 /* 168MHz / 48kHz */

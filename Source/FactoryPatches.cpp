@@ -6,6 +6,9 @@
 #include "basicmaths.h"
 #include "ProgramVector.h"
 
+#define STATIC_PROGRAM_STACK_SIZE   (64*1024)
+#define STATIC_PROGRAM_STACK_BASE   ((uint32_t*)CCMRAM)
+
 extern ProgramVector staticVector;
 
 PatchProcessor *processor;
@@ -25,8 +28,6 @@ void FactoryPatchDefinition::run(){
 }
 
 #include "factory.h"
-
-#define STATIC_PROGRAM_STACK_SIZE   (16*1024)
 
 template<class T> struct Register {
   static Patch* construct() {
@@ -56,14 +57,14 @@ void FactoryPatchDefinition::init(){
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition() {
-  stackBase = (uint32_t*)CCMRAM;
+  stackBase = STATIC_PROGRAM_STACK_BASE;
   stackSize = STATIC_PROGRAM_STACK_SIZE;
   programVector = &staticVector;
 }
 
 FactoryPatchDefinition::FactoryPatchDefinition(char* name, uint8_t inputs, uint8_t outputs, PatchCreator c) :
   PatchDefinition(name, inputs, outputs), creator(c) {
-  stackBase = (uint32_t*)CCMRAM;
+  stackBase = STATIC_PROGRAM_STACK_BASE;
   stackSize = STATIC_PROGRAM_STACK_SIZE;
   // stackSize = 0;
   programVector = &staticVector;

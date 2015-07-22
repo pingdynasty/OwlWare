@@ -112,6 +112,7 @@ void updateProgramIndex(uint8_t index){
   if(settings.program_index != index){
     settings.program_index = index;
     midi.sendPc(index);
+    midi.sendPatchName(index);
   }
 }
 
@@ -277,6 +278,11 @@ void setup(){
  extern "C" {
 #endif
 
+#ifdef BUTTON_PROGRAM_CHANGE
+#define PROGRAM_CHANGE_PUSHBUTTON_MS 2000
+#include "clock.h"
+#endif /* BUTTON_PROGRAM_CHANGE */
+
 extern volatile ProgramVectorAudioStatus audioStatus;
 __attribute__ ((section (".coderam")))
 void audioCallback(int16_t *src, int16_t *dst){
@@ -287,6 +293,17 @@ void audioCallback(int16_t *src, int16_t *dst){
   programVector->audio_output = dst;
   // program.audioReady();
   audioStatus = AUDIO_READY_STATUS;
+
+#ifdef BUTTON_PROGRAM_CHANGE
+  if(pushButtonPressed && (getSysTicks() > pushButtonPressed+PROGRAM_CHANGE_PUSHBUTTON_MS)
+     && settings.program_change_button){
+    if(isPushButtonPressed()){
+      setLed(NONE);
+      program.startProgramChange(false);
+    }
+    pushButtonPressed = 0; // prevent re-trigger
+  }
+#endif /* BUTTON_PROGRAM_CHANGE */
 }
 
 #ifdef __cplusplus
