@@ -20,8 +20,9 @@
  * M_SQRT1_2  - 1/sqrt(2)
  */
 #include <math.h>
+#ifdef ARM_CORTEX
 #include "arm_math.h" 
-
+#endif //ARM_CORTEX
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -47,15 +48,22 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
+  inline float arm_sqrt(float in){
+    float out;
+#ifdef ARM_CORTEX
+    arm_sqrt_f32(in, &out);
+#else
+    out=sqrtf(in);
+#endif
+    return out;
+  }
 
-   /* float fastPow(float a, float b); */
-   /* float fastSqrt(float a); */
-
-   inline float arm_sqrt(float in){
-     float out;
-     arm_sqrt_f32(in, &out);
-     return out;
-   }
+   // fast approximations
+   float fastlog2f(float x);
+   float fastpowf(float a, float b);
+   float fastsqrt1(float a);
+   float fastsqrt2(float a);
+   float fastsqrt3(float a);
 
 #ifdef __cplusplus
 }
@@ -63,11 +71,13 @@
 
 /* #define pow(x, y) fastPow(x, y) */
 /* #define powf(x, y) fastPow(x, y) */
+#ifdef ARM_CORTEX
 #define sin(x) arm_sin_f32(x)
 #define sinf(x) arm_sin_f32(x)
 #define cos(x) arm_cos_f32(x)
 #define cosf(x) arm_cos_f32(x)
 #define sqrt(x) arm_sqrt(x)
 #define sqrtf(x) arm_sqrt(x)
+#endif //ARM_CORTEX
 
 #endif // __basicmaths_h__

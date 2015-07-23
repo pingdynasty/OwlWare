@@ -1,7 +1,7 @@
 #ifndef __StompBox_h__
 #define __StompBox_h__
 
-#include <string.h>
+#include "FloatArray.h"
 class PatchProcessor;
 
 enum PatchParameterId {
@@ -20,14 +20,22 @@ enum PatchButtonId {
   RED_BUTTON
 };
 
+enum PatchChannelId {
+  LEFT_CHANNEL = 0,
+  RIGHT_CHANNEL = 1
+};
+
 class AudioBuffer {
 public:
   virtual ~AudioBuffer();
-  virtual float* getSamples(int channel) = 0;
+  virtual FloatArray getSamples(int channel) = 0;
+  // virtual float* getSamples(int channel) = 0;
   virtual int getChannels() = 0;
   virtual int getSize() = 0;
   virtual void clear() = 0;
+  static AudioBuffer* create(int channels, int samples);
 };
+
 
 class Patch {
 public:
@@ -40,6 +48,8 @@ public:
   int getBlockSize();
   double getSampleRate();
   AudioBuffer* createMemoryBuffer(int channels, int samples);
+  float getElapsedBlockTime();
+  int getElapsedCycles();
 public:
   virtual void processAudio(AudioBuffer& output) = 0;
 private:
