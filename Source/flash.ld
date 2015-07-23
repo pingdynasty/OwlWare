@@ -150,14 +150,14 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     . = ALIGN(4);
   } >RAM
 
-  /* CCM section, vars must be located here explicitly */
-  /* Example: int foo __attribute__ ((section (".ccmdata"))); */
-  .ccmdata (NOLOAD) :
-  {
-    . = ALIGN(4);
-    *(.ccmdata)
-    . = ALIGN(4);
-  } >CCMRAM
+  /* /\* CCM section, vars must be located here explicitly *\/ */
+  /* /\* Example: int foo __attribute__ ((section (".ccmdata"))); *\/ */
+  /* .ccmdata (NOLOAD) : */
+  /* { */
+  /*   . = ALIGN(4); */
+  /*   *(.ccmdata) */
+  /*   . = ALIGN(4); */
+  /* } >CCMRAM */
 
   /* External SRAM, vars must be located here explicitly */
   /* Example: int foo __attribute__ ((section (".extdata"))); */

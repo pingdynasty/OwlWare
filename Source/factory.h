@@ -15,7 +15,6 @@
 #include "SimpleStereoDelayPatch.hpp"
 #include "PsycheFilterPatch.hpp"
 #include "Qompression.hpp"
-#include "Faust/AutoWahPatch.hpp"
 #include "Guitarix/GuitarixOverdrivePatch.hpp"
 #include "Guitarix/GuitarixOscTubePatch.hpp"
 #include "Guitarix/GuitarixDistortion1Patch.hpp"
@@ -32,10 +31,14 @@
 #include "OliLarkin/WeirdPhaserPatch.hpp"
 #include "LogisticFunctionPatch.hpp"
 #include "DigitalMayhemPatch.hpp"
+#include "GhostNotePatch.hpp"
 #include "Faust/HarpAutoPatch.hpp"
 #include "Contest/SirenPatch.hpp"
+#include "VibroFlangePatch.hpp"
 
 #include "OliLarkin/XFMPatch.hpp"
+
+/* #include "Faust/AutoWahPatch.hpp" */
 
 /* #include "OliLarkin/BlipperPatch.hpp" */
 /* #include "OliLarkin/DroneBoxPatch.hpp" */
@@ -57,7 +60,6 @@
 /* #include "FreeVerbPatch.hpp" */
 /* #include "OctaveDownPatch.hpp" */
 /* #include "StereoMixerPatch.hpp" */
-/* #include "VibroFlangePatch.hpp" */
 /* #include "RingModulatorPatch.hpp" */
 /* #include "SynthPatch.hpp" */
 /* #include "FourBandsEqPatch.hpp" */
@@ -74,7 +76,6 @@
 /* #include "ReverseReverbPatch.hpp" */
 /* #include "SimpleDistortionPatch.hpp" */
 /* #include "MoogStereoPatch.hpp" */
-/* #include "GhostNotePatch.hpp" */
 /* #include "LpfDelayPatch.hpp" */
 /* #include "BittaPatch.hpp" */
 /* #include "VidhaPatch.hpp" */

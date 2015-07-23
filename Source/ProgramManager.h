@@ -18,9 +18,9 @@ public:
   void runManager();
   void startProgram(bool isr);
   void exitProgram(bool isr);
-  /* exit and restart program */
-  void resetProgram(bool isr);
+  void resetProgram(bool isr); /* exit and restart program */
   void startProgramChange(bool isr);
+  /* void sendMidiData(int type, bool isr); */
 
   void audioReady();
   void programReady();
@@ -35,8 +35,6 @@ public:
   void eraseProgramFromFlash(uint8_t sector);
   void saveProgramToFlash(uint8_t sector, void* address, uint32_t length);
   PatchDefinition* getPatchDefinitionFromFlash(uint8_t sector);
-
-  void sendPatchNames();
 
   uint32_t getCyclesPerBlock();
   uint32_t getHeapMemoryUsed();

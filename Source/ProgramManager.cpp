@@ -10,7 +10,7 @@
 #include "PatchRegistry.h"
 #include "ApplicationSettings.h"
 #include "CodecController.h"
-#include "MidiController.h"
+// #include "MidiController.h"
 
 // #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -38,6 +38,7 @@ extern void updateProgramVector(ProgramVector*);
 ProgramManager program;
 ProgramVector staticVector;
 ProgramVector* programVector = &staticVector;
+extern "C" ProgramVector* getProgramVector() { return programVector; }
 
 // #define JUMPTO(address) ((void (*)(void))address)();
 static DynamicPatchDefinition dynamo;
@@ -63,6 +64,7 @@ uint8_t ucHeap[configTOTAL_HEAP_SIZE];
 #define PROGRAM_FLASH_NOTIFICATION  0x04
 #define ERASE_FLASH_NOTIFICATION    0x08
 #define PROGRAM_CHANGE_NOTIFICATION 0x10
+// #define MIDI_SEND_NOTIFICATION      0x20
 
 PatchDefinition* patchdef = NULL;
 volatile int flashSectorToWrite;
@@ -90,6 +92,7 @@ extern "C" {
       updateProgramVector(programVector);
       setErrorStatus(NO_ERROR);
       setLed(GREEN);
+      codec.softMute(false);
       patchdef->run();
     }
     setErrorStatus(PROGRAM_ERROR);
@@ -174,21 +177,70 @@ extern "C" {
     vTaskDelete(NULL);
   }
 
-  void sendPatchNamesTask(void* p){
-    midi.sendPatchNames();
-    vTaskDelete(NULL);    
-  }
+  // static int midiMessagesToSend = 0;
+  // void sendMidiDataTask(void* p){
+  //   switch(midiMessagesToSend){
+  //   case SYSEX_PRESET_NAME_COMMAND:
+  //     midi.sendPatchNames();
+  //     break;
+  //   // case 0:
+  //   //   midi.sendDeviceInfo();
+  //   //   break;
+  //   // case SYSEX_PARAMETER_NAME_COMMAND:
+  //   //   midi.sendPatchParameterNames();
+  //   //   break;
+  //   // case SYSEX_FIRMWARE_VERSION:
+  //   //   midi.sendFirmwareVersion();
+  //   //   break;
+  //   // case SYSEX_DEVICE_ID:
+  //   //   midi.sendDeviceId();
+  //   //   break;
+  //   // case SYSEX_DEVICE_STATS:
+  //   //   midi.sendDeviceStats();
+  //   //   break;
+  //   // case SYSEX_PROGRAM_MESSAGE:
+  //   //   midi.sendProgramMessage();
+  //   //   break;
+  //   // case SYSEX_PROGRAM_STATS:
+  //   //   midi.sendProgramStats();
+  //   //   break;
+  //   // case PATCH_BUTTON:
+  //   //   midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
+  //   //   break;
+  //   // case LED:
+  //   //   midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
+  //   //   break;
+  //   // case 127:
+  //   //   midi.sendSettings();
+  //   //   break;
+  //   }
+  //   midiMessagesToSend = -1;
+  //   vTaskDelete(NULL);    
+  // }
 
 #ifdef BUTTON_PROGRAM_CHANGE
+#ifndef abs
+#define abs(x) ((x)>0?(x):-(x))
+#endif /* abs */
   void programChangeTask(void* p){
     setLed(RED);
-    int pc = 0;
+    int a = getAnalogValue(0);
+    int b = getAnalogValue(1);
+    int bank, prog, pc;
     do{
-      int bank = (getAnalogValue(0)*5)/4096;
-      int program = getAnalogValue(1) >> 9;
-      if(pc != bank*8+program+1){
+      int newA = getAnalogValue(0);
+      int newB = getAnalogValue(1);
+      if(abs(a-newA) > 0xff){
+	bank = (newA*5)/4096;
+	a = newA;
+      }
+      if(abs(b-newB) > 0xff){
+	prog = newB >> 9;
+	b = newB;
+      }
+      if(pc != bank*8+prog+1){
 	toggleLed();
-	pc = bank*8+program+1;
+	pc = bank*8+prog+1;
 	updateProgramIndex(pc);
 	vTaskDelay(20);
       }
@@ -235,7 +287,7 @@ void ProgramManager::audioReady(){
   portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 #else /* AUDIO_TASK_DIRECT */
   audioStatus = AUDIO_READY_STATUS;
-  // programVector->status = AUDIO_READY_STATUS;
+  // getProgramVector()->status = AUDIO_READY_STATUS;
 #endif
 }
 
@@ -244,7 +296,8 @@ __attribute__ ((section (".coderam")))
 void ProgramManager::programReady(){
 #ifdef DEBUG_DWT
   programVector->cycles_per_block = *DWT_CYCCNT;
-    // (*DWT_CYCCNT + programVector->cycles_per_block)>>1;
+  // getProgramVector()->cycles_per_block = *DWT_CYCCNT;
+    // (*DWT_CYCCNT + getProgramVector()->cycles_per_block)>>1;
 #endif /* DEBUG_DWT */
 #ifdef DEBUG_AUDIO
   clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
@@ -283,13 +336,6 @@ void ProgramManager::startManager(){
   if(xSemaphore == NULL)
     xSemaphore = xSemaphoreCreateBinary();
 #endif // AUDIO_TASK_SEMAPHORE
-}
-
-
-void ProgramManager::sendPatchNames(){
-  codec.softMute(true);
-  TaskHandle_t handle = NULL;
-  xTaskCreate(sendPatchNamesTask, "MIDI", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &handle);
 }
 
 void ProgramManager::notifyManagerFromISR(uint32_t ulValue){
@@ -341,6 +387,14 @@ void ProgramManager::startProgramChange(bool isr){
   else
     notifyManager(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
 }
+
+// void ProgramManager::sendMidiData(int type, bool isr){
+//   midiMessagesToSend = type;
+//   if(isr)
+//     notifyManagerFromISR(MIDI_SEND_NOTIFICATION);
+//   else
+//     notifyManager(MIDI_SEND_NOTIFICATION);
+// }
 
 void ProgramManager::loadProgram(uint8_t pid){
   PatchDefinition* def = registry.getPatchDefinition(pid);
@@ -395,11 +449,11 @@ uint32_t ProgramManager::getFreeHeapSize(){
 #endif /* DEBUG_STACK */
 
 uint32_t ProgramManager::getCyclesPerBlock(){
-  return programVector->cycles_per_block;
+  return getProgramVector()->cycles_per_block;
 }
 
 uint32_t ProgramManager::getHeapMemoryUsed(){
-  return programVector->heap_bytes_used;
+  return getProgramVector()->heap_bytes_used;
 }
 
 void ProgramManager::runManager(){
@@ -420,10 +474,11 @@ void ProgramManager::runManager(){
       if(xProgramHandle != NULL){
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
+	programVector = &staticVector;
       }
-      // allow idle task to garbage collect if necessary
-      vTaskDelay(20);
     }
+    // allow idle task to garbage collect if necessary
+    vTaskDelay(20);
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       if(xProgramHandle == NULL && patchdef != NULL){
 	BaseType_t ret;
@@ -439,8 +494,6 @@ void ProgramManager::runManager(){
 	if(ret != pdPASS){
 	  setErrorMessage(PROGRAM_ERROR, "Failed to start program task");
 	  setLed(RED);
-	}else{
-	  codec.softMute(false);
 	}
       }
 #ifdef BUTTON_PROGRAM_CHANGE
@@ -469,6 +522,13 @@ void ProgramManager::runManager(){
 	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Erase task");
 	setLed(RED);
       }
+    // }else if(ulNotifiedValue & MIDI_SEND_NOTIFICATION){ // erase flash
+    //   TaskHandle_t handle = NULL;
+    //   BaseType_t ret = xTaskCreate(sendMidiDataTask, "MIDI", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &handle);
+    //   if(ret != pdPASS){
+    // 	setErrorMessage(PROGRAM_ERROR, "Failed to start MIDI Send task");
+    // 	setLed(RED);
+    //   }
     }
   }
 }

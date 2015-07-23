@@ -28,19 +28,19 @@ PatchRegistry registry;
 volatile bool bypass = false;
 
 // uint16_t getParameterValue(PatchParameterId pid){
-//   return programVector->parameters[pid];
+//   return getProgramVector()->parameters[pid];
 // }
 
 bool getButton(PatchButtonId bid){
-  return programVector->buttons & (1<<bid);
+  return getProgramVector()->buttons & (1<<bid);
   // return false;
 }
 
 void setButton(PatchButtonId bid, bool on){
   if(on)
-    programVector->buttons |= 1<<bid;
+    getProgramVector()->buttons |= 1<<bid;
   else
-    programVector->buttons &= ~(1<<bid);
+    getProgramVector()->buttons &= ~(1<<bid);
 }
 
 void updateLed(){
@@ -123,7 +123,7 @@ void updateProgramIndex(uint8_t index){
    void setErrorMessage(int8_t err, const char* msg){
      setErrorStatus(err);
      setLed(RED);
-     ProgramVector* vec = programVector;
+     ProgramVector* vec = getProgramVector();
      if(vec != NULL)
        vec->message = (char*)msg;
    }
@@ -159,8 +159,8 @@ __attribute__ ((section (".coderam")))
 #endif
 
 void setParameterValues(uint16_t* values, int size){
-  programVector->parameters = values;
-  programVector->parameters_size = size;
+  getProgramVector()->parameters = values;
+  getProgramVector()->parameters_size = size;
 }
 
 void updateProgramVector(ProgramVector* smem){
@@ -207,7 +207,7 @@ void setup(){
   NVIC_SetPriority(ADC_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 3, 0));
   NVIC_SetPriority(OTG_FS_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 5, 0));
 
-  updateProgramVector(programVector);
+  updateProgramVector(getProgramVector());
 
   ledSetup();
   setLed(RED);
@@ -265,6 +265,7 @@ void setup(){
 
   codec.setup();
   codec.init(settings);
+  codec.softMute(true);
 
   program.loadProgram(settings.program_index);
   program.startProgram(false);
@@ -289,8 +290,8 @@ void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  programVector->audio_input = src;
-  programVector->audio_output = dst;
+  getProgramVector()->audio_input = src;
+  getProgramVector()->audio_output = dst;
   // program.audioReady();
   audioStatus = AUDIO_READY_STATUS;
 

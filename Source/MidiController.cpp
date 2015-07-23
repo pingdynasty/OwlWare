@@ -75,6 +75,7 @@ void MidiController::sendPatchParameterName(PatchParameterId pid, const char* na
 void MidiController::sendPatchNames(){
   for(uint8_t i=0; i<registry.getNumberOfPatches(); ++i)
     sendPatchName(i);
+  sendPc(settings.program_index);
 }
 
 void MidiController::sendPatchName(uint8_t index){
@@ -191,7 +192,7 @@ void MidiController::sendProgramStats(){
 }
 
 void MidiController::sendProgramMessage(){
-  ProgramVector* pv = programVector;
+  ProgramVector* pv = getProgramVector();
   if(pv != NULL && pv->message != NULL){
     char buffer[64];
     buffer[0] = SYSEX_PROGRAM_MESSAGE;

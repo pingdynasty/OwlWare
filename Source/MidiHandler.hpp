@@ -107,9 +107,8 @@ public:
 	midi.sendDeviceInfo();
 	break;
       case SYSEX_PRESET_NAME_COMMAND:
-	// todo: disabled for now, kills USB TX buffer
-	// midi.sendPatchNames();
-	program.sendPatchNames();
+	// program.sendMidiData(value, true);
+	midi.sendPatchNames();
 	break;
       case SYSEX_PARAMETER_NAME_COMMAND:
 	midi.sendPatchParameterNames();

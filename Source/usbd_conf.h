@@ -12,7 +12,7 @@
 #define AUDIO_OUT_EP                    0x01
 #define AUDIO_IN_EP                     0x82
 
-#define APP_RX_DATA_SIZE                1024 /* Total size of IN buffer */
+#define APP_RX_DATA_SIZE                2048 /* Total size of IN buffer */
 
 #endif //__USBD_CONF__H__
 
