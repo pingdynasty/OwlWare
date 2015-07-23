@@ -17,22 +17,22 @@ Patch::Patch() : processor(getInitialisingPatchProcessor()){
 Patch::~Patch(){}
 
 void Patch::registerParameter(PatchParameterId pid, const char* name, const char* description){
-  if(programVector->registerPatchParameter != NULL)
-    programVector->registerPatchParameter(pid, name);
+  if(getProgramVector()->registerPatchParameter != NULL)
+    getProgramVector()->registerPatchParameter(pid, name);
 }
 
 double Patch::getSampleRate(){
-  return programVector->audio_samplingrate;
+  return getProgramVector()->audio_samplingrate;
 }
 
 int Patch::getBlockSize(){
-  return programVector->audio_blocksize;
+  return getProgramVector()->audio_blocksize;
 }
 
 float Patch::getParameterValue(PatchParameterId pid){
   return processor->getParameterValue(pid);
-  // if(pid < programVector->parameters_size)
-  //   return programVector->parameters[pid]/4096.0f;
+  // if(pid < getProgramVector()->parameters_size)
+  //   return getProgramVector()->parameters[pid]/4096.0f;
   // return 0.0;
 }
 
@@ -49,12 +49,12 @@ AudioBuffer* Patch::createMemoryBuffer(int channels, int samples){
 void Patch::setButton(PatchButtonId bid, bool pressed){
   // processor->setButton(bid, pressed);
   if(pressed)
-    programVector->buttons |= 1<<bid;
+    getProgramVector()->buttons |= 1<<bid;
   else
-    programVector->buttons &= ~(1<<bid);
+    getProgramVector()->buttons &= ~(1<<bid);
 }
 
 bool Patch::isButtonPressed(PatchButtonId bid){
   // return processor->isButtonPressed(bid);
-  return programVector->buttons & (1<<bid);
+  return getProgramVector()->buttons & (1<<bid);
 }
