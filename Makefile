@@ -25,6 +25,7 @@ endif
 
 LDFLAGS += -Wl,--gc-sections
 
+CPPFLAGS  += -DARM_CORTEX
 CPPFLAGS  += --specs=nano.specs
 CPPFLAGS  += -D__FPU_PRESENT=1 -D__FPU_USED=1
 CPPFLAGS  += -DEXTERNAL_SRAM 
@@ -65,6 +66,8 @@ CPP_SRC += Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cp
 CPP_SRC += PatchRegistry.cpp ProgramManager.cpp
 CPP_SRC += FactoryPatches.cpp
 CPP_SRC += ServiceCall.cpp
+
+CPP_SRC += FloatArray.cpp
 
 OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o) $(FREERTOS_SRC:%.c=Build/%.o)
 vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/
