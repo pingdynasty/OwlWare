@@ -6,10 +6,11 @@
 #include "ProgramVector.h"
 #include "PatchProcessor.h"
 #include "ApplicationSettings.h"
+#include "MemoryBuffer.hpp"
 
 AudioBuffer::~AudioBuffer(){}
 
-PatchProcessor* getInitialisingPatchProcessor();
+extern PatchProcessor* getInitialisingPatchProcessor();
 
 Patch::Patch() : processor(getInitialisingPatchProcessor()){
   ASSERT(processor != NULL, "Initialising patch processor can't be NULL");
@@ -28,7 +29,6 @@ double Patch::getSampleRate(){
 }
 
 int Patch::getBlockSize(){
-  // return 128;
   // // return settings.audio_blocksize;
   return getProgramVector()->audio_blocksize;
 }
@@ -41,13 +41,9 @@ float Patch::getParameterValue(PatchParameterId pid){
 }
 
 AudioBuffer* Patch::createMemoryBuffer(int channels, int samples){
-  return processor->createMemoryBuffer(channels, samples);
-  // MemoryBuffer* buf = new ManagedMemoryBuffer(channels, size);
-  // if(buf == NULL)
-  //   return NULL;
-  // buffers[bufferCount++] = buf;
-  // buf->clear();
-  // return buf;
+   MemoryBuffer* buf = new ManagedMemoryBuffer(channels, samples);
+   ASSERT(buf != NULL, "malloc failed");
+   return buf;
 }
 
 void Patch::setButton(PatchButtonId bid, bool pressed){

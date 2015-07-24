@@ -1,14 +1,14 @@
 #include "PatchProcessor.h"
 #include "PatchRegistry.h"
-#include "MemoryBuffer.hpp"
 #include "device.h"
 #include <string.h>
 #include "ProgramVector.h"
+#include "basicmaths.h"
+#include "owlcontrol.h"
 
 PatchProcessor::PatchProcessor() 
-  : patch(NULL), bufferCount(0) {
+  : patch(NULL){}
  // todo: initialise suitable SampleBuffer: 16/24 bit, max size
-}
 
 PatchProcessor::~PatchProcessor(){
   clear();
@@ -18,6 +18,10 @@ void PatchProcessor::run(){
   if(patch == NULL)
     return;
   ProgramVector* vector = getProgramVector();
+  ASSERT(vector->audio_input != NULL, "Audio input must not be NULL");
+  ASSERT(vector->audio_output != NULL, "Audio output must not be NULL");
+  ASSERT(vector->audio_blocksize != 0, "Audio blocksize must not be 0");
+  ASSERT(vector->audio_samplingrate != 0, "Audio samplingrate must not be 0");
   for(;;){
     vector->programReady();
     buffer.split(vector->audio_input, vector->audio_blocksize);
@@ -28,26 +32,12 @@ void PatchProcessor::run(){
 }
 
 void PatchProcessor::clear(){
-  for(int i=0; i<bufferCount; ++i)
-    delete buffers[i];
-  bufferCount = 0;
   delete patch;
   patch = NULL;
 }
 
 void PatchProcessor::setPatch(Patch* p){
-  if(patch != NULL)
-    clear();
   patch = p;
-}
-
-AudioBuffer* PatchProcessor::createMemoryBuffer(int channels, int size){
-  MemoryBuffer* buf = new ManagedMemoryBuffer(channels, size);
-  if(buf == NULL)
-    return NULL;
-  buffers[bufferCount++] = buf;
-  buf->clear();
-  return buf;
 }
 
 float PatchProcessor::getParameterValue(PatchParameterId pid){
