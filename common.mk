@@ -58,7 +58,6 @@ $(BUILD)/%.s: %.cpp
 
 $(BUILD)/%.bin: $(BUILD)/%.elf
 	@$(OBJCOPY) -O binary $< $@
-	@echo Successfully built OWL $(PLATFORM) $(CONFIG) firmware in $@
 
 clean:
 	@rm -f $(OBJS) $(BUILD)/*.d $(ELF) $(CLEANOTHER) $(BIN) $(ELF:.elf=.s) $(OBJS:.o=.s) gdbscript
@@ -69,7 +68,7 @@ debug: $(ELF)
 	$(GDB) -x gdbscript $(ELF)
 # 	bash -c "$(GDB) -x <(echo target extended localhost:4242) $(ELF)"
 
-flash: $(BIN)
+flash: bin
 	$(STFLASH) write $(BIN) 0x8000000
 
 stlink:
@@ -83,9 +82,8 @@ etags:
 	find $(DISCOVERY_FILE) -type f -iname "*.[ch]" | xargs etags --append
 	find . -type f -iname "*.[ch]" | xargs etags --append
 
-bin: 
-	@echo Building $(CONFIG) firmware for OWL $(PLATFORM)
-	@$(MAKE) $(BIN)
+bin: $(BIN)
+	@echo Successfully built OWL $(PLATFORM) $(CONFIG) firmware in $(BIN)
 
 map : $(OBJS) $(LDSCRIPT)
 	$(LD) $(LDFLAGS) -Wl,-Map=$(ELF:.elf=.map) $(OBJS) $(LDLIBS)

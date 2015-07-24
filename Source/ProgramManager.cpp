@@ -34,7 +34,7 @@ extern void setup(); // main OWL setup
 extern void updateProgramVector(ProgramVector*);
 
 ProgramManager program;
-ProgramVector staticVector CCM;
+ProgramVector staticVector;
 ProgramVector* programVector = &staticVector;
 extern "C" ProgramVector* getProgramVector() { return programVector; }
 
@@ -68,7 +68,10 @@ uint8_t ucHeap[configTOTAL_HEAP_SIZE] CCM;
 #define PROGRAM_CHANGE_NOTIFICATION 0x10
 // #define MIDI_SEND_NOTIFICATION      0x20
 
-volatile PatchDefinition* patchdef = NULL;
+PatchDefinition* getPatchDefinition(){
+  return program.getPatchDefinition();
+}
+
 volatile int flashSectorToWrite;
 volatile void* flashAddressToWrite;
 volatile uint32_t flashSizeToWrite;
@@ -89,16 +92,20 @@ extern "C" {
   }
 
   void runProgramTask(void* p){
-    if(patchdef != NULL && patchdef->getProgramVector() != NULL){
-      programVector = patchdef->getProgramVector();
-      updateProgramVector(programVector);
+    PatchDefinition* def = getPatchDefinition();
+    ProgramVector* vector = def->getProgramVector();
+    if(def != NULL && vector != NULL){
+      updateProgramVector(vector);
+      programVector = vector;
       audioStatus = AUDIO_IDLE_STATUS;
       setErrorStatus(NO_ERROR);
       setLed(GREEN);
       codec.softMute(false);
-      patchdef->run();
+      def->run();
+      setErrorMessage(PROGRAM_ERROR, "Program exited");
+    }else{
+      setErrorMessage(PROGRAM_ERROR, "Invalid program");
     }
-    setErrorStatus(PROGRAM_ERROR);
     setLed(RED);
     for(;;);
   }
@@ -227,18 +234,21 @@ extern "C" {
 #endif /* abs */
   void programChangeTask(void* p){
     setLed(RED);
-    int bank, prog;
     int pc = settings.program_index;
+    int bank = getAnalogValue(0)*5/4096;
+    int prog = getAnalogValue(1)*8/4096+1;
+    // int bank = pc/8;
+    // int prog = pc-bank;
     do{
       float a = getAnalogValue(0)*(5.0/4096.0);
       float b = getAnalogValue(1)*(8.0/4096.0);
       if(a - (int)a < 0.8) // deadband each segment: [0.8-1.0)
 	bank = (int)a;
       if(b-(int)b < 0.8)
-	prog = (int)b;
-      if(pc != bank*8+prog+1){
+	prog = (int)b+1;
+      if(pc != bank*8+prog){
 	toggleLed();
-	pc = bank*8+prog+1;
+	pc = bank*8+prog;
 	updateProgramIndex(pc);
 	vTaskDelay(20);
       }
@@ -469,51 +479,45 @@ void ProgramManager::runManager(){
     }
     // allow idle task to garbage collect if necessary
     vTaskDelay(20);
+    // vTaskDelay(pdMS_TO_TICKS(200));
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
-      if(xProgramHandle == NULL && patchdef != NULL){
+      PatchDefinition* def = getPatchDefinition();
+      if(xProgramHandle == NULL && def != NULL){
 	BaseType_t ret;
-	if(patchdef->getStackBase() != 0 && 
-	   patchdef->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
+	if(def->getStackBase() != 0 && 
+	   def->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
 	  ret = xTaskGenericCreate(runProgramTask, "Program", 
-				   patchdef->getStackSize()/sizeof(portSTACK_TYPE), 
+				   def->getStackSize()/sizeof(portSTACK_TYPE), 
 				   NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle, 
-				   patchdef->getStackBase(), NULL);
+				   def->getStackBase(), NULL);
 	}else{
 	  ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
 	}
-	if(ret != pdPASS){
+	if(ret != pdPASS)
 	  setErrorMessage(PROGRAM_ERROR, "Failed to start program task");
-	  setLed(RED);
-	}
       }
 #ifdef BUTTON_PROGRAM_CHANGE
     }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
       if(xProgramHandle == NULL){
 	BaseType_t ret = xTaskCreate(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &xProgramHandle);
-	if(ret != pdPASS){
+	if(ret != pdPASS)
 	  setErrorMessage(PROGRAM_ERROR, "Failed to start Program Change task");
-	  setLed(RED);
-	}
       }
 #endif /* BUTTON_PROGRAM_CHANGE */
     }else if(ulNotifiedValue & PROGRAM_FLASH_NOTIFICATION){ // program flash
       BaseType_t ret = xTaskCreate(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
       if(ret != pdPASS){
 	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Write task");
-	setLed(RED);
       }
     }else if(ulNotifiedValue & ERASE_FLASH_NOTIFICATION){ // erase flash
       BaseType_t ret = xTaskCreate(eraseFlashTask, "Flash Erase", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
-      if(ret != pdPASS){
+      if(ret != pdPASS)
 	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Erase task");
-	setLed(RED);
-      }
     // }else if(ulNotifiedValue & MIDI_SEND_NOTIFICATION){ // erase flash
     //   TaskHandle_t handle = NULL;
     //   BaseType_t ret = xTaskCreate(sendMidiDataTask, "MIDI", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &handle);
     //   if(ret != pdPASS){
     // 	setErrorMessage(PROGRAM_ERROR, "Failed to start MIDI Send task");
-    // 	setLed(RED);
     //   }
     }
   }

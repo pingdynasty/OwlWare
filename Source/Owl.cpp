@@ -134,6 +134,7 @@ void updateProgramIndex(uint8_t index){
      dynamicPatchDefinition.inputs = inputChannels;
      dynamicPatchDefinition.outputs = outputChannels;
      registry.setDynamicPatchDefinition(&dynamicPatchDefinition);
+     midi.sendPatchName(0);
    }
 
    void registerPatchParameter(uint8_t id, const char* name){
@@ -163,30 +164,30 @@ void setParameterValues(uint16_t* values, int size){
   getProgramVector()->parameters_size = size;
 }
 
-void updateProgramVector(ProgramVector* smem){
-  smem->checksum = sizeof(ProgramVector);
+void updateProgramVector(ProgramVector* vector){
+  vector->checksum = sizeof(ProgramVector);
 #ifdef OWLMODULAR
-  smem->hardware_version = OWL_MODULAR_HARDWARE;
+  vector->hardware_version = OWL_MODULAR_HARDWARE;
 #else
-  smem->hardware_version = OWL_PEDAL_HARDWARE;
+  vector->hardware_version = OWL_PEDAL_HARDWARE;
 #endif
-  // smem->audio_input = NULL;
-  // smem->audio_output = NULL;
-  smem->audio_bitdepth = settings.audio_bitdepth;
-  smem->audio_blocksize = settings.audio_blocksize;
-  smem->audio_samplingrate = settings.audio_samplingrate;
-  smem->parameters = getAnalogValues();
-  smem->parameters_size = NOF_PARAMETERS;
+  vector->audio_input = NULL;
+  vector->audio_output = NULL;
+  vector->audio_bitdepth = settings.audio_bitdepth;
+  vector->audio_blocksize = settings.audio_blocksize;
+  vector->audio_samplingrate = settings.audio_samplingrate;
+  vector->parameters = getAnalogValues();
+  vector->parameters_size = NOF_PARAMETERS;
   // todo: pass real-time updates from MidiHandler
-  smem->buttons = (1<<GREEN_BUTTON);
-  smem->registerPatch = registerPatch;
-  smem->registerPatchParameter = registerPatchParameter;
-  smem->cycles_per_block = 0;
-  smem->heap_bytes_used = 0;
-  smem->programReady = programReady;
-  smem->programStatus = programStatus;
-  smem->serviceCall = serviceCall;
-  smem->message = NULL;
+  vector->buttons = (1<<GREEN_BUTTON);
+  vector->registerPatch = registerPatch;
+  vector->registerPatchParameter = registerPatchParameter;
+  vector->cycles_per_block = 0;
+  vector->heap_bytes_used = 0;
+  vector->programReady = programReady;
+  vector->programStatus = programStatus;
+  vector->serviceCall = serviceCall;
+  vector->message = NULL;
 }
 
 void setup(){

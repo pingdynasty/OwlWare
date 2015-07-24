@@ -3,6 +3,7 @@
 #include "PatchRegistry.h"
 #include "sramalloc.h"
 #include "device.h"
+#include "owlcontrol.h" // for setErrorMessage
 #include "basicmaths.h"
 #include "ProgramVector.h"
 
@@ -10,6 +11,8 @@
 // #define STATIC_PROGRAM_STACK_BASE   ((uint32_t*)CCMRAM)
 #define STATIC_PROGRAM_STACK_BASE   0
 #define STATIC_PROGRAM_STACK_SIZE   0
+
+#define ASSERT(cond, msg) do{if(!(cond))setErrorMessage(PROGRAM_ERROR, msg);}while(0)
 
 extern ProgramVector staticVector;
 
@@ -22,7 +25,6 @@ void FactoryPatchDefinition::run(){
   sram_init((char*)EXTRAM, 1024*1024);
   PatchProcessor proc; // 4kb : create on stack
   processor = &proc;
-  // processor = new PatchProcessor();
   Patch* patch = create();
   processor->setPatch(patch);
   getProgramVector()->heap_bytes_used = sram_used();
@@ -68,7 +70,6 @@ FactoryPatchDefinition::FactoryPatchDefinition(char* name, uint8_t inputs, uint8
   PatchDefinition(name, inputs, outputs), creator(c) {
   stackBase = STATIC_PROGRAM_STACK_BASE;
   stackSize = STATIC_PROGRAM_STACK_SIZE;
-  // stackSize = 0;
   programVector = &staticVector;
 }
 

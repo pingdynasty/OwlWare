@@ -5,7 +5,7 @@
 #include "device.h"
 #include "ProgramVector.h"
 #include "PatchProcessor.h"
-// #include "PatchController.h"
+#include "ApplicationSettings.h"
 
 AudioBuffer::~AudioBuffer(){}
 
@@ -22,10 +22,13 @@ void Patch::registerParameter(PatchParameterId pid, const char* name, const char
 }
 
 double Patch::getSampleRate(){
+  // return settings.audio_samplingrate;
   return getProgramVector()->audio_samplingrate;
 }
 
 int Patch::getBlockSize(){
+  // return 128;
+  // // return settings.audio_blocksize;
   return getProgramVector()->audio_blocksize;
 }
 

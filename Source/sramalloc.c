@@ -6,11 +6,11 @@ typedef struct {
   int size;
 } MCB, *MCB_P;
 
-char *mem_start_p;
-int max_mem;
-int allocated_mem; /* this is the memory in use. */
-int mcb_count;
-char *heap_end;
+static char *mem_start_p;
+static int max_mem;
+static int allocated_mem; /* this is the memory in use. */
+static int mcb_count;
+static char *heap_end;
 
 enum { NEW_MCB=0,
        NO_MCB,

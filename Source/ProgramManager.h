@@ -7,6 +7,7 @@
 
 class ProgramManager {
 private:
+  PatchDefinition* patchdef = NULL;
   void notifyManager(uint32_t ulValue);
   void notifyManagerFromISR(uint32_t ulValue);
 public:
@@ -39,6 +40,9 @@ public:
   uint32_t getCyclesPerBlock();
   uint32_t getHeapMemoryUsed();
   uint8_t getProgramIndex();
+  PatchDefinition* getPatchDefinition(){
+    return patchdef;
+  }
 };
 
 extern ProgramManager program;

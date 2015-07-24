@@ -17,12 +17,13 @@ PatchProcessor::~PatchProcessor(){
 void PatchProcessor::run(){
   if(patch == NULL)
     return;
+  ProgramVector* vector = getProgramVector();
   for(;;){
-    getProgramVector()->programReady();
-    buffer.split(getProgramVector()->audio_input, getProgramVector()->audio_blocksize);
-    setParameterValues(getProgramVector()->parameters);
+    vector->programReady();
+    buffer.split(vector->audio_input, vector->audio_blocksize);
+    setParameterValues(vector->parameters);
     patch->processAudio(buffer);
-    buffer.comb(getProgramVector()->audio_output);
+    buffer.comb(vector->audio_output);
   }
 }
 
@@ -69,7 +70,11 @@ void PatchProcessor::setParameterValues(uint16_t *params){
     if(abs(params[i]-parameterValues[i]) > 7)
 #endif
       // 16 = half a midi step (4096/128=32)
+#ifdef OWL_MODULAR
+      parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + 0x1000 - params[i])/(SMOOTH_FACTOR+1);
+#else /* OWL_MODULAR */
       parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + params[i])/(SMOOTH_FACTOR+1);
+#endif /* OWL_MODULAR */
   // for(int i=NOF_ADC_VALUES; i<NOF_PARAMETERS; ++i)
   //   // todo!
 }
