@@ -3,8 +3,10 @@
 #include "device.h"
 
 #define APPLICATION_SETTINGS_ADDR ADDR_FLASH_SECTOR_1
+#define APPLICATION_SETTINGS_SECTOR FLASH_Sector_1
 
 void ApplicationSettings::init(){
+  checksum = sizeof(*this) ^ 0xffffffff;
   if(settingsInFlash())
     loadFromFlash();
   else
@@ -31,7 +33,6 @@ void ApplicationSettings::reset(){
 }
 
 bool ApplicationSettings::settingsInFlash(){
-  checksum = sizeof(*this) ^ 0xffffffff;
   return eeprom_read_byte(APPLICATION_SETTINGS_ADDR) == checksum;
 }
 
@@ -41,13 +42,15 @@ void ApplicationSettings::loadFromFlash(){
 
 void ApplicationSettings::saveToFlash(){
   eeprom_unlock();
-  if(eeprom_erase(APPLICATION_SETTINGS_ADDR) == 0)
-    eeprom_write_block(APPLICATION_SETTINGS_ADDR, this, sizeof(*this));
+  //   if(eeprom_erase(APPLICATION_SETTINGS_ADDR) == 0)
+  eeprom_erase_sector(APPLICATION_SETTINGS_SECTOR);
+  eeprom_write_block(APPLICATION_SETTINGS_ADDR, this, sizeof(*this));
   eeprom_lock();
 }
 
 void ApplicationSettings::clearFlash(){
   eeprom_unlock();
-  eeprom_erase(APPLICATION_SETTINGS_ADDR);
+  eeprom_erase_sector(APPLICATION_SETTINGS_SECTOR);
+  //  eeprom_erase(APPLICATION_SETTINGS_ADDR);
   eeprom_lock();
 }
