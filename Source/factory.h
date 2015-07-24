@@ -1,10 +1,10 @@
 #include "JotReverbPatch.hpp"
 #include "FreeVerbPatch.hpp"
 #include "PlateVerbPatch.hpp"
-#include "MoogStereoPatch.hpp"
+#include "MoogPatch.hpp"
 #include "FourBandsEqPatch.hpp"
 #include "ParametricEqPatch.hpp"
-#include "mdaPorts/MdaBandistoPatch.cpp"
+#include "mdaPorts/MdaBandistoPatch.hpp"
 #include "OverdrivePatch.hpp"
 #include "Faust/StereoWahPatch.hpp"
 #include "Faust/PitchShifterPatch.hpp"
@@ -29,14 +29,14 @@
 #include "OliLarkin/ThruZeroFlangerPatch.hpp"
 #include "OliLarkin/BlipperPatch.hpp"
 #include "OliLarkin/WeirdPhaserPatch.hpp"
-#include "LogisticFunctionPatch.hpp"
+#include "ComplexorPatch.hpp"
 #include "DigitalMayhemPatch.hpp"
 #include "GhostNotePatch.hpp"
 #include "Faust/HarpAutoPatch.hpp"
 #include "Contest/SirenPatch.hpp"
 #include "VibroFlangePatch.hpp"
-
-#include "OliLarkin/XFMPatch.hpp"
+#include "RingModulatorPatch.hpp"
+//#include "OliLarkin/XFMPatch.hpp"
 
 /* #include "Faust/AutoWahPatch.hpp" */
 
@@ -60,7 +60,6 @@
 /* #include "FreeVerbPatch.hpp" */
 /* #include "OctaveDownPatch.hpp" */
 /* #include "StereoMixerPatch.hpp" */
-/* #include "RingModulatorPatch.hpp" */
 /* #include "SynthPatch.hpp" */
 /* #include "FourBandsEqPatch.hpp" */
 /* #include "JotReverbPatch.hpp" */
@@ -70,7 +69,7 @@
 /* #include "mdaPorts/MdaStereoPatch.cpp" */
 /* #include "mdaPorts/MdaTransientPatch.cpp" */
 /* #include "Qompression.hpp" */
-/* #include "PsycheFilter.hpp" */
+/* #include "PsycheFilterPatch.hpp" */
 /* #include "TremoloPatch.hpp" */
 /* #include "DigitalMayhemPatch.hpp" */
 /* #include "ReverseReverbPatch.hpp" */
@@ -108,8 +107,6 @@
 /* #include "Guitarix/GuitarixTonePatch.hpp" */
 /* #include "Guitarix/GuitarixBMfpPatch.hpp" */
 /* #include "Guitarix/GuitarixDistortion1Patch.hpp" */
-
-/* #include "LogisticFunctionPatch.hpp" */
 
 /* #include "Contest/SirenPatch.hpp" */
 /* #include "EnvelopeFilterPatch.hpp" */
