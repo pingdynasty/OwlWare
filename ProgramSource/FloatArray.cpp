@@ -69,13 +69,12 @@ int FloatArray::getMaxIndex(){
 }
 
 void FloatArray::rectify(FloatArray& destination){ //this is actually "copy data with rectifify"
-  int minSize= min(size,destination.getSize()); //TODO: shall we take this out and allow it to segfault?
+  ASSERT(destination.getSize() <= size, "Destination array too small");
 #ifdef ARM_CORTEX  
   arm_abs_f32( (float*)data, (float*)destination, size);
 #else
-  for(int n=0; n<minSize; n++){
-    destination[n]=abs(data[n]);
-  }
+  for(int n=0; n<size; n++)
+    destination[n] = abs(data[n]);
 #endif  
 }
 

@@ -70,11 +70,11 @@ void PatchProcessor::setParameterValues(uint16_t *params){
     if(abs(params[i]-parameterValues[i]) > 7)
 #endif
       // 16 = half a midi step (4096/128=32)
-#ifdef OWL_MODULAR
+#ifdef OWLMODULAR
       parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + 0x1000 - params[i])/(SMOOTH_FACTOR+1);
-#else /* OWL_MODULAR */
+#else /* OWLMODULAR */
       parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + params[i])/(SMOOTH_FACTOR+1);
-#endif /* OWL_MODULAR */
+#endif /* OWLMODULAR */
   // for(int i=NOF_ADC_VALUES; i<NOF_PARAMETERS; ++i)
   //   // todo!
 }

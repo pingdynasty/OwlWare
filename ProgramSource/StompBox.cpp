@@ -12,6 +12,7 @@ AudioBuffer::~AudioBuffer(){}
 PatchProcessor* getInitialisingPatchProcessor();
 
 Patch::Patch() : processor(getInitialisingPatchProcessor()){
+  ASSERT(processor != NULL, "Initialising patch processor can't be NULL");
 }
 
 Patch::~Patch(){}
