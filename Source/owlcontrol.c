@@ -110,7 +110,11 @@ void adcSetup(){
 
 uint16_t getAnalogValue(uint8_t index){
   /* assert_param(index < sizeof(adc_values)); */
+#ifdef OWLMODULAR
+  return 0x1000 - adc_values[index];
+#else /* OWLMODULAR */
   return adc_values[index];
+#endif /* OWLMODULAR */
 }
 
 uint16_t* getAnalogValues(){

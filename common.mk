@@ -85,7 +85,7 @@ etags:
 
 bin: 
 	@echo Building $(CONFIG) firmware for OWL $(PLATFORM)
-	make $(BIN)
+	@$(MAKE) $(BIN)
 
 map : $(OBJS) $(LDSCRIPT)
 	$(LD) $(LDFLAGS) -Wl,-Map=$(ELF:.elf=.map) $(OBJS) $(LDLIBS)

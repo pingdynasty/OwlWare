@@ -6,8 +6,10 @@
 #include "basicmaths.h"
 #include "ProgramVector.h"
 
-#define STATIC_PROGRAM_STACK_SIZE   (64*1024)
-#define STATIC_PROGRAM_STACK_BASE   ((uint32_t*)CCMRAM)
+// #define STATIC_PROGRAM_STACK_SIZE   (64*1024)
+// #define STATIC_PROGRAM_STACK_BASE   ((uint32_t*)CCMRAM)
+#define STATIC_PROGRAM_STACK_BASE   0
+#define STATIC_PROGRAM_STACK_SIZE   0
 
 extern ProgramVector staticVector;
 

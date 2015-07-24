@@ -18,8 +18,6 @@
 // #define AUDIO_TASK_YIELD
 /* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
 
-#define PC_TASK_STACK_BASE  ((uint32_t*)CCMRAM)
-
 // FreeRTOS low priority numbers denote low priority tasks. 
 // The idle task has priority zero (tskIDLE_PRIORITY).
 #define PROGRAM_TASK_PRIORITY            (2)
@@ -36,9 +34,13 @@ extern void setup(); // main OWL setup
 extern void updateProgramVector(ProgramVector*);
 
 ProgramManager program;
-ProgramVector staticVector;
+ProgramVector staticVector CCM;
 ProgramVector* programVector = &staticVector;
 extern "C" ProgramVector* getProgramVector() { return programVector; }
+
+#if defined AUDIO_TASK_DIRECT
+volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
+#endif /* AUDIO_TASK_DIRECT */
 
 // #define JUMPTO(address) ((void (*)(void))address)();
 static DynamicPatchDefinition dynamo;
@@ -57,7 +59,7 @@ TaskHandle_t xFlashTaskHandle = NULL;
 SemaphoreHandle_t xSemaphore = NULL;
 #endif // AUDIO_TASK_SEMAPHORE
 
-uint8_t ucHeap[configTOTAL_HEAP_SIZE];
+uint8_t ucHeap[configTOTAL_HEAP_SIZE] CCM;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
@@ -66,7 +68,7 @@ uint8_t ucHeap[configTOTAL_HEAP_SIZE];
 #define PROGRAM_CHANGE_NOTIFICATION 0x10
 // #define MIDI_SEND_NOTIFICATION      0x20
 
-PatchDefinition* patchdef = NULL;
+volatile PatchDefinition* patchdef = NULL;
 volatile int flashSectorToWrite;
 volatile void* flashAddressToWrite;
 volatile uint32_t flashSizeToWrite;
@@ -90,6 +92,7 @@ extern "C" {
     if(patchdef != NULL && patchdef->getProgramVector() != NULL){
       programVector = patchdef->getProgramVector();
       updateProgramVector(programVector);
+      audioStatus = AUDIO_IDLE_STATUS;
       setErrorStatus(NO_ERROR);
       setLed(GREEN);
       codec.softMute(false);
@@ -224,20 +227,15 @@ extern "C" {
 #endif /* abs */
   void programChangeTask(void* p){
     setLed(RED);
-    int a = getAnalogValue(0);
-    int b = getAnalogValue(1);
-    int bank, prog, pc;
+    int bank, prog;
+    int pc = settings.program_index;
     do{
-      int newA = getAnalogValue(0);
-      int newB = getAnalogValue(1);
-      if(abs(a-newA) > 0xff){
-	bank = (newA*5)/4096;
-	a = newA;
-      }
-      if(abs(b-newB) > 0xff){
-	prog = newB >> 9;
-	b = newB;
-      }
+      float a = getAnalogValue(0)*(5.0/4096.0);
+      float b = getAnalogValue(1)*(8.0/4096.0);
+      if(a - (int)a < 0.8) // deadband each segment: [0.8-1.0)
+	bank = (int)a;
+      if(b-(int)b < 0.8)
+	prog = (int)b;
       if(pc != bank*8+prog+1){
 	toggleLed();
 	pc = bank*8+prog+1;
@@ -245,9 +243,9 @@ extern "C" {
 	vTaskDelay(20);
       }
     }while(isPushButtonPressed() || pc < 1 || pc >= (int)registry.getNumberOfPatches());
+    setLed(RED);
     program.loadProgram(pc);
     program.resetProgram(false);
-    setLed(GREEN);
     for(;;); // wait for program manager to delete this task
   }
 #endif /* BUTTON_PROGRAM_CHANGE */
@@ -265,10 +263,6 @@ ProgramManager::ProgramManager() {
   *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
 #endif /* DEBUG_DWT */
 }
-
-#if defined AUDIO_TASK_DIRECT
-volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
-#endif /* AUDIO_TASK_DIRECT */
 
 /* called by the audio interrupt when a block should be processed */
 __attribute__ ((section (".coderam")))
@@ -355,7 +349,6 @@ void ProgramManager::notifyManager(uint32_t ulValue){
 }
 
 void ProgramManager::startProgram(bool isr){
-  audioStatus = AUDIO_IDLE_STATUS;
   if(isr)
     notifyManagerFromISR(START_PROGRAM_NOTIFICATION);
   else
@@ -363,8 +356,6 @@ void ProgramManager::startProgram(bool isr){
 }
 
 void ProgramManager::exitProgram(bool isr){
-  codec.softMute(true);
-  audioStatus = AUDIO_EXIT_STATUS;
   if(isr)
     notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION);
   else
@@ -373,7 +364,6 @@ void ProgramManager::exitProgram(bool isr){
 
 /* exit and restart program */
 void ProgramManager::resetProgram(bool isr){
-  codec.softMute(true);
   if(isr)
     notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|START_PROGRAM_NOTIFICATION);
   else
@@ -381,7 +371,6 @@ void ProgramManager::resetProgram(bool isr){
 }
 
 void ProgramManager::startProgramChange(bool isr){
-  codec.softMute(true);
   if(isr)
     notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
   else
@@ -470,11 +459,12 @@ void ProgramManager::runManager(){
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
 		    xMaxBlockTime ); 
     if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){ // stop      
+      audioStatus = AUDIO_EXIT_STATUS;
       codec.softMute(true);
       if(xProgramHandle != NULL){
+	programVector = &staticVector;
 	vTaskDelete(xProgramHandle);
 	xProgramHandle = NULL;
-	programVector = &staticVector;
       }
     }
     // allow idle task to garbage collect if necessary
@@ -499,10 +489,6 @@ void ProgramManager::runManager(){
 #ifdef BUTTON_PROGRAM_CHANGE
     }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
       if(xProgramHandle == NULL){
-	// BaseType_t ret = xTaskGenericCreate(programChangeTask, "Program Change", 
-	// 				    PC_TASK_STACK_SIZE, NULL,
-	// 				    PC_TASK_PRIORITY, &xProgramHandle,
-	// 				    PC_TASK_STACK_BASE, NULL);
 	BaseType_t ret = xTaskCreate(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &xProgramHandle);
 	if(ret != pdPASS){
 	  setErrorMessage(PROGRAM_ERROR, "Failed to start Program Change task");

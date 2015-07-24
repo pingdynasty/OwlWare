@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "vector-08"
+#define FIRMWARE_VERSION             "vector-09"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -45,7 +45,7 @@
 #define MIDI_CHANNEL                 0
 #define MIDI_MAX_MESSAGE_SIZE        256
 #define NOF_ADC_VALUES               5
-#define NOF_PARAMETERS               24
+#define NOF_PARAMETERS               5
 #define MAX_BUFFERS_PER_PATCH        8
 #define MAX_SYSEX_FIRMWARE_SIZE      ((16+16+64+128+128)*1024) // FLASH sectors 2-6
 #define MAX_SYSEX_PROGRAM_SIZE       (128*1024) // 128k, one flash sector
@@ -124,10 +124,10 @@
 #define USB_VBUS_GPIO_PORT           GPIOA
 #define USB_VBUS_GPIO_CLK            RCC_AHB1Periph_GPIOA
 
-#define PROGRAM_TASK_STACK_SIZE          (1*1024/sizeof(portSTACK_TYPE))
-#define MANAGER_TASK_STACK_SIZE          (300/sizeof(portSTACK_TYPE))
-#define FLASH_TASK_STACK_SIZE            (256/sizeof(portSTACK_TYPE))
-#define PC_TASK_STACK_SIZE               (256/sizeof(portSTACK_TYPE))
+#define PROGRAM_TASK_STACK_SIZE          (12*1024/sizeof(portSTACK_TYPE))
+#define MANAGER_TASK_STACK_SIZE          (512/sizeof(portSTACK_TYPE))
+#define FLASH_TASK_STACK_SIZE            (512/sizeof(portSTACK_TYPE))
+#define PC_TASK_STACK_SIZE               (512/sizeof(portSTACK_TYPE))
 #define ARM_CYCLES_PER_SAMPLE            3500 /* 168MHz / 48kHz */
 
 #ifdef  USE_FULL_ASSERT

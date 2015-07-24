@@ -300,7 +300,7 @@ void audioCallback(int16_t *src, int16_t *dst){
      && settings.program_change_button){
     if(isPushButtonPressed()){
       setLed(NONE);
-      program.startProgramChange(false);
+      program.startProgramChange(true);
     }
     pushButtonPressed = 0; // prevent re-trigger
   }

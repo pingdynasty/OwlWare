@@ -22,7 +22,7 @@ MEMORY
   PROGRAM2 (r)     : ORIGIN = 0x080a0000, LENGTH = 128K   /* Sector 9 */
   PROGRAM1 (r)     : ORIGIN = 0x080c0000, LENGTH = 128K   /* Sector 10 */
   PROGRAM0 (r)     : ORIGIN = 0x080e0000, LENGTH = 128K   /* Sector 11 */ /* total Flash memory is 1Mb */
-  CCMRAM (rw)      : ORIGIN = 0x10000000, LENGTH = 64K    /* Closely Coupled Memory */
+  CCMRAM (rw)      : ORIGIN = 0x10000000, LENGTH = 16K    /* Closely Coupled Memory */
   RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 48K
   PATCHRAM (rwx)   : ORIGIN = 0x2000c000, LENGTH = 64K    /* total RAM is 112kb */
   BANK1_SRAM1 (rwx): ORIGIN = 0x60000000, LENGTH = 0K
@@ -150,14 +150,14 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     . = ALIGN(4);
   } >RAM
 
-  /* /\* CCM section, vars must be located here explicitly *\/ */
-  /* /\* Example: int foo __attribute__ ((section (".ccmdata"))); *\/ */
-  /* .ccmdata (NOLOAD) : */
-  /* { */
-  /*   . = ALIGN(4); */
-  /*   *(.ccmdata) */
-  /*   . = ALIGN(4); */
-  /* } >CCMRAM */
+  /* CCM section, vars must be located here explicitly */
+  /* Example: int foo __attribute__ ((section (".ccmdata"))); */
+  .ccmdata (NOLOAD) :
+  {
+    . = ALIGN(4);
+    *(.ccmdata)
+    . = ALIGN(4);
+  } >CCMRAM
 
   /* External SRAM, vars must be located here explicitly */
   /* Example: int foo __attribute__ ((section (".extdata"))); */
