@@ -24,30 +24,29 @@
 #include "Guitarix/GuitarixMoogPatch.hpp"
 #include "Guitarix/GuitarixFlangerGXPatch.hpp"
 #include "Guitarix/GuitarixTonePatch.hpp"
-#include "OliLarkin/DroneBoxPatch.hpp"
-#include "OliLarkin/DualPitchShifterPatch.hpp"
-#include "OliLarkin/ThruZeroFlangerPatch.hpp"
-#include "OliLarkin/BlipperPatch.hpp"
-#include "OliLarkin/WeirdPhaserPatch.hpp"
 #include "ComplexorPatch.hpp"
 #include "DigitalMayhemPatch.hpp"
 #include "GhostNotePatch.hpp"
 #include "Faust/HarpAutoPatch.hpp"
 #include "Contest/SirenPatch.hpp"
 #include "VibroFlangePatch.hpp"
-#include "RingModulatorPatch.hpp"
-//#include "OliLarkin/XFMPatch.hpp"
+#include "mdaPorts/MdaStereoPatch.hpp"
+#include "mdaPorts/MdaTransientPatch.hpp"
+#include "OliLarkin/XFMPatch.hpp"
 
-/* #include "Faust/AutoWahPatch.hpp" */
+#include "Faust/AutoWahPatch.hpp"
+#include "StereoPatch.hpp"
 
-/* #include "OliLarkin/BlipperPatch.hpp" */
-/* #include "OliLarkin/DroneBoxPatch.hpp" */
-/* #include "OliLarkin/StereoFreqShifterPatch.hpp" */
-/* #include "OliLarkin/DualFreqShifterPatch.hpp" */
-/* #include "OliLarkin/DualPitchShifterPatch.hpp" */
-/* #include "OliLarkin/ThruZeroFlangerPatch.hpp" */
-/* #include "OliLarkin/WeirdPhaserPatch.hpp" */
-/* #include "OliLarkin/XFMPatch.hpp" */
+// #include "RingModulatorPatch.hpp"
+
+#include "OliLarkin/BlipperPatch.hpp"
+#include "OliLarkin/DroneBoxPatch.hpp"
+#include "OliLarkin/StereoFreqShifterPatch.hpp"
+#include "OliLarkin/DualFreqShifterPatch.hpp"
+#include "OliLarkin/DualPitchShifterPatch.hpp"
+#include "OliLarkin/ThruZeroFlangerPatch.hpp"
+#include "OliLarkin/WeirdPhaserPatch.hpp"
+#include "OliLarkin/XFMPatch.hpp"
 
 /* #include "GainPatch.hpp" */
 /* #include "SimpleStereoDelayPatch.hpp" */
@@ -66,8 +65,6 @@
 /* /\\* #include "Contest/BiasedDelayPatch.hpp" *\\/ */
 /* /\\* #include "Contest/DualTremoloPatch.hpp" *\/ */
 /* #include "mdaPorts/MdaBandistoPatch.cpp" */
-/* #include "mdaPorts/MdaStereoPatch.cpp" */
-/* #include "mdaPorts/MdaTransientPatch.cpp" */
 /* #include "Qompression.hpp" */
 /* #include "PsycheFilterPatch.hpp" */
 /* #include "TremoloPatch.hpp" */

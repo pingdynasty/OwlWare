@@ -55,7 +55,10 @@ void PatchProcessor::setParameterValues(uint16_t *params){
 #endif
       // 16 = half a midi step (4096/128=32)
 #ifdef OWLMODULAR
-      parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + 0x1000 - params[i])/(SMOOTH_FACTOR+1);
+      if(i<4)
+	parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + 4095 - params[i])/(SMOOTH_FACTOR+1);
+      else
+	parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR - params[i])/(SMOOTH_FACTOR+1);
 #else /* OWLMODULAR */
       parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + params[i])/(SMOOTH_FACTOR+1);
 #endif /* OWLMODULAR */

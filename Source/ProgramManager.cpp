@@ -237,14 +237,13 @@ extern "C" {
     int pc = settings.program_index;
     int bank = getAnalogValue(0)*5/4096;
     int prog = getAnalogValue(1)*8/4096+1;
-    // int bank = pc/8;
-    // int prog = pc-bank;
     do{
-      float a = getAnalogValue(0)*(5.0/4096.0);
-      float b = getAnalogValue(1)*(8.0/4096.0);
-      if(a - (int)a < 0.8) // deadband each segment: [0.8-1.0)
+      float a = getAnalogValue(0)*5/4096.0 - 0.5/5;
+      float b = getAnalogValue(1)*8/4096.0 - 0.5/8;
+      //      if(a - (int)a < 0.8) // deadband each segment: [0.8-1.0)
+      if(a > 0 && abs(a - (int)a - 0.1) > 0.2) // deadband each segment: [0.9-1.1]
 	bank = (int)a;
-      if(b-(int)b < 0.8)
+      if(b > 0 && abs(b-(int)b - 0.1) > 0.2)
 	prog = (int)b+1;
       if(pc != bank*8+prog){
 	toggleLed();

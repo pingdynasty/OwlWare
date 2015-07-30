@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "vector-08"
+#define FIRMWARE_VERSION             "vector-09"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -124,7 +124,7 @@
 #define USB_VBUS_GPIO_PORT           GPIOA
 #define USB_VBUS_GPIO_CLK            RCC_AHB1Periph_GPIOA
 
-#define PROGRAM_TASK_STACK_SIZE          (12*1024/sizeof(portSTACK_TYPE))
+#define PROGRAM_TASK_STACK_SIZE          (4*1024/sizeof(portSTACK_TYPE))
 #define MANAGER_TASK_STACK_SIZE          (512/sizeof(portSTACK_TYPE))
 #define FLASH_TASK_STACK_SIZE            (512/sizeof(portSTACK_TYPE))
 #define PC_TASK_STACK_SIZE               (512/sizeof(portSTACK_TYPE))

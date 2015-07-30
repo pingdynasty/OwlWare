@@ -1,4 +1,5 @@
 #include "StompBox.h"
+#include "owlcontrol.h" // for ASSERT
 #include <string.h>
 #include <stdlib.h>
 
@@ -28,10 +29,7 @@ class ManagedMemoryBuffer : public MemoryBuffer {
 public:
   ManagedMemoryBuffer(int ch, int sz) :
     MemoryBuffer(new float[ch*sz], ch, sz) {
-    if(buffer == NULL){
-      channels = 0;
-      size = 0;
-    }
+    ASSERT(buffer != NULL, "Memory allocation failed");
   }
   ~ManagedMemoryBuffer(){
     delete buffer;

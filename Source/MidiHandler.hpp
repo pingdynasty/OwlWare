@@ -36,9 +36,25 @@ public:
 
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){
+#ifdef OWLMODULAR
     case PATCH_PARAMETER_A:
-      // scale from 7bit to 12bit value
-      midi_values[PARAMETER_A] = value<<5;
+      midi_values[PARAMETER_A] = (127-value)<<5; // invert and scale from 7bit to 12bit value
+      break;
+    case PATCH_PARAMETER_B:
+      midi_values[PARAMETER_B] = (127-value)<<5;
+      break;
+    case PATCH_PARAMETER_C:
+      midi_values[PARAMETER_C] = (127-value)<<5;
+      break;
+    case PATCH_PARAMETER_D:
+      midi_values[PARAMETER_D] = (127-value)<<5;
+      break;
+    case PATCH_PARAMETER_E:
+      midi_values[PARAMETER_E] = value<<5;
+      break;
+#else /* OWLMODULAR */
+    case PATCH_PARAMETER_A:
+      midi_values[PARAMETER_A] = value<<5; // scale from 7bit to 12bit value
       break;
     case PATCH_PARAMETER_B:
       midi_values[PARAMETER_B] = value<<5;
@@ -52,6 +68,7 @@ public:
     case PATCH_PARAMETER_E:
       midi_values[PARAMETER_E] = value<<5;
       break;
+#endif /* OWLMODULAR */
     case PATCH_CONTROL:
       if(value == 127){
 	memcpy(midi_values, getAnalogValues(), NOF_MIDI_PARAMETERS*sizeof(uint16_t));

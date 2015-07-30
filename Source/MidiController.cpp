@@ -120,7 +120,7 @@ void MidiController::sendDeviceStats(){
   char buffer[64];
   buffer[0] = SYSEX_DEVICE_STATS;
   char* p = &buffer[1];
-  p = stpcpy(p, (const char*)"Stack: Program ");
+  p = stpcpy(p, (const char*)"Program Stack ");
   p = stpcpy(p, itoa(program.getProgramStackUsed(), 10));
   p = stpcpy(p, (const char*)"/");
   p = stpcpy(p, itoa(program.getProgramStackAllocation(), 10));

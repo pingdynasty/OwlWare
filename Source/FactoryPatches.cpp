@@ -13,23 +13,18 @@
 #define STATIC_PROGRAM_STACK_SIZE   0
 
 extern ProgramVector staticVector;
-// static PatchProcessor *processor = NULL;
+static PatchProcessor proc CCM; // 4kb SampleBuffer
 
-static PatchProcessor proc CCM; // 4kb : create on stack
 PatchProcessor* getInitialisingPatchProcessor(){
-  // return processor;
   return &proc;
 }
 
 void FactoryPatchDefinition::run(){
   sram_init((char*)EXTRAM, 1024*1024);
-  // processor = &proc;
-  // processor = new PatchProcessor();
   Patch* patch = create();
-  // processor->setPatch(patch);
+  ASSERT(patch != NULL, "Memory allocation failed");
   proc.setPatch(patch);
   getProgramVector()->heap_bytes_used = sram_used();
-  // processor->run();
   proc.run();
 }
 
