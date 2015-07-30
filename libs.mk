@@ -17,6 +17,7 @@ OBJS += $(DSPLIB)/CommonTables/arm_const_structs.o
 # OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_init_f32.o
 # OBJS += $(DSPLIB)/FilteringFunctions/arm_biquad_cascade_df1_f32.o
 
+OBJS += $(DSPLIB)/SupportFunctions/arm_copy_f32.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q31.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_q31_to_float.o
 # OBJS += $(DSPLIB)/SupportFunctions/arm_float_to_q15.o
