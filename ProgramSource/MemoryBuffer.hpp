@@ -14,8 +14,7 @@ public:
     memset(buffer, 0, size*channels*sizeof(float));
   }
   FloatArray getSamples(int channel){
-    // assert_param(channel < channels);
-    return FloatArray(buffer+channel, size);
+    return FloatArray(buffer+channel*size, size);
   }
   int getChannels(){
     return channels;
@@ -28,8 +27,6 @@ public:
 class ManagedMemoryBuffer : public MemoryBuffer {
 public:
   ManagedMemoryBuffer(int ch, int sz) :
-    // MemoryBuffer((float*)malloc(ch*sz*sizeof(float)), ch, sz) {
-    // MemoryBuffer(new float*[ch*sz], ch, sz) {
     MemoryBuffer(new float[ch*sz], ch, sz) {
     if(buffer == NULL){
       channels = 0;
@@ -37,7 +34,6 @@ public:
     }
   }
   ~ManagedMemoryBuffer(){
-    // free(buffer);
     delete buffer;
   }
 };

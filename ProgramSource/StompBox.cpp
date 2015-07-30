@@ -58,3 +58,7 @@ bool Patch::isButtonPressed(PatchButtonId bid){
   // return processor->isButtonPressed(bid);
   return getProgramVector()->buttons & (1<<bid);
 }
+
+AudioBuffer* AudioBuffer::create(int channels, int samples){
+  return new ManagedMemoryBuffer(channels, samples);
+}
