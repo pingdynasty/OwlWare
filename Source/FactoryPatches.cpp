@@ -12,23 +12,25 @@
 #define STATIC_PROGRAM_STACK_BASE   0
 #define STATIC_PROGRAM_STACK_SIZE   0
 
-#define ASSERT(cond, msg) do{if(!(cond))setErrorMessage(PROGRAM_ERROR, msg);}while(0)
-
 extern ProgramVector staticVector;
+// static PatchProcessor *processor = NULL;
 
-PatchProcessor *processor;
+static PatchProcessor proc CCM; // 4kb : create on stack
 PatchProcessor* getInitialisingPatchProcessor(){
-  return processor;
+  // return processor;
+  return &proc;
 }
 
 void FactoryPatchDefinition::run(){
   sram_init((char*)EXTRAM, 1024*1024);
-  PatchProcessor proc; // 4kb : create on stack
-  processor = &proc;
+  // processor = &proc;
+  // processor = new PatchProcessor();
   Patch* patch = create();
-  processor->setPatch(patch);
+  // processor->setPatch(patch);
+  proc.setPatch(patch);
   getProgramVector()->heap_bytes_used = sram_used();
-  processor->run();
+  // processor->run();
+  proc.run();
 }
 
 #include "factory.h"
