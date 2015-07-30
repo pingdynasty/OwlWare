@@ -11,7 +11,6 @@ PatchProcessor::PatchProcessor()
  // todo: initialise suitable SampleBuffer: 16/24 bit, max size
 
 PatchProcessor::~PatchProcessor(){
-  clear();
 }
 
 void PatchProcessor::run(){
@@ -29,11 +28,6 @@ void PatchProcessor::run(){
     patch->processAudio(buffer);
     buffer.comb(vector->audio_output);
   }
-}
-
-void PatchProcessor::clear(){
-  delete patch;
-  patch = NULL;
 }
 
 void PatchProcessor::setPatch(Patch* p){
