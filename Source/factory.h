@@ -20,7 +20,7 @@
 #include "Guitarix/GuitarixDistortion1Patch.hpp"
 #include "Guitarix/GuitarixBMfpPatch.hpp"
 #include "Guitarix/GuitarixCompressorPatch.hpp"
-#include "Guitarix/GuitarixDunwahPatch.hpp"
+// #include "Guitarix/GuitarixDunwahPatch.hpp"
 #include "Guitarix/GuitarixMoogPatch.hpp"
 #include "Guitarix/GuitarixFlangerGXPatch.hpp"
 #include "Guitarix/GuitarixTonePatch.hpp"

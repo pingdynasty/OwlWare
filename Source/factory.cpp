@@ -1,3 +1,5 @@
+// sed 's/^REGISTER_PATCH.*"\(.*\)", \(.*\)).*/\1, \2/g' < Source/factory.cpp
+
 REGISTER_PATCH(JotReverbPatch, "Jot Reverb", 2, 2);
 REGISTER_PATCH(FreeVerbPatch, "FreeVerb", 1, 1);
 REGISTER_PATCH(PlateVerbPatch, "Plate Reverb", 1, 1);
@@ -12,7 +14,7 @@ REGISTER_PATCH(SmoothDelayPatch, "Smooth Delay", 1, 1);
 REGISTER_PATCH(LpfDelayPatch, "Lowpass Delay", 1, 1);
 REGISTER_PATCH(PitchShifterPatch, "Pitch Shifter", 2, 2);
 REGISTER_PATCH(EnvelopeFilterPatch, "Envelope Filter", 2, 2);
-REGISTER_PATCH(AutoWahPatch, "AutoWah", 1, 1); /* 104% ext ram*/
+REGISTER_PATCH(StereoWahPatch, "StereoWah", 2, 2);
 REGISTER_PATCH(VibroFlangePatch, "Vibro-Flange", 1, 1); /* 104% ext ram */
 REGISTER_PATCH(PsycheFilterPatch, "Psyche Filter", 2, 2);
 
@@ -23,7 +25,7 @@ REGISTER_PATCH(ThruZeroFlangerPatch, "OL/Thru Zero Flanger", 2, 2);
 REGISTER_PATCH(DualPitchShifterPatch, "OL/Dual Pitch Shifter", 2, 2);
 REGISTER_PATCH(DualFreqShifterPatch, "OL/Dual Frequency Shifter", 2, 2);
 REGISTER_PATCH(StereoFreqShifterPatch, "OL/Stereo Frequency Shifter", 2, 2);
-REGISTER_PATCH(XFMPatch, "OL/XFM Oscillator", 2, 2);
+REGISTER_PATCH(XFMPatch, "OL/XFM Oscillator", 0, 2);
 
 REGISTER_PATCH(StereoPatch<GuitarixTonePatch>, "Guitarix/Tone", 1, 1);
 REGISTER_PATCH(StereoPatch<GuitarixBMfpPatch>, "Guitarix/BigMuffFuzz", 2, 2);
@@ -31,7 +33,7 @@ REGISTER_PATCH(StereoPatch<GuitarixOverdrivePatch>, "Guitarix/Overdrive", 2, 2);
 REGISTER_PATCH(GuitarixOscTubePatch, "Guitarix/OscTube", 1, 1);
 REGISTER_PATCH(StereoPatch<GuitarixDistortion1Patch>, "Guitarix/Distortion1", 2, 2);
 REGISTER_PATCH(StereoPatch<GuitarixMoogPatch>, "Guitarix/Moog Filter", 1, 1);
-REGISTER_PATCH(GuitarixDunwahPatch, "Guitarix/Dunwah", 2, 2);
+REGISTER_PATCH(GuitarixCompressorPatch, "Guitarix/Compressor", 1, 1);
 REGISTER_PATCH(StereoPatch<GuitarixFlangerGXPatch>, "Guitarix/FlangerGX", 1, 1);
 
 REGISTER_PATCH(ComplexorPatch, "MK/Complexor", 2, 2);
@@ -39,20 +41,20 @@ REGISTER_PATCH(MdaBandistoPatch, "MDA/Bandisto", 2, 2);
 REGISTER_PATCH(DigitalMayhemPatch, "RS/Digital Mayhem", 1, 1);
 REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
 
+// REGISTER_PATCH(AutoWahPatch, "AutoWah", 1, 1); /* 104% ext ram*/
+// REGISTER_PATCH(GuitarixDunwahPatch, "Guitarix/Dunwah", 2, 2);
+
 // REGISTER_PATCH(QompressionPatch, "Qompression", 2, 2);
 // REGISTER_PATCH(MdaStereoPatch, "MDA/Stereo", 2, 2);
 // REGISTER_PATCH(MdaTransientPatch, "MDA/Transient", 2, 2);
 // REGISTER_PATCH(GuitarixCompressorPatch, "Guitarix/Compressor", 1, 1);
-// REGISTER_PATCH(GuitarixPhaserPatch, "Guitarix/Phaser", 2, 2);
+
 
 // REGISTER_PATCH(GhostNotePatch,"RS/GhostNote", 1, 1); /* 101% ext ram */
 // REGISTER_PATCH(RingModulatorPatch, "Ring Modulator", 2, 2); /* 174%, 210%, sometimes 15%?? */
 
-// REGISTER_PATCH(StereoWahPatch, "StereoWah", 2, 2);
-
 // REGISTER_PATCH(HarpAutoPatch, "Faust/AutoHarp", 0, 1);
 
-// sed 's/^REGISTER_PATCH.*"\(.*\)".*/\1/g' < Source/factory.cpp
 
 // REGISTER_PATCH(ReverseReverbPatch, "RS/Reverse Reverb", 1, 1);
 // REGISTER_PATCH(FaustVerbPatch, "FreeVerb", 1, 1);
