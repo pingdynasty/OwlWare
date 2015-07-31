@@ -1,83 +1,3 @@
-/**
-  ******************************************************************************
-  * @file    usbd_audio_core.c
-  * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    19-March-2012
-  * @brief   This file provides the high layer firmware functions to manage the 
-  *          following functionalities of the USB Audio Class:
-  *           - Initialization and Configuration of high and low layer
-  *           - Enumeration as Audio Streaming Device
-  *           - Audio Streaming data transfer
-  *           - AudioControl requests management
-  *           - Error management
-  *           
-  *  @verbatim
-  *      
-  *          ===================================================================      
-  *                                Audio Class Driver Description
-  *          =================================================================== 
-  *           This driver manages the Audio Class 1.0 following the "USB Device Class Definition for
-  *           Audio Devices V1.0 Mar 18, 98".
-  *           This driver implements the following aspects of the specification:
-  *             - Device descriptor management
-  *             - Configuration descriptor management
-  *             - Standard AC Interface Descriptor management
-  *             - 1 Audio Streaming Interface (with single channel, PCM, Stereo mode)
-  *             - 1 Audio Streaming Endpoint
-  *             - 1 Audio Terminal Input (1 channel)
-  *             - Audio Class-Specific AC Interfaces
-  *             - Audio Class-Specific AS Interfaces
-  *             - AudioControl Requests: only SET_CUR and GET_CUR requests are supported (for Mute)
-  *             - Audio Feature Unit (limited to Mute control)
-  *             - Audio Synchronization type: Asynchronous
-  *             - Single fixed audio sampling rate (configurable in usbd_conf.h file)
-  *          
-  *           @note
-  *            The Audio Class 1.0 is based on USB Specification 1.0 and thus supports only
-  *            Low and Full speed modes and does not allow High Speed transfers.
-  *            Please refer to "USB Device Class Definition for Audio Devices V1.0 Mar 18, 98"
-  *            for more details.
-  * 
-  *           These aspects may be enriched or modified for a specific user application.
-  *          
-  *            This driver doesn't implement the following aspects of the specification 
-  *            (but it is possible to manage these features with some modifications on this driver):
-  *             - AudioControl Endpoint management
-  *             - AudioControl requsests other than SET_CUR and GET_CUR
-  *             - Abstraction layer for AudioControl requests (only Mute functionality is managed)
-  *             - Audio Synchronization type: Adaptive
-  *             - Audio Compression modules and interfaces
-  *             - MIDI interfaces and modules
-  *             - Mixer/Selector/Processing/Extension Units (Feature unit is limited to Mute control)
-  *             - Any other application-specific modules
-  *             - Multiple and Variable audio sampling rates
-  *             - Out Streaming Endpoint/Interface (microphone)
-  *      
-  *  @endverbatim
-  *                                  
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
-  *
-  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
-  * You may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at:
-  *
-  *        http://www.st.com/software_license_agreement_liberty_v2
-  *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  *
-  ******************************************************************************
-  */ 
-
-/* Includes ------------------------------------------------------------------*/
-
 #include "usbd_audio_core.h"
 #include "midicontrol.h"
 
@@ -97,8 +17,6 @@ static void Handle_USBAsynchXfer (void *pdev);
 /*********************************************
    AUDIO Requests management functions
  *********************************************/
-//static void AUDIO_Req_GetCurrent(void *pdev, USB_SETUP_REQ *req);
-//static void AUDIO_Req_SetCurrent(void *pdev, USB_SETUP_REQ *req);
 static uint8_t  *USBD_audio_GetCfgDesc (uint8_t speed, uint16_t *length);
 
 __ALIGN_BEGIN uint8_t USB_Rx_Buffer   [MIDI_MAX_PACKET_SIZE] __ALIGN_END ;
@@ -616,5 +534,3 @@ static uint8_t  *USBD_audio_GetCfgDesc (uint8_t speed, uint16_t *length)
   *length = sizeof (usbd_audio_CfgDesc);
   return usbd_audio_CfgDesc;
 }
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

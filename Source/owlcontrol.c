@@ -6,8 +6,14 @@
 #include "device.h"
 #include "gpio.h"
 
+#ifdef OWLMODULAR
+#define HARDWARE_VERSION             "OWL Modular"
+#else /* OWLMODULAR */
+#define HARDWARE_VERSION             "OWL Pedal"
+#endif /* OWLMODULAR */
+
 char* getFirmwareVersion(){ 
-  return HARDWARE_VERSION "-" FIRMWARE_VERSION ;
+  return HARDWARE_VERSION " " FIRMWARE_VERSION ;
 }
 
 bool isClockExternal(){
@@ -16,13 +22,13 @@ bool isClockExternal(){
 }
 
 /* Unique device ID register (96 bits: 12 bytes) */
-uint8_t* getDeviceId(){
+uint32_t* getDeviceId(){
   const uint32_t* addr = (uint32_t*)0x1fff7a10;
   static uint32_t deviceId[3];
   deviceId[0] = addr[0];
   deviceId[1] = addr[1];
   deviceId[2] = addr[2];
-  return (uint8_t*)deviceId;
+  return deviceId;
 
   // read location 0xE0042000
   // 16 bits revision id, 4 bits reserved, 12 bits device id
@@ -96,14 +102,18 @@ void ledSetup(){
   clearPin(LED_PORT, LED_RED|LED_GREEN);
 }
 
-uint16_t adc_values[NOF_ADC_VALUES];
+uint16_t adc_values[NOF_PARAMETERS];
 void adcSetup(){
-  memset(adc_values, 0, sizeof adc_values);
+  memset(adc_values, 0, sizeof(adc_values));
   adcSetupDMA(&adc_values[0]);
 }
 
 uint16_t getAnalogValue(uint8_t index){
-  assert_param(index < sizeof(adc_values));
+  /* assert_param(index < sizeof(adc_values)); */
+#ifdef OWLMODULAR
+  if(index < 4)
+    return 4095 - adc_values[index];
+#endif /* OWLMODULAR */
   return adc_values[index];
 }
 
@@ -180,8 +190,7 @@ void setupSwitchB(void (*f)()){
   EXTI_StructInit(&EXTI_InitStructure);
   EXTI_InitStructure.EXTI_Line = SWITCH_B_PIN_LINE;
   EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-  EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-/*   EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling; */
+  EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
   EXTI_InitStructure.EXTI_LineCmd = ENABLE;
   EXTI_Init(&EXTI_InitStructure);
 

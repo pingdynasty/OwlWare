@@ -7,24 +7,54 @@
 #include "MidiReader.hpp"
 #include "MidiController.h"
 #include "CodecController.h"
-#include "PatchController.h"
 #include "ApplicationSettings.h"
+#include "FirmwareLoader.hpp"
+#include "ProgramManager.h"
 
-uint16_t midi_values[NOF_ADC_VALUES];
+#define NOF_MIDI_PARAMETERS NOF_PARAMETERS
+static uint16_t midi_values[NOF_MIDI_PARAMETERS];
+static FirmwareLoader loader;
 
 class MidiHandler : public MidiReader {
 private:
   uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
 public:
   MidiHandler() : MidiReader(buffer, sizeof(buffer)) {
-    memset(midi_values, 0, sizeof(midi_values));
+    memset(midi_values, 0, NOF_MIDI_PARAMETERS*sizeof(uint16_t));
+  }
+
+  void handleProgramChange(uint8_t status, uint8_t pid){
+    if(pid == 0 && loader.isReady()){
+      program.loadDynamicProgram(loader.getData(), loader.getSize());
+      loader.clear();
+      program.startProgram(true);
+    }else{
+      program.loadProgram(pid);
+      program.resetProgram(true);
+    }
   }
 
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){
+#ifdef OWLMODULAR
     case PATCH_PARAMETER_A:
-      // scale from 7bit to 12bit value
-      midi_values[PARAMETER_A] = value<<5;
+      midi_values[PARAMETER_A] = (127-value)<<5; // invert and scale from 7bit to 12bit value
+      break;
+    case PATCH_PARAMETER_B:
+      midi_values[PARAMETER_B] = (127-value)<<5;
+      break;
+    case PATCH_PARAMETER_C:
+      midi_values[PARAMETER_C] = (127-value)<<5;
+      break;
+    case PATCH_PARAMETER_D:
+      midi_values[PARAMETER_D] = (127-value)<<5;
+      break;
+    case PATCH_PARAMETER_E:
+      midi_values[PARAMETER_E] = value<<5;
+      break;
+#else /* OWLMODULAR */
+    case PATCH_PARAMETER_A:
+      midi_values[PARAMETER_A] = value<<5; // scale from 7bit to 12bit value
       break;
     case PATCH_PARAMETER_B:
       midi_values[PARAMETER_B] = value<<5;
@@ -38,17 +68,18 @@ public:
     case PATCH_PARAMETER_E:
       midi_values[PARAMETER_E] = value<<5;
       break;
+#endif /* OWLMODULAR */
     case PATCH_CONTROL:
       if(value == 127){
-	memcpy(midi_values, getAnalogValues(), sizeof(midi_values));
-	patches.setParameterValues(midi_values);
+	memcpy(midi_values, getAnalogValues(), NOF_MIDI_PARAMETERS*sizeof(uint16_t));
+	setParameterValues(midi_values, NOF_MIDI_PARAMETERS);
       }else{
-	patches.setParameterValues(getAnalogValues());
+	setParameterValues(getAnalogValues(), NOF_PARAMETERS);
       }
       break;
     case PATCH_BUTTON:
       if(value == 127)
-	patches.toggleActiveSlot();
+	togglePushButton();
       break;
     case LED:
       if(value < 42){
@@ -58,19 +89,6 @@ public:
       }else{
 	setLed(GREEN);
       }
-      break;
-    case PATCH_MODE:
-      settings.patch_mode = value >> 5;
-      patches.setActiveSlot(patches.getActiveSlot());
-      break;
-    case PATCH_SLOT_GREEN:
-      patches.setPatch(GREEN, value);
-      break;
-    case PATCH_SLOT_RED:
-      patches.setPatch(RED, value);
-      break;
-    case ACTIVE_SLOT:
-      patches.setActiveSlot(value == 127 ? RED : GREEN);
       break;
     case LEFT_INPUT_GAIN:
       settings.inputGainLeft = value>>2;
@@ -94,109 +112,38 @@ public:
     case RIGHT_OUTPUT_MUTE:
       codec.setOutputMuteRight(value == 127);
       break;
-    case BYPASS:
-      codec.setBypass(value == 127);
-      break;
     case LEFT_INPUT_MUTE:
       codec.setInputMuteLeft(value == 127);
       break;
     case RIGHT_INPUT_MUTE:
       codec.setInputMuteRight(value == 127);
       break;
-    case SAMPLING_RATE:
-      uint32_t frequency;
-      if(value < 32){
-	frequency = 8000;
-      }else if(value < 64){
-	frequency = 32000;
-      }else if(value < 96){
-	frequency = 48000;
-      }else{
-	frequency = 96000;
-      }
-      if(frequency != settings.audio_samplingrate){
-	settings.audio_samplingrate = frequency;
-	codec.stop();
-	codec.init(settings);
-	patches.reset(); // changing sampling rate may require re-initialisation of patches
-	codec.start();
-      }
-      break;
-    case SAMPLING_BITS: {
-      I2SFormat format;
-      if(value < 42){
-	format = I2S_FORMAT_16bit;
-      }else if(value < 84){
-	format = I2S_FORMAT_24bit;
-      }else{
-	format = I2S_FORMAT_32bit;
-      }      
-      if(format != settings.audio_codec_format){
-	settings.audio_codec_format = format;
-	codec.stop();
-	codec.init(settings);
-	codec.start();
-      }
-      break;
-    }
-    case CODEC_MASTER: {
-      bool master = value > 63;
-      if(master != settings.audio_codec_master){
-	settings.audio_codec_master = master;
-	codec.stop();
-	codec.init(settings);
-	codec.start();
-      }
-      break;
-    }
-    case CODEC_PROTOCOL: {
-      I2SProtocol protocol;
-      if(value < 64){
-	protocol = I2S_PROTOCOL_PHILIPS;
-      }else{
-	protocol = I2S_PROTOCOL_MSB;
-      }
-      if(protocol != settings.audio_codec_protocol){
-	settings.audio_codec_protocol = protocol;
-	codec.stop();
-	codec.init(settings);
-	codec.start();
-      }
-      break;
-    }
-    case SAMPLING_SIZE: {
-      uint32_t blocksize = 1L << value;
-      if(settings.audio_blocksize != blocksize && blocksize <= AUDIO_MAX_BLOCK_SIZE){
-	settings.audio_blocksize = blocksize;
-	codec.stop();
-	codec.init(settings);
-	patches.reset(); // changing blocksize may require re-initialisation of patches
-	codec.start();
-      }
-      break;
-    }
-    case LEFT_RIGHT_SWAP:
-      codec.setSwapLeftRight(value == 127);
-      break;
     case REQUEST_SETTINGS:
       switch(value){
       case 0:
 	midi.sendDeviceInfo();
 	break;
-      case 1:
+      case SYSEX_PRESET_NAME_COMMAND:
+	// program.sendMidiData(value, true);
 	midi.sendPatchNames();
 	break;
-      case 2:
+      case SYSEX_PARAMETER_NAME_COMMAND:
 	midi.sendPatchParameterNames();
 	break;
-      case 3:
+      case SYSEX_FIRMWARE_VERSION:
 	midi.sendFirmwareVersion();
 	break;
-      case 4:
+      case SYSEX_DEVICE_ID:
 	midi.sendDeviceId();
 	break;
-      case 5:
-	midi.sendSelfTest();
+      case SYSEX_DEVICE_STATS:
+	midi.sendDeviceStats();
+	break;
+      case SYSEX_PROGRAM_MESSAGE:
+	midi.sendProgramMessage();
+	break;
+      case SYSEX_PROGRAM_STATS:
+	midi.sendProgramStats();
 	break;
       case PATCH_BUTTON:
 	midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
@@ -216,16 +163,11 @@ public:
 	toggleLed();
       }
       break;
-    case DEVICE_FIRMWARE_UPDATE:
-      if(value == 127)
-	jump_to_bootloader();
-      break;
     case FACTORY_RESET:
       if(value == 127){
 	settings.reset();
-	settings.clearFlash();
-	codec.init(settings);
-	patches.setActiveSlot(GREEN);
+	program.eraseProgramFromFlash(-1);
+	updateCodecSettings();
       }
       break;
     }
@@ -234,14 +176,115 @@ public:
   void handleSystemCommon(uint8_t){
   }
 
-  void handleSysEx(uint8_t* data, uint8_t size){
-    if(size < 3 || 
-       data[1] != MIDI_SYSEX_MANUFACTURER || 
-       data[2] != MIDI_SYSEX_DEVICE)
+  void updateCodecSettings(){
+    codec.softMute(true);
+    codec.stop();
+    codec.init(settings);
+    codec.start();
+    program.resetProgram(true);
+  }
+
+  void handleConfigurationCommand(uint8_t* data, uint16_t size){
+    if(size < 4)
       return;
-    switch(data[4]){
+    char* p = (char*)data;
+    uint32_t value = strtol(p+2, NULL, 16);
+    if(strncmp(SYSEX_CONFIGURATION_AUDIO_RATE, p, 2) == 0){
+      settings.audio_samplingrate = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_BLOCKSIZE, p, 2) == 0){
+      settings.audio_blocksize = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_BITDEPTH, p, 2) == 0){
+      settings.audio_bitdepth = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_DATAFORMAT, p, 2) == 0){
+      settings.audio_dataformat = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_PROTOCOL, p, 2) == 0){
+      settings.audio_codec_protocol = (I2SProtocol)value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_MASTER, p, 2) == 0){
+      settings.audio_codec_master = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_SWAP, p, 2) == 0){
+      settings.audio_codec_swaplr = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_BYPASS, p, 2) == 0){
+      settings.audio_codec_bypass = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_CODEC_HALFSPEED, p, 2) == 0){
+      settings.audio_codec_halfspeed = value;
+      // settings.audio_codec_halfspeed = (p[2] == '1' ? true : false);
+    }else if(strncmp(SYSEX_CONFIGURATION_PC_BUTTON, p, 2) == 0){
+      settings.program_change_button = value;
+    }
+    updateCodecSettings();
+  }
+
+  void handleFirmwareUploadCommand(uint8_t* data, uint16_t size){
+    int32_t ret = loader.handleFirmwareUpload(data, size);
+    if(ret > 0){
+      // firmware upload complete: wait for run or store
+      setLed(NONE);
+    }else if(ret == 0){
+      toggleLed();
+    }// else error
+  }
+
+  void handleFirmwareRunCommand(uint8_t* data, uint16_t size){
+    if(loader.isReady()){
+      program.loadDynamicProgram(loader.getData(), loader.getSize());
+      loader.clear();
+      program.startProgram(true);
+    }else{
+      setErrorMessage(PROGRAM_ERROR, "No program to run");
+    }      
+  }
+
+  void handleFirmwareFlashCommand(uint8_t* data, uint16_t size){
+    if(loader.isReady() && size == 5){
+      uint32_t checksum = loader.decodeInt(data);
+      if(checksum == loader.getChecksum()){
+	program.saveProgramToFlash(-1, loader.getData(), loader.getSize());
+	loader.clear();
+      }else{
+	setErrorMessage(PROGRAM_ERROR, "Invalid FLASH checksum");
+      }
+    }else{
+      setErrorMessage(PROGRAM_ERROR, "Invalid FLASH command");
+    }
+  }
+
+  void handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
+    if(loader.isReady() && size == 5){
+      uint32_t slot = loader.decodeInt(data);
+      if(slot >= 0 && slot < MAX_USER_PATCHES){
+	program.saveProgramToFlash(slot, loader.getData(), loader.getSize());
+	loader.clear();
+      }else{
+	setErrorMessage(PROGRAM_ERROR, "Invalid program slot");
+      }
+    }else{
+      setErrorMessage(PROGRAM_ERROR, "No program to store");
+    }
+  }
+
+  void handleSysEx(uint8_t* data, uint16_t size){
+    if(size < 3 || 
+       data[0] != MIDI_SYSEX_MANUFACTURER || 
+       data[1] != MIDI_SYSEX_DEVICE)
+      return;
+    switch(data[2]){
+    case SYSEX_CONFIGURATION_COMMAND:
+      handleConfigurationCommand(data+3, size-3);
+      break;
     case SYSEX_DFU_COMMAND:
       jump_to_bootloader();
+      break;
+    case SYSEX_FIRMWARE_UPLOAD:
+      handleFirmwareUploadCommand(data, size);
+      break;
+    case SYSEX_FIRMWARE_RUN:
+      handleFirmwareRunCommand(data+3, size-3);
+      break;
+    case SYSEX_FIRMWARE_STORE:
+      handleFirmwareStoreCommand(data+3, size-3);
+      break;
+    case SYSEX_FIRMWARE_FLASH:
+      handleFirmwareFlashCommand(data+3, size-3);
       break;
     }
   }

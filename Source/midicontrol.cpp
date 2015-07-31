@@ -29,22 +29,36 @@ bool midi_device_connected(){
   return usbd_usr_device_status > 0x02;
 }
 
-void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){
-  for(int i=1; i<length; ++i){ // skip first of 4 bytes
-    if(handler.read(buffer[i]) == ERROR_STATUS){
-      handler.clear();
-      break;
+void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){    
+  for(int i=1; i<length; ++i){
+    // skip every 4th byte
+    if(i & 0x3){
+      MidiReaderStatus status = handler.read(buffer[i]);
+      if(status == ERROR_STATUS){
+	handler.clear();
+	// todo: error message
+	return; // discard the rest of the message
+      }
     }
   }
 }
 
-void midi_send_short_message(uint8_t* msg, uint16_t length) {
-  uint8_t packet[4];
-  assert_param(length < sizeof(packet));
-  packet[0] = msg[0]>>4; // todo: set cable id
-  memcpy(&packet[1], msg, length);
-  midi_send_usb_buffer(packet, sizeof(packet));
-}
+// void midi_send_short_message(uint8_t* msg, uint16_t length) {
+//   uint8_t packet[4];
+//   // assert_param(length < sizeof(packet));
+//   switch(length){
+//   case 3:
+//     packet[3] = msg[2];
+//     // deliberate fall-through
+//   case 2:
+//     packet[2] = msg[1];
+//     // deliberate fall-through
+//   case 1:
+//     packet[1] = msg[0];
+//   }
+//   packet[0] = msg[0]>>4; // todo: set cable id
+//   midi_send_usb_buffer(packet, sizeof(packet));
+// }
 
 void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
   /* Add a MIDI message to the USB buffer. These need to be written in

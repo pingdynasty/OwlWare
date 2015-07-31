@@ -40,10 +40,6 @@ Hardware Configuration defines parameters
 #define CODEC_I2S_MCK_GPIO             GPIOC
 #define AUDIO_I2S_IRQHandler           SPI2_IRQHandler
 
-
-#define AUDIO_DMA_PERIPH_DATA_SIZE     DMA_PeripheralDataSize_HalfWord
-#define AUDIO_DMA_MEM_DATA_SIZE        DMA_MemoryDataSize_HalfWord
-
 /* I2S DMA Stream definitions */
 #define AUDIO_I2S_DMA_CLOCK            RCC_AHB1Periph_DMA1
 #define AUDIO_I2S_DMA_STREAM           DMA1_Stream4
@@ -164,7 +160,7 @@ Hardware Configuration defines parameters
 /* Register 0x08: Sampling Control */
 #define WM8731_MODE_NORMAL    0x00
 #define WM8731_MODE_USB       0x01
-#define WM8731_BOSR          (1<<1)
+#define WM8731_BOSR          (1<<1)     /* Base Oversampling Rate: 0=256fs, 1=384fs */
 #define WM8731_SR_48_48      (0x00<<2)  /* Normal mode rates, MCLK = 12.288MHz, 256fs  */
 #define WM8731_SR_48_08      (0x01<<2)
 #define WM8731_SR_08_48      (0x02<<2)
@@ -172,11 +168,11 @@ Hardware Configuration defines parameters
 #define WM8731_SR_32_32      (0x06<<2)
 #define WM8731_SR_96_96      (0x07<<2)
 #define WM8731_SR_USB_48_48  (0x00<<2)  /* USB mode rates */
-#define WM8731_SR_USB_44_44  (0x18<<2)
+#define WM8731_SR_USB_44_44  (0x08<<2)
 #define WM8731_SR_USB_48_08  (0x01<<2)
-#define WM8731_SR_USB_44_08  (0x19<<2)
+#define WM8731_SR_USB_44_08  (0x09<<2)
 #define WM8731_SR_USB_08_48  (0x02<<2)
-#define WM8731_SR_USB_08_44  (0x1a<<2)
+#define WM8731_SR_USB_08_44  (0x0a<<2)
 #define WM8731_SR_USB_08_08  (0x03<<2)
 #define WM8731_SR_USB_32_32  (0x06<<2)
 #define WM8731_SR_USB_96_96  (0x07<<2)
@@ -198,7 +194,7 @@ Hardware Configuration defines parameters
 
 /* Low layer codec functions */
 void     Codec_CtrlInterface_Init(void);
-uint32_t Codec_AudioInterface_Init(uint32_t AudioFreq, bool master, uint16_t standard, uint16_t format);
+uint32_t Codec_AudioInterface_Init(uint32_t AudioFreq, bool master, uint16_t standard, uint8_t bits);
 uint32_t Codec_Reset(void);
 uint32_t Codec_WriteRegister(uint8_t RegisterAddr, uint16_t RegisterValue);
 void     Codec_GPIO_Init(void);

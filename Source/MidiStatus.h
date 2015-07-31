@@ -10,7 +10,6 @@ enum MidiStatus {
   PROGRAM_CHANGE		= 0xC0,
   CHANNEL_PRESSURE		= 0xD0,
   PITCH_BEND_CHANGE		= 0xE0,
-
   SYSTEM_COMMON			= 0xF0,
   SYSEX				= 0xF0,
   TIME_CODE_QUARTER_FRAME       = 0xF1,

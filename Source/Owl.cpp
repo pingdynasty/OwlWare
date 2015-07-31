@@ -1,21 +1,22 @@
+#include <string.h>
 #include "Owl.h"
-#include "arm_math.h"
 #include "armcontrol.h"
 #include "usbcontrol.h"
 #include "owlcontrol.h"
 #include "PatchRegistry.h"
-#include "StompBox.h"
-#include "PatchProcessor.h"
 #include "MidiController.h"
 #include "CodecController.h"
-#include "PatchController.h"
-#include "SampleBuffer.hpp"
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
+#include "ProgramVector.h"
+#include "ProgramManager.h"
+#include "ServiceCall.h"
+#include "bkp_sram.h"
 
-#include "serial.h"
+// #include "serial.h"
 #include "clock.h"
 #include "device.h"
+#include "codec.h"
 
 #define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; \
 if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
@@ -24,24 +25,43 @@ CodecController codec;
 MidiController midi;
 ApplicationSettings settings;
 PatchRegistry registry;
-PatchController patches;
 volatile bool bypass = false;
 
+// uint16_t getParameterValue(PatchParameterId pid){
+//   return getProgramVector()->parameters[pid];
+// }
+
+bool getButton(PatchButtonId bid){
+  return getProgramVector()->buttons & (1<<bid);
+  // return false;
+}
+
+void setButton(PatchButtonId bid, bool on){
+  if(on)
+    getProgramVector()->buttons |= 1<<bid;
+  else
+    getProgramVector()->buttons &= ~(1<<bid);
+}
+
 void updateLed(){
-  setLed((LedPin)patches.getActiveSlot());
-  midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
+  if(getButton(GREEN_BUTTON))  
+    setLed(GREEN);
+  else if(getButton(RED_BUTTON))
+    setLed(RED);
+  else
+    setLed(NONE);
 }
 
 void updateBypassMode(){
 #ifdef OWLMODULAR
   bypass = false;
-  updateLed();
 #else
   if(isStompSwitchPressed()){
+    setButton(BYPASS_BUTTON, true);
     bypass = true;
-    setLed(NONE);
-    midi.sendCc(LED, 0);
+    setLed(NONE);    
   }else{
+    setButton(BYPASS_BUTTON, false);
     bypass = false;
     updateLed();
   }
@@ -49,73 +69,125 @@ void updateBypassMode(){
 }
 
 void footSwitchCallback(){
-  DEBOUNCE(bypass, 200);
+  DEBOUNCE(bypass, BYPASS_DEBOUNCE);
   updateBypassMode();
 }
 
-void toggleActiveSlot(){
-  patches.toggleActiveSlot();
-  updateLed();
-  midi.sendPatchParameterNames(); // todo: this should probably be requested from client
+void togglePushButton(){
+  if(getLed() == GREEN){
+    setLed(RED);
+    setButton(RED_BUTTON, true);
+    setButton(GREEN_BUTTON, false);
+  }else{ // if(getLed() == RED){
+    setLed(GREEN);
+    setButton(GREEN_BUTTON, true);
+    setButton(RED_BUTTON, false);
+  }
+  midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
+volatile uint32_t pushButtonPressed;
 void pushButtonCallback(){
-  DEBOUNCE(pushbutton, 200);
-  if(isPushButtonPressed() && settings.patch_mode != PATCHMODE_SINGLE)
-    toggleActiveSlot();
+  DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
+  if(isPushButtonPressed()){
+    pushButtonPressed = getSysTicks();
+    setButton(PUSHBUTTON, true);
+    togglePushButton();
+  }else{
+    pushButtonPressed = 0;
+    setButton(PUSHBUTTON, false);
+  }
 }
 
-SampleBuffer buffer CCM;
-
-void setBlocksize(uint16_t sz){
-  buffer.setSize(sz);
+void exitProgram(bool isr){
+  // disable audio processing
+  codec.softMute(true);
+  codec.clear();
+  program.exitProgram(isr);
+  registry.setDynamicPatchDefinition(NULL);
+  setLed(RED);
 }
 
-volatile bool doProcessAudio = false;
-volatile bool collision = false;
-uint16_t* source;
-uint16_t* dest;
+void updateProgramIndex(uint8_t index){
+  if(settings.program_index != index){
+    settings.program_index = index;
+    midi.sendPc(index);
+    midi.sendPatchName(index);
+  }
+}
 
-#ifdef DEBUG_DWT
-uint32_t dwt_count = 0;
+#ifdef __cplusplus
+ extern "C" {
 #endif
+
+   void setErrorMessage(int8_t err, const char* msg){
+     setErrorStatus(err);
+     setLed(RED);
+     ProgramVector* vec = getProgramVector();
+     if(vec != NULL)
+       vec->message = (char*)msg;
+   }
+
+   PatchDefinition dynamicPatchDefinition;
+   void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
+     dynamicPatchDefinition.name = name;
+     dynamicPatchDefinition.inputs = inputChannels;
+     dynamicPatchDefinition.outputs = outputChannels;
+     registry.setDynamicPatchDefinition(&dynamicPatchDefinition);
+     midi.sendPatchName(0);
+   }
+
+   void registerPatchParameter(uint8_t id, const char* name){
+     midi.sendPatchParameterName((PatchParameterId)id, name);
+   }
 
 __attribute__ ((section (".coderam")))
-void run(){
-#ifdef DEBUG_DWT
-  volatile unsigned int *DWT_CYCCNT = (volatile unsigned int *)0xE0001004; //address of the register
-  volatile unsigned int *DWT_CONTROL = (volatile unsigned int *)0xE0001000; //address of the register
-  volatile unsigned int *SCB_DEMCR = (volatile unsigned int *)0xE000EDFC; //address of the register
-  *SCB_DEMCR = *SCB_DEMCR | 0x01000000;
-  *DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
+   void programReady(){
+     // while(audioStatus != AUDIO_READY_STATUS);
+     program.programReady();
+   }
+
+   void programStatus(ProgramVectorAudioStatus status){
+     program.programStatus(status);
+   }
+
+   void setParameter(int pid, uint16_t value){
+     getAnalogValues()[pid] = value;
+   }
+
+#ifdef __cplusplus
+}
 #endif
-  for(;;){
-    if(doProcessAudio){
-#ifdef DEBUG_AUDIO
-      setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+
+void setParameterValues(uint16_t* values, int size){
+  getProgramVector()->parameters = values;
+  getProgramVector()->parameters_size = size;
+}
+
+void updateProgramVector(ProgramVector* vector){
+  vector->checksum = sizeof(ProgramVector);
+#ifdef OWLMODULAR
+  vector->hardware_version = OWL_MODULAR_HARDWARE;
+#else
+  vector->hardware_version = OWL_PEDAL_HARDWARE;
 #endif
-#ifdef DEBUG_DWT
-      *DWT_CYCCNT = 0; // reset the counter
-#endif
-      buffer.split(source);
-      patches.process(buffer);
-      buffer.comb(dest);
-      if(collision){
-	collision = false;
-#ifdef DEBUG_AUDIO
-	debugToggle();
-#endif
-      }else{
-	doProcessAudio = false;
-      }
-#ifdef DEBUG_AUDIO
-      clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
-#endif
-#ifdef DEBUG_DWT
-      dwt_count = *DWT_CYCCNT;
-#endif
-    }
-  }
+  vector->audio_input = NULL;
+  vector->audio_output = NULL;
+  vector->audio_bitdepth = settings.audio_bitdepth;
+  vector->audio_blocksize = settings.audio_blocksize;
+  vector->audio_samplingrate = settings.audio_samplingrate;
+  vector->parameters = getAnalogValues();
+  vector->parameters_size = NOF_PARAMETERS;
+  // todo: pass real-time updates from MidiHandler
+  vector->buttons = (1<<GREEN_BUTTON);
+  vector->registerPatch = registerPatch;
+  vector->registerPatchParameter = registerPatchParameter;
+  vector->cycles_per_block = 0;
+  vector->heap_bytes_used = 0;
+  vector->programReady = programReady;
+  vector->programStatus = programStatus;
+  vector->serviceCall = serviceCall;
+  vector->message = NULL;
 }
 
 void setup(){
@@ -124,19 +196,23 @@ void setup(){
    * 2 bits for sub-priority (0-3). Priorities control which
    * interrupts are allowed to preempt one another.
    */
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+  // NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
   /* Increase SysTick priority to be higher than USB interrupt
    * priority. USB code stalls inside interrupt and we can't let
    * this throw off the SysTick timer.
    */
-  NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, SYSTICK_PRIORITY, SYSTICK_SUBPRIORITY));
-  NVIC_SetPriority(DMA1_Stream3_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 0, 0));
-  NVIC_SetPriority(DMA1_Stream4_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 0, 0));
-  NVIC_SetPriority(SPI2_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 1, 0));
-  NVIC_SetPriority(ADC_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_2, 2, 0));
+  // NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, SYSTICK_PRIORITY, SYSTICK_SUBPRIORITY));
+  NVIC_SetPriority(AUDIO_I2S_DMA_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 1, 0));
+  NVIC_SetPriority(AUDIO_I2S_EXT_DMA_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 1, 0));
+  NVIC_SetPriority(CODEC_I2S_IRQ, NVIC_EncodePriority(NVIC_PriorityGroup_4, 1, 0));
+  NVIC_SetPriority(ADC_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 3, 0));
+  NVIC_SetPriority(OTG_FS_IRQn, NVIC_EncodePriority(NVIC_PriorityGroup_4, 5, 0));
+
+  updateProgramVector(getProgramVector());
 
   ledSetup();
   setLed(RED);
+  BKPSRAM_Init();
 
   /* check if we need to DFU boot */
   configureDigitalInput(SWITCH_B_PORT, SWITCH_B_PIN, GPIO_PuPd_UP);
@@ -150,7 +226,7 @@ void setup(){
 
   settings.init();
   midi.init(MIDI_CHANNEL);
-  patches.init();
+  registry.init();
 
 #ifdef EXPRESSION_PEDAL
 #ifndef OWLMODULAR
@@ -190,8 +266,11 @@ void setup(){
 
   codec.setup();
   codec.init(settings);
+  codec.softMute(true);
 
-  printString("startup\n");
+  program.loadProgram(settings.program_index);
+  program.startProgram(false);
+
   updateBypassMode();
 
   codec.start();
@@ -201,16 +280,32 @@ void setup(){
  extern "C" {
 #endif
 
+#ifdef BUTTON_PROGRAM_CHANGE
+#define PROGRAM_CHANGE_PUSHBUTTON_MS 2000
+#include "clock.h"
+#endif /* BUTTON_PROGRAM_CHANGE */
+
+extern volatile ProgramVectorAudioStatus audioStatus;
 __attribute__ ((section (".coderam")))
-void audioCallback(uint16_t *src, uint16_t *dst, uint16_t sz){
+void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  if(doProcessAudio)
-    collision = true;
-  source = src;
-  dest = dst;
-  doProcessAudio = true;
+  getProgramVector()->audio_input = src;
+  getProgramVector()->audio_output = dst;
+  // program.audioReady();
+  audioStatus = AUDIO_READY_STATUS;
+
+#ifdef BUTTON_PROGRAM_CHANGE
+  if(pushButtonPressed && (getSysTicks() > pushButtonPressed+PROGRAM_CHANGE_PUSHBUTTON_MS)
+     && settings.program_change_button){
+    if(isPushButtonPressed()){
+      setLed(NONE);
+      program.startProgramChange(true);
+    }
+    pushButtonPressed = 0; // prevent re-trigger
+  }
+#endif /* BUTTON_PROGRAM_CHANGE */
 }
 
 #ifdef __cplusplus

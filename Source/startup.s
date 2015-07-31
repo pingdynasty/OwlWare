@@ -114,7 +114,7 @@ LoopFillZerobss:
 /* Call the clock system intitialization function.*/
   bl  SystemInit   
 /* Call static constructors */
-    bl __libc_init_array
+  bl __libc_init_array
 /* Call the application's entry point.*/
   bl  main
   bx  lr    
@@ -126,8 +126,6 @@ Reboot_Loader:
 	ldr  r0, [r0, #4]
 	bx   r0
 .size Reboot_Loader, .-Reboot_Loader
-
-
 
 /**
  * @brief  This is the code that gets called when the processor receives an 

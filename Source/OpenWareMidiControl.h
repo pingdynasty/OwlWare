@@ -4,15 +4,48 @@
 #define MIDI_SYSEX_MANUFACTURER        0x7d     /* Educational or development use only */
 #define MIDI_SYSEX_DEVICE              0x52     /* OWL Open Ware Laboratory */
 #define MIDI_SYSEX_VERSION             0x03     /* Revision */
-#define MIDI_MAX_MESSAGE_SIZE          0x0f
+
+enum PatchParameterId {
+  PARAMETER_A,
+  PARAMETER_B,
+  PARAMETER_C,
+  PARAMETER_D,
+  PARAMETER_E,
+  PARAMETER_F
+};
+
+enum PatchButtonId {
+  BYPASS_BUTTON,
+  PUSHBUTTON,
+  GREEN_BUTTON,
+  RED_BUTTON
+};
+
+#define SYSEX_CONFIGURATION_AUDIO_RATE            "FS"
+#define SYSEX_CONFIGURATION_AUDIO_BITDEPTH        "BD"
+#define SYSEX_CONFIGURATION_AUDIO_DATAFORMAT      "DF"
+#define SYSEX_CONFIGURATION_AUDIO_BLOCKSIZE       "BS"
+#define SYSEX_CONFIGURATION_CODEC_PROTOCOL        "PT"
+#define SYSEX_CONFIGURATION_CODEC_MASTER          "MS"
+#define SYSEX_CONFIGURATION_CODEC_SWAP            "SW"
+#define SYSEX_CONFIGURATION_CODEC_BYPASS          "BY"
+#define SYSEX_CONFIGURATION_CODEC_HALFSPEED       "HS"
+#define SYSEX_CONFIGURATION_PC_BUTTON             "PC"
 
 enum OpenWareMidiSysexCommand {
   SYSEX_PRESET_NAME_COMMAND       = 0x01,
   SYSEX_PARAMETER_NAME_COMMAND    = 0x02,
+  SYSEX_CONFIGURATION_COMMAND     = 0x03,
   SYSEX_DFU_COMMAND               = 0x7e,
+  SYSEX_FIRMWARE_UPLOAD           = 0x10,
+  SYSEX_FIRMWARE_STORE            = 0x11,
+  SYSEX_FIRMWARE_RUN              = 0x12,
+  SYSEX_FIRMWARE_FLASH            = 0x13,
   SYSEX_FIRMWARE_VERSION          = 0x20,
   SYSEX_DEVICE_ID                 = 0x21,
-  SYSEX_SELFTEST                  = 0x22
+  SYSEX_PROGRAM_MESSAGE           = 0x22,
+  SYSEX_DEVICE_STATS              = 0x23,
+  SYSEX_PROGRAM_STATS             = 0x24
 };
 
 /*
@@ -26,21 +59,11 @@ enum OpenWareMidiControl {
   PATCH_PARAMETER_E      = 24, /* Expression pedal / input */
   PATCH_BUTTON           = 25, /* LED Pushbutton: 0=not pressed, 127=pressed */
   PATCH_CONTROL          = 26, /* Remote control: 0=local, 127=MIDI */
-  PATCH_MODE             = 27, /* 0-31 = single,
-				* 32-63 = dual,
-				* 64-95 = series,
-				* 96-127 = parallel
-				*/
-  PATCH_SLOT_GREEN       = 28, /* load patch into green slot */
-  PATCH_SLOT_RED         = 29, /* load patch into red slot */
-
   LED                    = 30, /* set/get LED value: 
 				* 0-41 = off
 				* 42-83 = green
 				* 84-127 = red 
 				*/
-  ACTIVE_SLOT            = 31, /* currently active slot: 0 for green slot, 127 for red */
-
   LEFT_INPUT_GAIN        = 32, /* left channel input gain, -34.5dB to +12dB (92 = 0dB) */
   RIGHT_INPUT_GAIN       = 33,
   LEFT_OUTPUT_GAIN       = 34, /* left channel output gain, -73dB to +6dB (121 = 0dB) */
@@ -77,7 +100,8 @@ enum OpenWareMidiControl {
   REQUEST_SETTINGS       = 67, /* load settings from device (127=all settings) (30 for LED) (more to come) */
   SAVE_SETTINGS          = 68, /* save settings to device */
   DEVICE_FIRMWARE_UPDATE = 69, /* enter Device Firmware Upgrade mode */
-  FACTORY_RESET          = 70  /* reset all settings */
+  FACTORY_RESET          = 70, /* reset all settings */
+  DEVICE_STATUS          = 71
 };
 
 #endif  // OPENWAREMIDICONTROL_H_INCLUDED

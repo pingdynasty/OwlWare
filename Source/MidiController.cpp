@@ -1,16 +1,16 @@
 #include <errno.h>
 #include <string.h>
-#include "MidiStatus.h"
-#include "MidiController.h"
-#include "CodecController.h"
-#include "OpenWareMidiControl.h"
-#include "PatchController.h"
-#include "PatchRegistry.h"
-#include "ApplicationSettings.h"
-#include "fsmc_sram.h"
 #include "owlcontrol.h"
 #include "midicontrol.h"
-#include "sysex.h"
+#include "MidiStatus.h"
+#include "PatchRegistry.h"
+#include "MidiController.h"
+#include "CodecController.h"
+#include "ApplicationSettings.h"
+#include "OpenWareMidiControl.h"
+#include "ProgramVector.h"
+#include "ProgramManager.h"
+#include <math.h> /* for ceilf */
 
 uint32_t log2(uint32_t x){ 
   return x == 0 ? 0 : 31 - __builtin_clz (x); /* clz returns the number of leading 0's */
@@ -21,18 +21,14 @@ void MidiController::init(uint8_t ch){
 }
 
 void MidiController::sendSettings(){
-  PatchProcessor* processor = patches.getActivePatchProcessor();
-  sendCc(PATCH_PARAMETER_A, (uint8_t)(processor->getParameterValue(PARAMETER_A)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_B, (uint8_t)(processor->getParameterValue(PARAMETER_B)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_C, (uint8_t)(processor->getParameterValue(PARAMETER_C)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_D, (uint8_t)(processor->getParameterValue(PARAMETER_D)*127.0) & 0x7f);
-  sendCc(PATCH_PARAMETER_E, (uint8_t)(processor->getParameterValue(PARAMETER_E)*127.0) & 0x7f);
+  sendPc(settings.program_index);
+  sendCc(PATCH_PARAMETER_A, (uint8_t)(getAnalogValue(PARAMETER_A)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_B, (uint8_t)(getAnalogValue(PARAMETER_B)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_C, (uint8_t)(getAnalogValue(PARAMETER_C)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_D, (uint8_t)(getAnalogValue(PARAMETER_D)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_E, (uint8_t)(getAnalogValue(PARAMETER_E)>>5) & 0x7f);
   sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
   sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
-  sendCc(PATCH_MODE, settings.patch_mode << 5);
-  sendCc(PATCH_SLOT_GREEN, settings.patch_green);
-  sendCc(PATCH_SLOT_RED, settings.patch_red);
-  sendCc(ACTIVE_SLOT, patches.getActiveSlot() == GREEN ? 0 : 127);
   sendCc(LEFT_INPUT_GAIN, codec.getInputGainLeft()<<2);
   sendCc(RIGHT_INPUT_GAIN, codec.getInputGainRight()<<2);
   sendCc(LEFT_OUTPUT_GAIN, codec.getOutputGainLeft());
@@ -42,84 +38,199 @@ void MidiController::sendSettings(){
   sendCc(LEFT_OUTPUT_MUTE, codec.getOutputMuteLeft() ? 127 : 0);
   sendCc(RIGHT_OUTPUT_MUTE, codec.getOutputMuteRight() ? 127 : 0);
   sendCc(BYPASS, codec.getBypass() ? 127 : 0);
-  sendCc(SAMPLING_RATE, (codec.getSamplingRate() >> 10) + 20);
-  sendCc(SAMPLING_BITS, (codec.getFormat() << 4) + 20);
-  sendCc(CODEC_MASTER, codec.isMaster() ? 127 : 0);
-  sendCc(CODEC_PROTOCOL, codec.getProtocol() == I2S_PROTOCOL_PHILIPS ? 0 : 127);
-  sendCc(SAMPLING_SIZE, log2(settings.audio_blocksize));
-  sendCc(LEFT_RIGHT_SWAP, codec.getSwapLeftRight());
+
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_RATE, settings.audio_samplingrate);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_BITDEPTH, settings.audio_bitdepth);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_DATAFORMAT, settings.audio_dataformat);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_AUDIO_BLOCKSIZE, settings.audio_blocksize);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_MASTER, settings.audio_codec_master);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_PROTOCOL, settings.audio_codec_protocol);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_BYPASS, settings.audio_codec_bypass);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_HALFSPEED, settings.audio_codec_halfspeed);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_SWAP, settings.audio_codec_swaplr);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_PC_BUTTON, settings.program_change_button);
 }
 
 void MidiController::sendPatchParameterNames(){
-  PatchProcessor* processor = patches.getActivePatchProcessor();
-  for(int i=0; i<NOF_ADC_VALUES; ++i){
-    PatchParameterId pid = (PatchParameterId)i;
-    const char* name = processor->getParameterName(pid);
-    if(name != NULL)
-      sendPatchParameterName(pid, name);
-    else
-      sendPatchParameterName(pid, "");
-  }
+  // PatchProcessor* processor = patches.getActivePatchProcessor();
+  // for(int i=0; i<NOF_ADC_VALUES; ++i){
+  //   PatchParameterId pid = (PatchParameterId)i;
+  //   const char* name = processor->getParameterName(pid);
+  //   if(name != NULL)
+  //     sendPatchParameterName(pid, name);
+  //   else
+  //     sendPatchParameterName(pid, "");
+  // }
 }
 
 void MidiController::sendPatchParameterName(PatchParameterId pid, const char* name){
-  uint8_t size = strlen(name);
-  uint8_t buffer[size+3];
+  uint8_t size = strnlen(name, 24);
+  uint8_t buffer[size+2];
   buffer[0] = SYSEX_PARAMETER_NAME_COMMAND;
   buffer[1] = pid;
-  memcpy(buffer+2, name, size+1);
+  memcpy(buffer+2, name, size);
   sendSysEx(buffer, sizeof(buffer));
 }
 
 void MidiController::sendPatchNames(){
-  for(unsigned int i=0; i<registry.getNumberOfPatches(); ++i)
+  for(uint8_t i=0; i<registry.getNumberOfPatches(); ++i)
     sendPatchName(i);
+  sendPc(settings.program_index);
 }
 
 void MidiController::sendPatchName(uint8_t index){
   const char* name = registry.getName(index);
-  uint8_t size = strlen(name);
-  // uint8_t size = strnlen(name, 16);
-  uint8_t buffer[size+3];
-  buffer[0] = SYSEX_PRESET_NAME_COMMAND;
-  buffer[1] = index;
-  memcpy(buffer+2, name, size+1);
-  sendSysEx(buffer, sizeof(buffer));
+  if(name != NULL){
+    uint8_t size = strnlen(name, 24);
+    uint8_t buffer[size+2];
+    buffer[0] = SYSEX_PRESET_NAME_COMMAND;
+    buffer[1] = index;
+    memcpy(buffer+2, name, size);
+    sendSysEx(buffer, sizeof(buffer));
+  }
 }
 
 void MidiController::sendDeviceInfo(){
   sendFirmwareVersion();
+  sendProgramMessage();
+  sendProgramStats();
+  sendDeviceStats();
 }
 
-#include <stdio.h>
-#include <malloc.h>
-extern char *heap_end;
+#ifndef abs
+#define abs(x) ((x)>0?(x):-(x))
+#endif /* abs */
+char* itoa(int val, int base, int pad=0){
+  static char buf[13] = {0};
+  int i = 11;
+  unsigned int part = abs(val);
+  do{
+    buf[i--] = "0123456789abcdef"[part % base];
+    part /= base;
+  }while(i && (--pad > 0 || part));
+  if(val < 0)
+    buf[i--] = '-';
+  return &buf[i+1];
+}
+
+#include <string.h>
+
+void MidiController::sendDeviceStats(){
+#ifdef DEBUG_STACK
+  char buffer[64];
+  buffer[0] = SYSEX_DEVICE_STATS;
+  char* p = &buffer[1];
+  p = stpcpy(p, (const char*)"Program Stack ");
+  p = stpcpy(p, itoa(program.getProgramStackUsed(), 10));
+  p = stpcpy(p, (const char*)"/");
+  p = stpcpy(p, itoa(program.getProgramStackAllocation(), 10));
+  p = stpcpy(p, (const char*)" Manager ");
+  p = stpcpy(p, itoa(program.getManagerStackUsed(), 10));
+  p = stpcpy(p, (const char*)"/");
+  p = stpcpy(p, itoa(program.getManagerStackAllocation(), 10));
+  p = stpcpy(p, (const char*)" Free ");
+  p = stpcpy(p, itoa(program.getFreeHeapSize(), 10));
+  sendSysEx((uint8_t*)buffer, p-buffer);
+#endif /* DEBUG_STACK */
+}
+
+void MidiController::sendProgramStats(){
+  char buffer[64];
+  buffer[0] = SYSEX_PROGRAM_STATS;
+  char* p = &buffer[1];
+  uint8_t err = getErrorStatus();
+  switch(err & 0xf0){
+  case NO_ERROR: {
 #ifdef DEBUG_DWT
-extern uint32_t dwt_count;
+    p = stpcpy(p, (const char*)"CPU: ");
+    float percent = (program.getCyclesPerBlock()/settings.audio_blocksize) / (float)ARM_CYCLES_PER_SAMPLE;
+    p = stpcpy(p, itoa(ceilf(percent*100), 10));
+    p = stpcpy(p, (const char*)"% ");
 #endif /* DEBUG_DWT */
+#ifdef DEBUG_STACK
+    p = stpcpy(p, (const char*)"Stack: ");
+    int stack = program.getProgramStackUsed();
+    p = stpcpy(p, itoa(stack, 10));
+    p = stpcpy(p, (const char*)" Heap: ");
+#else
+    p = stpcpy(p, (const char*)"Heap: ");
+#endif /* DEBUG_STACK */
+    int mem = program.getHeapMemoryUsed();
+    p = stpcpy(p, itoa(mem, 10));
+    break;
+  }
+  case MEM_ERROR:
+    p = stpcpy(p, (const char*)"Memory Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case BUS_ERROR:
+    p = stpcpy(p, (const char*)"Bus Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case USAGE_ERROR:
+    p = stpcpy(p, (const char*)"Usage Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case NMI_ERROR:
+    p = stpcpy(p, (const char*)"Non-maskable Interrupt 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case HARDFAULT_ERROR:
+    p = stpcpy(p, (const char*)"HardFault Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  case PROGRAM_ERROR:
+    p = stpcpy(p, (const char*)"Missing or Invalid Program 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  default:
+    p = stpcpy(p, (const char*)"Unknown Error 0x");
+    p = stpcpy(p, itoa(err, 16));
+    break;
+  }
+  sendSysEx((uint8_t*)buffer, p-buffer);
+}
+
+void MidiController::sendProgramMessage(){
+  ProgramVector* pv = getProgramVector();
+  if(pv != NULL && pv->message != NULL){
+    char buffer[64];
+    buffer[0] = SYSEX_PROGRAM_MESSAGE;
+    char* p = &buffer[1];
+    p = stpncpy(p, pv->message, 62);
+    sendSysEx((uint8_t*)buffer, p-buffer);
+    pv->message = NULL;
+  }
+}
 
 void MidiController::sendFirmwareVersion(){
-  char* version = getFirmwareVersion();
-  struct mallinfo minfo = mallinfo();
-  int used = minfo.uordblks;
-  uint8_t len = strlen(version);
-  char buffer[len+32];
+  char buffer[32];
   buffer[0] = SYSEX_FIRMWARE_VERSION;
-#ifdef DEBUG_DWT
-  uint32_t cycles = dwt_count/settings.audio_blocksize;
-  len = sprintf(buffer+1, "%s (%lu | %d)", version, cycles, used);
-#else /* DEBUG_DWT */
-  len = sprintf(buffer+1, "%s (%d bytes)", version, used);
-#endif /* DEBUG_DWT */
-  sendSysEx((uint8_t*)buffer, len+2);
+  char* p = &buffer[1];
+  p = stpcpy(p, getFirmwareVersion());
+  sendSysEx((uint8_t*)buffer, p-buffer);
+}
+
+void MidiController::sendConfigurationSetting(const char* name, uint32_t value){
+  char buffer[16];
+  buffer[0] = SYSEX_CONFIGURATION_COMMAND;
+  char* p = &buffer[1];
+  p = stpcpy(p, name);
+  p = stpcpy(p, itoa(value, 16));
+  sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
 void MidiController::sendDeviceId(){
-  uint8_t buffer[15];
+  uint32_t* deviceId = getDeviceId();
+  char buffer[32];
   buffer[0] = SYSEX_DEVICE_ID;
-  uint8_t* deviceId = getDeviceId();
-  data_to_sysex(deviceId, buffer+1, 3*4);
-  sendSysEx(buffer, sizeof(buffer));
+  char* p = &buffer[1];
+  p = stpcpy(p, itoa(deviceId[0], 16, 8));
+  p = stpcpy(p, ":");
+  p = stpcpy(p, itoa(deviceId[1], 16, 8));
+  p = stpcpy(p, ":");
+  p = stpcpy(p, itoa(deviceId[2], 16, 8));
+  sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
 void MidiController::sendSelfTest(){
@@ -142,6 +253,15 @@ void MidiController::sendSelfTest(){
   // }else{
   //   sendSysEx(buffer, 2);
   // }
+}
+
+void MidiController::sendPc(uint8_t pc){
+  if(midi_device_connected()){
+    uint8_t packet[4] = { USB_COMMAND_PROGRAM_CHANGE,
+			  (uint8_t)(PROGRAM_CHANGE | channel),
+			  pc, 0 };
+    midi_send_usb_buffer(packet, sizeof(packet));
+  }
 }
 
 void MidiController::sendCc(uint8_t cc, uint8_t value){

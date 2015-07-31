@@ -2,32 +2,27 @@
 #define __PatchRegistry_h__
 
 #include <string>
-#include "StompBox.h"
 #include "device.h"
+#include "PatchDefinition.hpp"
 
 class PatchRegistry;
 extern PatchRegistry registry;
 
 class PatchRegistry {
-  typedef Patch* (*PatchCreator)(); // function pointer to create Patch
 public:
   PatchRegistry();
-  const char* getName(unsigned int index); 
-  Patch* create(unsigned int index);
-  Patch* create(const char* name);
+  void init();
+  const char* getName(unsigned int index);
+  PatchDefinition* getPatchDefinition(unsigned int index);
   unsigned int getNumberOfPatches();
-  void registerPatch(const char* name, PatchCreator creator);
+  void registerPatch(PatchDefinition* def);
+  void setDynamicPatchDefinition(PatchDefinition* def){
+    dynamicPatchDefinition = def;
+  }
 private:
-  template<class T> struct Register {
-    static Patch* construct() {
-      return new T();
-    };
-    static PatchCreator* creator;
-  };
-private:
-  const char* names[MAX_NUMBER_OF_PATCHES];
-  PatchCreator creators[MAX_NUMBER_OF_PATCHES];
-  int nofPatches;
+  PatchDefinition* defs[MAX_NUMBER_OF_PATCHES];
+  unsigned int nofPatches;
+  PatchDefinition* dynamicPatchDefinition;
 };
 
 #endif // __PatchRegistry_h__
