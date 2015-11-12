@@ -33,7 +33,7 @@ void ApplicationSettings::reset(){
 }
 
 bool ApplicationSettings::settingsInFlash(){
-  return eeprom_read_byte(APPLICATION_SETTINGS_ADDR) == checksum;
+  return eeprom_read_word(APPLICATION_SETTINGS_ADDR) == checksum;
 }
 
 void ApplicationSettings::loadFromFlash(){

@@ -92,9 +92,19 @@ void eeprom_unlock(){
 	       FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
 }
 
+void* eeprom_read(uint32_t address){
+  while(eeprom_get_status() == FLASH_BUSY);
+  return (void*)address;
+}
+
 uint8_t eeprom_read_byte(uint32_t address){
   while(eeprom_get_status() == FLASH_BUSY);
   return *(uint8_t*)address;
+}
+
+uint32_t eeprom_read_word(uint32_t address){
+  while(eeprom_get_status() == FLASH_BUSY);
+  return *(uint32_t*)address;
 }
 
 int eeprom_read_block(uint32_t address, void* data, uint32_t size){
