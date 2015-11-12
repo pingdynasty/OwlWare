@@ -69,8 +69,8 @@ void CodecController::setup(){
 }
 
 void CodecController::clear(){
-  memset(tx_buffer, 0, sizeof(tx_buffer));
-  memset(rx_buffer, 0, sizeof(rx_buffer));
+  memset(tx_buffer, 0, AUDIO_BUFFER_SIZE*sizeof(int16_t));
+  memset(rx_buffer, 0, AUDIO_BUFFER_SIZE*sizeof(int16_t));
 }
 
 void CodecController::init(ApplicationSettings& settings){
