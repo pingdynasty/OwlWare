@@ -31,22 +31,34 @@ bool getButton(PatchButtonId bid){
   return getProgramVector()->buttons & (1<<bid);
 }
 
+void setGate(){
+#ifdef OWLMODULAR
+  clearPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output high
+#endif
+}
+
+void clearGate(){
+#ifdef OWLMODULAR
+  setPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output low
+#endif
+}
+
 void setButton(PatchButtonId bid){
   ProgramVector* pv = getProgramVector();
   pv->buttons |= (1<<bid);
   pv->parameters[PARAMETER_F+bid] = getSampleCounter();
-#ifdef OWLMODULAR
-  if(bid == PUSHBUTTON)
-    clearPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output high
-#endif
+// #ifdef OWLMODULAR
+//   if(bid == PUSHBUTTON)
+//     clearPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output high
+// #endif
 }
 
 void clearButton(PatchButtonId bid){
   getProgramVector()->buttons &= ~(1<<bid);
-#ifdef OWLMODULAR
-  if(bid == PUSHBUTTON)
-    setPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output low
-#endif
+// #ifdef OWLMODULAR
+//   if(bid == PUSHBUTTON)
+//     setPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output low
+// #endif
 }
 
 void setButton(PatchButtonId bid, bool on){
@@ -95,35 +107,17 @@ void updateBypassMode(){
 
 void togglePushButton(){
   if(getLed() == GREEN){
+    setGate();
     setLed(RED);
     setButton(RED_BUTTON);
     clearButton(GREEN_BUTTON);
   }else{ // if(getLed() == RED){
+    clearGate();
     setLed(GREEN);
     setButton(GREEN_BUTTON);
     clearButton(RED_BUTTON);
   }
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
-}
-
-void setPushButton(LedPin state){
-  switch(state){
-  case RED:
-    setLed(RED);
-    setButton(RED_BUTTON);
-    clearButton(GREEN_BUTTON);
-    break;
-  case GREEN:
-    setLed(GREEN);
-    setButton(GREEN_BUTTON);
-    clearButton(RED_BUTTON);
-    break;
-  case NONE:
-    setLed(NONE);
-    clearButton(GREEN_BUTTON);
-    clearButton(RED_BUTTON);
-    break;
-  }
 }
 
 #ifdef OWLMODULAR
@@ -153,6 +147,7 @@ void pushButtonCallback(){
   if(isPushButtonPressed()){
     pushButtonPressed = getSysTicks();
     setButton(PUSHBUTTON);
+    setGate();
     // setPushButton(RED);
     setLed(RED);
     setButton(RED_BUTTON);
@@ -160,6 +155,7 @@ void pushButtonCallback(){
   }else{
     pushButtonPressed = 0;
     clearButton(PUSHBUTTON);
+    clearGate();
     // setPushButton(GREEN);
     setLed(GREEN);
     setButton(GREEN_BUTTON);
