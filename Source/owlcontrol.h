@@ -27,30 +27,15 @@
    inline void setLed(LedPin led){
      clearPin(LED_PORT, led ^ (LED_RED|LED_GREEN));
      setPin(LED_PORT, led);
-#ifdef OWLMODULAR
-     if(led == LED_RED)
-       clearPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output high
-     else
-       setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output low
-#endif
    }
 
    inline void toggleLed(){
      togglePin(LED_PORT, LED_RED|LED_GREEN);
-#ifdef OWLMODULAR
-     togglePin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
-#endif
    }
 
    inline void blink(){
      togglePin(LED_PORT, LED_RED|LED_GREEN);
-#ifdef OWLMODULAR
-     togglePin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
-#endif
      togglePin(LED_PORT, LED_RED|LED_GREEN);
-#ifdef OWLMODULAR
-     togglePin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
-#endif
    }
 
    inline void debugSet(){
@@ -77,6 +62,10 @@
 
    inline bool isPushButtonPressed(){
      return !getPin(SWITCH_B_PORT, SWITCH_B_PIN);
+   }
+
+   inline bool isPushGatePressed(){
+     return !getPin(SWITCH_A_PORT, SWITCH_A_PIN);
    }
 
    void setupSwitchA(void (*f)());

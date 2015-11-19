@@ -23,7 +23,7 @@ void SysTick_Handler(void){
 #else
 // FreeRTOS callback
 void vApplicationTickHook(void) {
-  systicks ++;
+  systicks++;
   /* systicks += portTICK_PERIOD_MS; */
 }
 #endif /* DEFINE_OWL_SYSTICK */

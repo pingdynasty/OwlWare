@@ -102,3 +102,12 @@ void adcSetupDMA(uint16_t* dma){
   /* Start ADC3 Software Conversion */ 
   ADC_SoftwareStartConv(ADC3);
 }
+
+uint16_t getSampleCounter(){
+  // does not work: always returns values <= 5
+  // return DMA_GetCurrDataCounter(DMA2_Stream0);
+  // todo:
+  volatile uint32_t *DWT_CYCCNT = (volatile uint32_t *)0xE0001004; //address of the register
+  // reset every start of block (after lock in programReady())
+  return (*DWT_CYCCNT)/3500;
+}

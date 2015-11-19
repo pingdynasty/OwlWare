@@ -27,29 +27,51 @@ ApplicationSettings settings;
 PatchRegistry registry;
 volatile bool bypass = false;
 
-// uint16_t getParameterValue(PatchParameterId pid){
-//   return getProgramVector()->parameters[pid];
-// }
-
 bool getButton(PatchButtonId bid){
   return getProgramVector()->buttons & (1<<bid);
-  // return false;
+}
+
+void setButton(PatchButtonId bid){
+  ProgramVector* pv = getProgramVector();
+  pv->buttons |= (1<<bid);
+  pv->parameters[PARAMETER_F+bid] = getSampleCounter();
+#ifdef OWLMODULAR
+  if(bid == PUSHBUTTON)
+    clearPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output high
+#endif
+}
+
+void clearButton(PatchButtonId bid){
+  getProgramVector()->buttons &= ~(1<<bid);
+#ifdef OWLMODULAR
+  if(bid == PUSHBUTTON)
+    setPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output low
+#endif
 }
 
 void setButton(PatchButtonId bid, bool on){
   if(on)
-    getProgramVector()->buttons |= 1<<bid;
+    setButton(bid);
   else
-    getProgramVector()->buttons &= ~(1<<bid);
+    clearButton(bid);
 }
 
-void updateLed(){
-  if(getButton(GREEN_BUTTON))  
-    setLed(GREEN);
-  else if(getButton(RED_BUTTON))
-    setLed(RED);
-  else
-    setLed(NONE);
+void buttonChanged(PatchButtonId bid, bool on){
+  switch(bid){
+  case PUSHBUTTON:
+    togglePushButton();
+    break;
+  case GREEN_BUTTON:
+    setButton(GREEN_BUTTON, on);
+    setButton(RED_BUTTON, !on);
+    setLed(on ? GREEN : RED);
+    break;
+  case RED_BUTTON:
+    setButton(RED_BUTTON, on);
+    setButton(GREEN_BUTTON, !on);
+    setLed(on ? RED : GREEN);
+    break;
+  }
 }
 
 void updateBypassMode(){
@@ -57,46 +79,94 @@ void updateBypassMode(){
   bypass = false;
 #else
   if(isStompSwitchPressed()){
-    setButton(BYPASS_BUTTON, true);
+    setButton(BYPASS_BUTTON);
     bypass = true;
     setLed(NONE);    
   }else{
-    setButton(BYPASS_BUTTON, false);
+    clearButton(BYPASS_BUTTON);
     bypass = false;
-    updateLed();
+    if(getButton(RED_BUTTON))
+      setLed(RED);
+    else
+      setLed(GREEN);
   }
 #endif
-}
-
-void footSwitchCallback(){
-  DEBOUNCE(bypass, BYPASS_DEBOUNCE);
-  updateBypassMode();
 }
 
 void togglePushButton(){
   if(getLed() == GREEN){
     setLed(RED);
-    setButton(RED_BUTTON, true);
-    setButton(GREEN_BUTTON, false);
+    setButton(RED_BUTTON);
+    clearButton(GREEN_BUTTON);
   }else{ // if(getLed() == RED){
     setLed(GREEN);
-    setButton(GREEN_BUTTON, true);
-    setButton(RED_BUTTON, false);
+    setButton(GREEN_BUTTON);
+    clearButton(RED_BUTTON);
   }
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
+void setPushButton(LedPin state){
+  switch(state){
+  case RED:
+    setLed(RED);
+    setButton(RED_BUTTON);
+    clearButton(GREEN_BUTTON);
+    break;
+  case GREEN:
+    setLed(GREEN);
+    setButton(GREEN_BUTTON);
+    clearButton(RED_BUTTON);
+    break;
+  case NONE:
+    setLed(NONE);
+    clearButton(GREEN_BUTTON);
+    clearButton(RED_BUTTON);
+    break;
+  }
+}
+
+#ifdef OWLMODULAR
+void pushGateCallback(){
+  if(isPushGatePressed()){
+    setButton(PUSHBUTTON);
+    setLed(RED);
+    setButton(RED_BUTTON);
+    clearButton(GREEN_BUTTON);
+  }else{
+    clearButton(PUSHBUTTON);
+    setLed(GREEN);
+    setButton(GREEN_BUTTON);
+    clearButton(RED_BUTTON);
+  }
+}
+#else
+void footSwitchCallback(){
+  DEBOUNCE(bypass, BYPASS_DEBOUNCE);
+  updateBypassMode();
+}
+#endif
+
 volatile uint32_t pushButtonPressed;
 void pushButtonCallback(){
-  DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
+  // DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
   if(isPushButtonPressed()){
     pushButtonPressed = getSysTicks();
-    setButton(PUSHBUTTON, true);
-    togglePushButton();
+    setButton(PUSHBUTTON);
+    // setPushButton(RED);
+    setLed(RED);
+    setButton(RED_BUTTON);
+    clearButton(GREEN_BUTTON);
   }else{
     pushButtonPressed = 0;
-    setButton(PUSHBUTTON, false);
+    clearButton(PUSHBUTTON);
+    // setPushButton(GREEN);
+    setLed(GREEN);
+    setButton(GREEN_BUTTON);
+    clearButton(RED_BUTTON);
   }
+  DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
+  midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
 void exitProgram(bool isr){
@@ -221,7 +291,11 @@ void setup(){
 
   adcSetup();
   clockSetup();
+#ifdef OWLMODULAR
+  setupSwitchA(pushGateCallback);
+#else
   setupSwitchA(footSwitchCallback);
+#endif
   setupSwitchB(pushButtonCallback);
 
   settings.init();
@@ -238,6 +312,13 @@ void setup(){
   configureDigitalOutput(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
   debugClear();
 
+#ifdef OWLMODULAR
+  // Configure OWL Modular digital output  
+  RCC_AHB1PeriphClockCmd(PUSH_GATE_OUT_CLK, ENABLE);
+  configureDigitalOutput(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN);
+#endif
+  clearButton(PUSHBUTTON);
+
 #ifdef DEBUG_AUDIO
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // DEBUG
   configureDigitalOutput(GPIOA, GPIO_Pin_7); // PA7 DEBUG
@@ -245,7 +326,7 @@ void setup(){
   clearPin(GPIOC, GPIO_Pin_5); // DEBUG
   clearPin(GPIOA, GPIO_Pin_7); // DEBUG
 #endif /* DEBUG_AUDIO */
-	
+
   usb_init();
 
 #if SERIAL_PORT == 1
@@ -256,12 +337,6 @@ void setup(){
 #ifdef EXPRESSION_PEDAL
 #error invalid configuration
 #endif
-#endif
-
-#ifdef OWLMODULAR
-  configureDigitalInput(GPIOB, GPIO_Pin_6, GPIO_PuPd_NOPULL);  // PB6 OWL Modular digital input
-  configureDigitalOutput(GPIOB, GPIO_Pin_7);  // PB7 OWL Modular digital output
-  setPin(GPIOB, GPIO_Pin_7); // PB7 OWL Modular digital output
 #endif
 
   codec.setup();

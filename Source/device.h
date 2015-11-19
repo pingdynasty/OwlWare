@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "v10"
+#define FIRMWARE_VERSION             "v10.1"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -45,7 +45,8 @@
 #define MIDI_CHANNEL                 0
 #define MIDI_MAX_MESSAGE_SIZE        256
 #define NOF_ADC_VALUES               5
-#define NOF_PARAMETERS               5
+#define NOF_PARAMETERS               10
+#define NOF_BUTTONS                  4
 #define MAX_BUFFERS_PER_PATCH        8
 #define MAX_SYSEX_FIRMWARE_SIZE      ((16+16+64+128+128)*1024) // FLASH sectors 2-6
 #define MAX_SYSEX_PROGRAM_SIZE       (128*1024) // 128k, one flash sector
@@ -69,7 +70,18 @@
 #define SYSTICK_SUBPRIORITY          0
 
 /* pin configuration */
-/* Switch A: bypass foot switch */
+#ifdef OWLMODULAR
+/* Switch A: push gate on OWL Modular */
+#define SWITCH_A_PORT                GPIOB
+#define SWITCH_A_CLOCK               RCC_AHB1Periph_GPIOB
+#define SWITCH_A_PORT_SOURCE         EXTI_PortSourceGPIOB
+#define SWITCH_A_PIN                 GPIO_Pin_6
+#define SWITCH_A_PIN_SOURCE          EXTI_PinSource6
+#define SWITCH_A_PIN_LINE            EXTI_Line6           /* Line 6 connects to all Px6 pins, et c */
+#define SWITCH_A_IRQ                 EXTI9_5_IRQn
+#define SWITCH_A_HANDLER             EXTI9_5_IRQHandler
+#else /* OWLMODULAR */
+/* Switch A: bypass foot switch on OWL Pedal */
 #define SWITCH_A_PORT                GPIOE
 #define SWITCH_A_CLOCK               RCC_AHB1Periph_GPIOE
 #define SWITCH_A_PORT_SOURCE         EXTI_PortSourceGPIOE
@@ -78,6 +90,7 @@
 #define SWITCH_A_PIN_LINE            EXTI_Line4           /* Line 4 connects to all Px4 pins, et c */
 #define SWITCH_A_IRQ                 EXTI4_IRQn
 #define SWITCH_A_HANDLER             EXTI4_IRQHandler
+#endif /* OWLMODULAR */
 
 /* Expression input */
 #define EXPRESSION_PEDAL
@@ -107,8 +120,14 @@
 #define SWITCH_B_IRQ                 EXTI2_IRQn
 #define SWITCH_B_HANDLER             EXTI2_IRQHandler
 
+#ifdef OWLMODULAR
+#define PUSH_GATE_OUT_PIN            GPIO_Pin_7
+#define PUSH_GATE_OUT_PORT           GPIOB
+#define PUSH_GATE_OUT_CLK            RCC_AHB1Periph_GPIOB
+#endif /* OWLMODULAR */
+
 #define BYPASS_DEBOUNCE              200
-#define PUSHBUTTON_DEBOUNCE          100
+#define PUSHBUTTON_DEBOUNCE          100 // 40Hz
 
 #define LED_PORT                     GPIOE
 #define LED_GREEN                    GPIO_Pin_5
