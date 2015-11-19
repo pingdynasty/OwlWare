@@ -47,7 +47,6 @@ AudioBuffer* Patch::createMemoryBuffer(int channels, int samples){
 }
 
 void Patch::setButton(PatchButtonId bid, bool pressed){
-  // processor->setButton(bid, pressed);
   if(pressed)
     getProgramVector()->buttons |= 1<<bid;
   else
@@ -55,8 +54,13 @@ void Patch::setButton(PatchButtonId bid, bool pressed){
 }
 
 bool Patch::isButtonPressed(PatchButtonId bid){
-  // return processor->isButtonPressed(bid);
   return getProgramVector()->buttons & (1<<bid);
+}
+
+int Patch::getSamplesSinceButtonPressed(PatchButtonId bid){
+  int index = bid+PARAMETER_F;
+  return index <= getProgramVector()->parameters_size ? 
+    getProgramVector()->parameters[index] : 0;
 }
 
 AudioBuffer* AudioBuffer::create(int channels, int samples){

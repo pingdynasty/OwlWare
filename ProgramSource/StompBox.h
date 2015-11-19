@@ -14,7 +14,7 @@ enum PatchParameterId {
 };
 
 enum PatchButtonId {
-  BYPASS_BUTTON,
+  BYPASS_BUTTON = 0,
   PUSHBUTTON,
   GREEN_BUTTON,
   RED_BUTTON
@@ -29,13 +29,11 @@ class AudioBuffer {
 public:
   virtual ~AudioBuffer();
   virtual FloatArray getSamples(int channel) = 0;
-  // virtual float* getSamples(int channel) = 0;
   virtual int getChannels() = 0;
   virtual int getSize() = 0;
   virtual void clear() = 0;
   static AudioBuffer* create(int channels, int samples);
 };
-
 
 class Patch {
 public:
@@ -44,6 +42,7 @@ public:
   void registerParameter(PatchParameterId pid, const char* name, const char* description = "");
   float getParameterValue(PatchParameterId pid);
   bool isButtonPressed(PatchButtonId bid);
+  int getSamplesSinceButtonPressed(PatchButtonId bid);
   void setButton(PatchButtonId bid, bool pressed);
   int getBlockSize();
   double getSampleRate();
@@ -54,9 +53,6 @@ public:
   virtual void processAudio(AudioBuffer& output) = 0;
 private:
   PatchProcessor* processor;
-  /* uint8_t bufferCount; */
-  /* uint16_t parameterValues[NOF_ADC_VALUES]; */
-  /* AudioBuffer* buffers[MAX_BUFFERS_PER_PATCH]; */
 };
 
 #endif // __StompBox_h__
