@@ -6,6 +6,7 @@
 #include "owlcontrol.h" // for setErrorMessage
 #include "basicmaths.h"
 #include "ProgramVector.h"
+#include "BiquadFilter.hpp"
 
 // #define STATIC_PROGRAM_STACK_SIZE   (64*1024)
 // #define STATIC_PROGRAM_STACK_BASE   ((uint32_t*)CCMRAM)

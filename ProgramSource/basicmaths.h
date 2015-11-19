@@ -48,7 +48,7 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
-  inline float arm_sqrt(float in){
+  inline float arm_sqrtf(float in){
     float out;
 #ifdef ARM_CORTEX
     arm_sqrt_f32(in, &out);
@@ -69,15 +69,15 @@
 }
 #endif
 
-/* #define pow(x, y) fastPow(x, y) */
-/* #define powf(x, y) fastPow(x, y) */
+/* #define pow(x, y) fastpowf(x, y) */
+/* #define powf(x, y) fastpowf(x, y) */
 #ifdef ARM_CORTEX
 #define sin(x) arm_sin_f32(x)
 #define sinf(x) arm_sin_f32(x)
 #define cos(x) arm_cos_f32(x)
 #define cosf(x) arm_cos_f32(x)
-#define sqrt(x) arm_sqrt(x)
-#define sqrtf(x) arm_sqrt(x)
+#define sqrt(x) arm_sqrtf(x)
+#define sqrtf(x) arm_sqrtf(x)
 #endif //ARM_CORTEX
 
 #endif // __basicmaths_h__

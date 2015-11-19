@@ -4,42 +4,49 @@ REGISTER_PATCH(JotReverbPatch, "Jot Reverb", 2, 2);
 REGISTER_PATCH(FreeVerbPatch, "FreeVerb", 1, 1);
 REGISTER_PATCH(PlateVerbPatch, "Plate Reverb", 1, 1);
 REGISTER_PATCH(FourBandsEqPatch, "Four Band EQ", 2, 2);
-REGISTER_PATCH(ParametricEqPatch, "Parametric EQ", 2, 2);
+REGISTER_PATCH(StereoWahPatch, "StereoWah", 2, 2);
+//REGISTER_PATCH(ParametricEqPatch, "Parametric EQ", 2, 2);
 REGISTER_PATCH(OverdrivePatch, "Overdrive", 2, 2);
 REGISTER_PATCH(MoogPatch, "Moog Drive", 2, 2);
 REGISTER_PATCH(StereoPatch<PhaserPatch>, "Phaser", 2, 2);
 
 REGISTER_PATCH(SimpleStereoDelayPatch, "Stereo Delay", 2, 2);
 REGISTER_PATCH(SmoothDelayPatch, "Smooth Delay", 1, 1);
-REGISTER_PATCH(LpfDelayPatch, "Lowpass Delay", 1, 1);
-REGISTER_PATCH(PitchShifterPatch, "Pitch Shifter", 2, 2);
-REGISTER_PATCH(EnvelopeFilterPatch, "Envelope Filter", 2, 2);
-REGISTER_PATCH(StereoWahPatch, "StereoWah", 2, 2);
-REGISTER_PATCH(VibroFlangePatch, "Vibro-Flange", 1, 1); /* 104% ext ram */
-REGISTER_PATCH(PsycheFilterPatch, "Psyche Filter", 2, 2);
+REGISTER_PATCH(StereoPatch<LpfDelayPatch>, "Lowpass Delay", 2, 2);
+REGISTER_PATCH(SlapBackEchoPatch, "Slap Back Echo", 2, 2);
+REGISTER_PATCH(PingPongDelayPatch, "Ping Pong Delay", 2, 2);
+REGISTER_PATCH(StereoPatch<DubDelayPatch>, "Dub Delay", 2, 2);
+REGISTER_PATCH(TempoSyncedStereoDelayPatch, "Tap Tempo Delay", 2, 2);
+REGISTER_PATCH(TempoSyncedPingPongDelayPatch, "TTPP Delay", 2, 2);
+
+//REGISTER_PATCH(EnvelopeFilterPatch, "Envelope Filter", 2, 2);
 
 REGISTER_PATCH(DroneBoxPatch, "OL/DroneBox", 2, 2);
 REGISTER_PATCH(BlipperPatch, "OL/Blipper", 2, 2); // PC-2 emulation
 REGISTER_PATCH(WeirdPhaserPatch, "OL/Weird Phaser", 2, 2);
 REGISTER_PATCH(ThruZeroFlangerPatch, "OL/Thru Zero Flanger", 2, 2);
 REGISTER_PATCH(DualPitchShifterPatch, "OL/Dual Pitch Shifter", 2, 2);
-REGISTER_PATCH(DualFreqShifterPatch, "OL/Dual Frequency Shifter", 2, 2);
-REGISTER_PATCH(StereoFreqShifterPatch, "OL/Stereo Frequency Shifter", 2, 2);
-REGISTER_PATCH(XFMPatch, "OL/XFM Oscillator", 0, 2);
+REGISTER_PATCH(PitchShifterPatch, "Pitch Shifter", 2, 2);
+REGISTER_PATCH(StereoPatch<VibroFlangePatch>, "Vibro-Flange", 2, 2);
+REGISTER_PATCH(PsycheFilterPatch, "Psyche Filter", 2, 2);
 
-REGISTER_PATCH(StereoPatch<GuitarixTonePatch>, "Guitarix/Tone", 1, 1);
+// REGISTER_PATCH(DualFreqShifterPatch, "OL/Dual Frequency Shifter", 2, 2);
+// REGISTER_PATCH(StereoFreqShifterPatch, "OL/Stereo Frequency Shifter", 2, 2);
+// REGISTER_PATCH(XFMPatch, "OL/XFM Oscillator", 0, 2);
+
+REGISTER_PATCH(StereoPatch<GuitarixTonePatch>, "Guitarix/Tone", 2, 2);
 REGISTER_PATCH(StereoPatch<GuitarixBMfpPatch>, "Guitarix/BigMuffFuzz", 2, 2);
 REGISTER_PATCH(StereoPatch<GuitarixOverdrivePatch>, "Guitarix/Overdrive", 2, 2);
 REGISTER_PATCH(GuitarixOscTubePatch, "Guitarix/OscTube", 1, 1);
 REGISTER_PATCH(StereoPatch<GuitarixDistortion1Patch>, "Guitarix/Distortion1", 2, 2);
-REGISTER_PATCH(StereoPatch<GuitarixMoogPatch>, "Guitarix/Moog Filter", 1, 1);
+REGISTER_PATCH(StereoPatch<GuitarixMoogPatch>, "Guitarix/Moog Filter", 2, 2);
 REGISTER_PATCH(GuitarixCompressorPatch, "Guitarix/Compressor", 1, 1);
-REGISTER_PATCH(StereoPatch<GuitarixFlangerGXPatch>, "Guitarix/FlangerGX", 1, 1);
+REGISTER_PATCH(StereoPatch<GuitarixFlangerGXPatch>, "Guitarix/FlangerGX", 2, 2);
 
 REGISTER_PATCH(ComplexorPatch, "MK/Complexor", 2, 2);
 REGISTER_PATCH(MdaBandistoPatch, "MDA/Bandisto", 2, 2);
-REGISTER_PATCH(DigitalMayhemPatch, "RS/Digital Mayhem", 1, 1);
-REGISTER_PATCH(SirenPatch, "Siren", 0, 1);
+REGISTER_PATCH(StereoPatch<DigitalMayhemPatch>, "RS/Digital Mayhem", 2, 2);
+REGISTER_PATCH(SirenPatch, "Siren", 0, 2);
 
 // REGISTER_PATCH(AutoWahPatch, "AutoWah", 1, 1); /* 104% ext ram*/
 // REGISTER_PATCH(GuitarixDunwahPatch, "Guitarix/Dunwah", 2, 2);

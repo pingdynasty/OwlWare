@@ -10,9 +10,16 @@
 #include "Faust/PitchShifterPatch.hpp"
 #include "PhaserPatch.hpp"
 #include "EnvelopeFilterPatch.hpp"
+
 #include "Faust/SmoothDelayPatch.hpp"
 #include "LpfDelayPatch.hpp"
 #include "SimpleStereoDelayPatch.hpp"
+#include "SlapBackEchoPatch.hpp"
+#include "PingPongDelayPatch.hpp"
+#include "DubDelayPatch.hpp"
+#include "TempoSyncedStereoDelayPatch.hpp"
+#include "TempoSyncedPingPongDelayPatch.hpp"
+
 #include "PsycheFilterPatch.hpp"
 #include "Qompression.hpp"
 #include "Guitarix/GuitarixOverdrivePatch.hpp"
@@ -41,8 +48,8 @@
 
 #include "OliLarkin/BlipperPatch.hpp"
 #include "OliLarkin/DroneBoxPatch.hpp"
-#include "OliLarkin/StereoFreqShifterPatch.hpp"
-#include "OliLarkin/DualFreqShifterPatch.hpp"
+//#include "OliLarkin/StereoFreqShifterPatch.hpp"
+//#include "OliLarkin/DualFreqShifterPatch.hpp"
 #include "OliLarkin/DualPitchShifterPatch.hpp"
 #include "OliLarkin/ThruZeroFlangerPatch.hpp"
 #include "OliLarkin/WeirdPhaserPatch.hpp"
