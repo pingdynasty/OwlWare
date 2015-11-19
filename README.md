@@ -23,13 +23,7 @@ You will then also have to manually download [OwlPatches][owlpatches-zip] and un
 ## GNU Tools for ARM Embedded Processors
 Download the [GNU ARM toolchain][gcc-arm] for your operating system. Unzip in the __OwlWare/Tools__ directory.
 
-If you want to install it elsewhere, edit `Makefile.common` in the __OwlWare__ directory to point to the right `TOOLROOT` directory.
-
-
-## STM32F4DISCOVERY Firmware Package
-Download [the STM32F4-Discovery Firmware Package][STM32068] and unzip the file `stsw-stm32068.zip` in the __OwlWare/Libraries__ directory.
-
-If you have installed the software elsewhere, edit `Makefile.f4` in the __OwlWare__ directory to point to the right `LIBROOT` directory.
+If you want to install it elsewhere, edit `common.mk` in the __OwlWare__ directory to point to the right `TOOLROOT` directory.
 
 
 ## DFU Util
@@ -67,7 +61,6 @@ In the __OwlWare__ directory, type in:
 * `make debug` to build the elf file and upload to an OWL device connected with `st-util` using an stlink programmer
 
 
-[STM32068]: http://www.st.com/web/catalog/tools/FM147/CL1794/SC961/SS1743/PF257904
 [gcc-arm]: https://launchpad.net/gcc-arm-embedded
 [dfu-util]: http://dfu-util.gnumonks.org
 [stlink]: https://github.com/texane/stlink
