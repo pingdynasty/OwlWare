@@ -48,8 +48,8 @@
 
 #include "OliLarkin/BlipperPatch.hpp"
 #include "OliLarkin/DroneBoxPatch.hpp"
-//#include "OliLarkin/StereoFreqShifterPatch.hpp"
-//#include "OliLarkin/DualFreqShifterPatch.hpp"
+#include "OliLarkin/StereoFreqShifterPatch.hpp"
+#include "OliLarkin/DualFreqShifterPatch.hpp"
 #include "OliLarkin/DualPitchShifterPatch.hpp"
 #include "OliLarkin/ThruZeroFlangerPatch.hpp"
 #include "OliLarkin/WeirdPhaserPatch.hpp"
