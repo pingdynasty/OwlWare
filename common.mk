@@ -38,6 +38,13 @@ all: bin
 $(ELF) : $(OBJS) $(LDSCRIPT)
 	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
+# compile library targets
+%.o: %.c
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+
+%.o: %.S
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+
 # compile and generate dependency info
 $(BUILD)/%.o: %.c
 	@$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
@@ -63,16 +70,16 @@ clean:
 	@rm -f $(OBJS) $(BUILD)/*.d $(ELF) $(CLEANOTHER) $(BIN) $(ELF:.elf=.s) $(OBJS:.o=.s) gdbscript
 
 debug: $(ELF)
-	echo "target extended localhost:4242" > gdbscript
-	echo "load $(ELF)" >> gdbscript
+	@echo "target extended localhost:4242" > gdbscript
+	@echo "load $(ELF)" >> gdbscript
 	$(GDB) -x gdbscript $(ELF)
 # 	bash -c "$(GDB) -x <(echo target extended localhost:4242) $(ELF)"
 
-flash: bin
-	$(STFLASH) write $(BIN) 0x8000000
+flash:
+	$(STFLASH) write $(BIN) 0x8008000
 
 stlink:
-	echo "target extended localhost:4242" > gdbscript
+	@echo "target extended localhost:4242" > gdbscript
 	$(GDB) -x gdbscript $(ELF)
 
 etags:
@@ -86,10 +93,10 @@ bin: $(BIN)
 	@echo Successfully built OWL $(PLATFORM) $(CONFIG) firmware in $(BIN)
 
 map : $(OBJS) $(LDSCRIPT)
-	$(LD) $(LDFLAGS) -Wl,-Map=$(ELF:.elf=.map) $(OBJS) $(LDLIBS)
+	@$(LD) $(LDFLAGS) -Wl,-Map=$(ELF:.elf=.map) $(OBJS) $(LDLIBS)
 
 as: $(ELF)
-	$(OBJDUMP) -S $(ELF) > $(ELF:.elf=.s)
+	@$(OBJDUMP) -S $(ELF) > $(ELF:.elf=.s)
 
 dfu: $(BIN)
 	$(DFUUTIL) -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8008000:leave -D $(BIN)
