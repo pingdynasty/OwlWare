@@ -78,3 +78,12 @@ CPPFLAGS += -I$(TEMPLATEROOT)/Libraries/OwlPatches
 
 include $(TEMPLATEROOT)/libs.mk
 include $(TEMPLATEROOT)/f4.mk
+
+DFUCMD = $(DFUUTIL) -d 0483:df11 -c 1 -i 0 -a 0
+deploy:
+	@echo Flashing OWL $(PLATFORM) firmware
+	$(DFUCMD) -s 0x080E0000 -D binaries/patch0.bin
+	$(DFUCMD) -s 0x080C0000 -D binaries/patch1.bin
+	$(DFUCMD) -s 0x080A0000 -D binaries/patch2.bin
+	$(DFUCMD) -s 0x08080000 -D binaries/patch3.bin
+	$(DFUCMD) -s 0x8008000:leave -D binaries/OwlWare-v10-$(PLATFORM).bin
