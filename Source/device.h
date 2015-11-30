@@ -44,10 +44,10 @@
 #define AUDIO_INPUT_GAIN_RIGHT       0x01b
 #define AUDIO_OUTPUT_GAIN_LEFT       0x073
 #define AUDIO_OUTPUT_GAIN_RIGHT      0x073
-#define AUDIO_VOLT_OFFSET            0x00
-#define AUDIO_VOLT_SCALAR            0x7fffffff /* INT32_MAX */
-#define AUDIO_VOLT_OFFSET            0x00
-#define AUDIO_VOLT_SCALAR            0x7fffffff /* INT32_MAX */
+#define AUDIO_INPUT_OFFSET           0x0     /* AC coupled */
+#define AUDIO_INPUT_SCALAR           0x1fffe /* 2.0 * 65535 */
+#define AUDIO_OUTPUT_OFFSET          0x0     /* AC coupled */
+#define AUDIO_OUTPUT_SCALAR          0x1fffe /* 2.0 * 65535 */
 #endif /* OWLMODULAR */
 
 #define MIDI_CHANNEL                 0
