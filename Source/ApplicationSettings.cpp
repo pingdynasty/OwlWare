@@ -30,6 +30,10 @@ void ApplicationSettings::reset(){
   outputGainRight = AUDIO_OUTPUT_GAIN_RIGHT;
   program_index = DEFAULT_PROGRAM;
   program_change_button = true;
+  input_offset = AUDIO_INPUT_OFFSET;
+  input_scalar = AUDIO_INPUT_SCALAR;
+  output_offset = AUDIO_OUTPUT_OFFSET;
+  output_scalar = AUDIO_OUTPUT_SCALAR;
 }
 
 bool ApplicationSettings::settingsInFlash(){

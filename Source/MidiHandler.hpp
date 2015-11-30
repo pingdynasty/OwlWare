@@ -151,6 +151,13 @@ public:
       case LED:
 	midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
 	break;
+      case PATCH_PARAMETER_A:
+      case PATCH_PARAMETER_B:
+      case PATCH_PARAMETER_C:
+      case PATCH_PARAMETER_D:
+      case PATCH_PARAMETER_E:
+	midi.sendPatchParameterValues();
+	break;
       case 127:
 	midi.sendSettings();
 	break;
@@ -188,7 +195,7 @@ public:
     if(size < 4)
       return;
     char* p = (char*)data;
-    uint32_t value = strtol(p+2, NULL, 16);
+    int32_t value = strtol(p+2, NULL, 16);
     if(strncmp(SYSEX_CONFIGURATION_AUDIO_RATE, p, 2) == 0){
       settings.audio_samplingrate = value;
     }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_BLOCKSIZE, p, 2) == 0){
@@ -210,6 +217,14 @@ public:
       // settings.audio_codec_halfspeed = (p[2] == '1' ? true : false);
     }else if(strncmp(SYSEX_CONFIGURATION_PC_BUTTON, p, 2) == 0){
       settings.program_change_button = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_INPUT_OFFSET, p, 2) == 0){
+      settings.input_offset = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_INPUT_SCALAR, p, 2) == 0){
+      settings.input_scalar = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_OUTPUT_OFFSET, p, 2) == 0){
+      settings.output_offset = value;
+    }else if(strncmp(SYSEX_CONFIGURATION_OUTPUT_SCALAR, p, 2) == 0){
+      settings.output_scalar = value;
     }
     updateCodecSettings();
   }

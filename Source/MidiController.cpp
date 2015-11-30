@@ -20,13 +20,17 @@ void MidiController::init(uint8_t ch){
   channel = ch;
 }
 
-void MidiController::sendSettings(){
-  sendPc(settings.program_index);
+void MidiController::sendPatchParameterValues(){
   sendCc(PATCH_PARAMETER_A, (uint8_t)(getAnalogValue(PARAMETER_A)>>5) & 0x7f);
   sendCc(PATCH_PARAMETER_B, (uint8_t)(getAnalogValue(PARAMETER_B)>>5) & 0x7f);
   sendCc(PATCH_PARAMETER_C, (uint8_t)(getAnalogValue(PARAMETER_C)>>5) & 0x7f);
   sendCc(PATCH_PARAMETER_D, (uint8_t)(getAnalogValue(PARAMETER_D)>>5) & 0x7f);
   sendCc(PATCH_PARAMETER_E, (uint8_t)(getAnalogValue(PARAMETER_E)>>5) & 0x7f);
+}
+
+void MidiController::sendSettings(){
+  sendPc(settings.program_index);
+  sendPatchParameterValues();
   sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
   sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
   sendCc(LEFT_INPUT_GAIN, codec.getInputGainLeft()<<2);

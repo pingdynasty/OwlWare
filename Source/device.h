@@ -34,12 +34,20 @@
 #define AUDIO_INPUT_GAIN_RIGHT       0x017
 #define AUDIO_OUTPUT_GAIN_LEFT       0x079
 #define AUDIO_OUTPUT_GAIN_RIGHT      0x079 
+#define AUDIO_INPUT_OFFSET           0xffffefaa /* -0.06382 * 65535 */
+#define AUDIO_INPUT_SCALAR           0xfffbb5c7 /* -4.290 * 65535 */
+#define AUDIO_OUTPUT_OFFSET          0x00001eec /* 0.1208 * 65535 */
+#define AUDIO_OUTPUT_SCALAR          0xfffb5bab /* -4.642 * 65535 */
 #else /* OWLMODULAR */
 /* +6db in, -6dB out */
 #define AUDIO_INPUT_GAIN_LEFT        0x01b
 #define AUDIO_INPUT_GAIN_RIGHT       0x01b
 #define AUDIO_OUTPUT_GAIN_LEFT       0x073
 #define AUDIO_OUTPUT_GAIN_RIGHT      0x073
+#define AUDIO_VOLT_OFFSET            0x00
+#define AUDIO_VOLT_SCALAR            0x7fffffff /* INT32_MAX */
+#define AUDIO_VOLT_OFFSET            0x00
+#define AUDIO_VOLT_SCALAR            0x7fffffff /* INT32_MAX */
 #endif /* OWLMODULAR */
 
 #define MIDI_CHANNEL                 0

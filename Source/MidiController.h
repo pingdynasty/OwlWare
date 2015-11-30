@@ -21,6 +21,7 @@ public:
   void sendConfigurationSetting(const char* name, uint32_t value);
   void sendPatchParameterNames();
   void sendPatchParameterName(PatchParameterId pid, const char* name);
+  void sendPatchParameterValues();
   void sendPatchNames();
   void sendPatchName(uint8_t index);
   void sendDeviceInfo();

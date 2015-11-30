@@ -28,6 +28,10 @@ public:
   uint8_t audio_codec_protocol;
   uint8_t program_index;
   bool program_change_button;
+  uint32_t input_offset;
+  uint32_t input_scalar;
+  uint32_t output_offset;
+  uint32_t output_scalar;
 public:
   void init();
   void reset();
