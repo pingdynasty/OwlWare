@@ -1,6 +1,16 @@
 #include "basicmaths.h"
 #include <stdint.h>
 
+float arm_sqrtf(float in){
+  float out;
+#ifdef ARM_CORTEX
+  arm_sqrt_f32(in, &out);
+#else
+  out=sqrtf(in);
+#endif
+  return out;
+}
+
 float fastpowf(float a, float b){
   /* Taken from
    * http://martin.ankerl.com/2007/10/04/optimized-pow-approximation-for-java-and-c-c/
