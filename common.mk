@@ -67,7 +67,7 @@ $(BUILD)/%.bin: $(BUILD)/%.elf
 	@$(OBJCOPY) -O binary $< $@
 
 clean:
-	@rm -f $(OBJS) $(BUILD)/*.d $(ELF) $(CLEANOTHER) $(BIN) $(ELF:.elf=.s) $(OBJS:.o=.s) gdbscript
+	@rm -f $(OBJS) $(BUILD)/*.d $(ELF) $(CLEANOTHER) $(BIN) $(ELF:.elf=.s) gdbscript
 
 debug: $(ELF)
 	@echo "target extended localhost:4242" > gdbscript
