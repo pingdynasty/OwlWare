@@ -303,7 +303,7 @@ void ProgramManager::programReady(){
   //    togglePushButton();
   if(buttons != programVector->buttons){
     for(int i=1; i<NOF_BUTTONS; ++i) // skip bypass button
-      if(buttons & (1<<i) != programVector->buttons & (1<<i))
+      if((buttons & (1<<i)) != (programVector->buttons & (1<<i)))
   	buttonChanged(i, programVector->buttons & (1<<i));
   }
 #ifdef DEBUG_DWT
