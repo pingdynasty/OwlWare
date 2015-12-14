@@ -68,7 +68,7 @@ void setButton(PatchButtonId bid, bool on){
     clearButton(bid);
 }
 
-void buttonChanged(PatchButtonId bid, bool on){
+void buttonChanged(int bid, bool on){
   switch(bid){
   case PUSHBUTTON:
     togglePushButton();
@@ -82,6 +82,8 @@ void buttonChanged(PatchButtonId bid, bool on){
     setButton(RED_BUTTON, on);
     setButton(GREEN_BUTTON, !on);
     setLed(on ? RED : GREEN);
+    break;
+  default:
     break;
   }
 }
