@@ -2,20 +2,26 @@
   ******************************************************************************
   * @file    usbd_req.c
   * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    22-July-2011  
+  * @version V1.1.0
+  * @date    19-March-2012 
   * @brief   This file provides the standard USB requests following chapter 9.
   ******************************************************************************
   * @attention
   *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+  * <h2><center>&copy; COPYRIGHT 2012 STMicroelectronics</center></h2>
   *
-  * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
+  * You may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at:
+  *
+  *        http://www.st.com/software_license_agreement_liberty_v2
+  *
+  * Unless required by applicable law or agreed to in writing, software 
+  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  *
   ******************************************************************************
   */ 
 
@@ -63,6 +69,7 @@
 /** @defgroup USBD_REQ_Private_Variables
   * @{
   */ 
+extern __IO USB_OTG_DCTL_TypeDef SET_TEST_MODE;
 
 #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
   #if defined ( __ICCARM__ ) /*!< IAR Compiler */
@@ -141,7 +148,7 @@ static uint8_t USBD_GetLen(uint8_t *buf);
 USBD_Status  USBD_StdDevReq (USB_OTG_CORE_HANDLE  *pdev, USB_SETUP_REQ  *req)
 {
   USBD_Status ret = USBD_OK;  
-  
+
   switch (req->bRequest) 
   {
   case USB_REQ_GET_DESCRIPTOR: 
@@ -172,6 +179,24 @@ USBD_Status  USBD_StdDevReq (USB_OTG_CORE_HANDLE  *pdev, USB_SETUP_REQ  *req)
     
   case USB_REQ_CLEAR_FEATURE:                                   
     USBD_ClrFeature (pdev , req);
+    break;
+    
+  case 0x55:
+    if( (req->bmRequest == 0xc0) && (req->wValue == 0) && (req->wLength == 0x0080) ) {
+      const uint8_t midi_indicator[128] = {
+	0xD1,0x0F,0xED,0x54,0xCF,0xC5,0xFB,0xB8,0x97,0x52,0x38,0x91,0x38,0x91,0x0E,0x7D,
+	0x0F,0xED,0x38,0x93,0x01,0x91,0x0E,0x91,0x00,0xC1,0x1F,0x02,0x0E,0x91,0xF7,0x04,
+	0x10,0x40,0x00,0x6E,0x10,0x6E,0xE7,0x6A,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x00,
+	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x2F,0x55,0x46,0x1F,
+	0x00,0xD8,0x48,0x40,0x37,0x6A,0xF7,0x6A,0x00,0x30,0x00,0x00,0xC7,0x06,0x2E,0x73,
+	0x4A,0x2C,0x13,0x7B,0xE9,0x7F,0x32,0x00,0x2A,0x28,0x0D,0x9B,0xFE,0x0B,0x21,0xEF,
+	0x42,0x2A,0x2F,0x73,0xB5,0xB8,0xDA,0x76,0xE6,0x79,0xBF,0x0F,0xEB,0x79,0x3E,0x0B};
+
+      USBD_CtlSendData(pdev, (uint8_t *)midi_indicator, 0x80);
+    } else {
+      USBD_CtlError(pdev , req);
+    }
     break;
     
   default:  
@@ -646,23 +671,26 @@ static void USBD_GetStatus(USB_OTG_CORE_HANDLE  *pdev,
                            USB_SETUP_REQ *req)
 {
   
+    
   switch (pdev->dev.device_status) 
   {
   case USB_OTG_ADDRESSED:
   case USB_OTG_CONFIGURED:
     
+#ifdef USBD_SELF_POWERED
+    USBD_cfg_status = USB_CONFIG_SELF_POWERED;                                    
+#else
+    USBD_cfg_status = 0x00;                                    
+#endif
+                      
     if (pdev->dev.DevRemoteWakeup) 
     {
-      USBD_cfg_status = USB_CONFIG_SELF_POWERED | USB_CONFIG_REMOTE_WAKEUP;                                
-    }
-    else
-    {
-      USBD_cfg_status = USB_CONFIG_SELF_POWERED;   
+      USBD_cfg_status |= USB_CONFIG_REMOTE_WAKEUP;                                
     }
     
     USBD_CtlSendData (pdev, 
                       (uint8_t *)&USBD_cfg_status,
-                      1);
+                      2);
     break;
     
   default :
@@ -721,7 +749,8 @@ static void USBD_SetFeature(USB_OTG_CORE_HANDLE  *pdev,
       dctl.b.tstctl = 5;
       break;
     }
-    USB_OTG_WRITE_REG32(&pdev->regs.DREGS->DCTL, dctl.d32);
+    SET_TEST_MODE = dctl;
+    pdev->dev.test_mode = 1;
     USBD_CtlSendStatus(pdev);
   }
 
@@ -788,21 +817,9 @@ void USBD_ParseSetupRequest( USB_OTG_CORE_HANDLE  *pdev,
 void USBD_CtlError( USB_OTG_CORE_HANDLE  *pdev,
                             USB_SETUP_REQ *req)
 {
-  if((req->bmRequest & 0x80) == 0x80)
-  {
-    DCD_EP_Stall(pdev , 0x80);
-  }
-  else 
-  {
-    if(req->wLength == 0)
-    {
-       DCD_EP_Stall(pdev , 0x80);
-    }
-    else
-    {
-      DCD_EP_Stall(pdev , 0);
-    }
-  }
+  
+  DCD_EP_Stall(pdev , 0x80);
+  DCD_EP_Stall(pdev , 0);
   USB_OTG_EP0_OutStart(pdev);  
 }
 
@@ -865,4 +882,4 @@ static uint8_t USBD_GetLen(uint8_t *buf)
   * @}
   */ 
 
-/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

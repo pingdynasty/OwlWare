@@ -199,8 +199,11 @@ void GPIO_Init(GPIO_TypeDef* GPIOx, GPIO_InitTypeDef* GPIO_InitStruct)
 
     if (currentpin == pos)
     {
-      GPIOx->MODER  &= ~(GPIO_MODER_MODER0 << (pinpos * 2));
-      GPIOx->MODER |= (((uint32_t)GPIO_InitStruct->GPIO_Mode) << (pinpos * 2));
+      // TK: added check if MODER already initialized to target value to avoid glitches during reconfiguration of output pins!
+      if( ((GPIOx->MODER >> (2*pinpos)) & 3) != GPIO_InitStruct->GPIO_Mode ) {
+	GPIOx->MODER  &= ~(GPIO_MODER_MODER0 << (pinpos * 2));
+	GPIOx->MODER |= (((uint32_t)GPIO_InitStruct->GPIO_Mode) << (pinpos * 2));
+      }
 
       if ((GPIO_InitStruct->GPIO_Mode == GPIO_Mode_OUT) || (GPIO_InitStruct->GPIO_Mode == GPIO_Mode_AF))
       {
