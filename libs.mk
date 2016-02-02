@@ -3,6 +3,7 @@ OBJS += $(PERIPH)
 OBJS += $(BUILD)/startup.o
 OBJS += $(BUILD)/libnosys_gnu.o
 OBJS += $(USB_DEVICE) $(USB_OTG)
+OBJS += $(USB_HOST)
 OBJS += $(DSPLIB)/FastMathFunctions/arm_sin_f32.o
 OBJS += $(DSPLIB)/FastMathFunctions/arm_cos_f32.o
 OBJS += $(DSPLIB)/CommonTables/arm_common_tables.o

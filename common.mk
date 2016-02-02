@@ -3,7 +3,8 @@ ELF=$(BUILD)/OwlWare.elf
 BIN=$(BUILD)/OwlWare.bin
 
 # Tool path
-TOOLROOT ?= $(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-4_9-2015q3/bin
+TOOLROOT ?= $(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-5_2-2015q4/bin
+# TOOLROOT=/Users/mars/devel/stm32fx/gcc-arm-none-eabi-4_7-2013q3/bin
 STLINK ?= $(TEMPLATEROOT)/Tools/stlink/
 DFUUTIL ?= $(TEMPLATEROOT)/Tools/dfu-util/dfu-util
 
@@ -30,6 +31,7 @@ vpath %.c $(PERIPH_FILE)/src
 vpath %.c $(PERIPH_FILE)/inc
 vpath %.c $(DEVICE)
 vpath %.c $(USB_DEVICE_FILE)/Core/src
+vpath %.c $(USB_HOST_FILE)/Core/src
 vpath %.c $(USB_OTG_FILE)/src/
 
 all: bin

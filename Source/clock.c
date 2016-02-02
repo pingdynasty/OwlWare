@@ -17,6 +17,11 @@ void clockSetup(){
 #endif /* DEFINE_OWL_SYSTICK */
 }
 
+void delay(uint32_t ms){
+  ms += systicks;
+  while(systicks < ms);
+}
+
 #ifdef DEFINE_OWL_SYSTICK
 void SysTick_Handler(void){
   systicks++;

@@ -1,35 +1,35 @@
-#include "usbd_audio_core.h"
+#include "usbd_midi_core.h"
 #include "midicontrol.h"
 
 /*********************************************
-   AUDIO Device library callbacks
+   MIDI Device library callbacks
  *********************************************/
-static uint8_t  usbd_audio_Init       (void  *pdev, uint8_t cfgidx);
-static uint8_t  usbd_audio_DeInit     (void  *pdev, uint8_t cfgidx);
-static uint8_t  usbd_audio_Setup      (void  *pdev, USB_SETUP_REQ *req);
-static uint8_t  usbd_audio_EP0_RxReady(void *pdev);
-static uint8_t  usbd_audio_DataIn     (void *pdev, uint8_t epnum);
-static uint8_t  usbd_audio_DataOut    (void *pdev, uint8_t epnum);
-static uint8_t  usbd_audio_SOF        (void *pdev);
-//static uint8_t  usbd_audio_OUT_Incplt (void  *pdev);
+static uint8_t  usbd_midi_Init       (void  *pdev, uint8_t cfgidx);
+static uint8_t  usbd_midi_DeInit     (void  *pdev, uint8_t cfgidx);
+static uint8_t  usbd_midi_Setup      (void  *pdev, USB_SETUP_REQ *req);
+static uint8_t  usbd_midi_EP0_RxReady(void *pdev);
+static uint8_t  usbd_midi_DataIn     (void *pdev, uint8_t epnum);
+static uint8_t  usbd_midi_DataOut    (void *pdev, uint8_t epnum);
+static uint8_t  usbd_midi_SOF        (void *pdev);
+//static uint8_t  usbd_midi_OUT_Incplt (void  *pdev);
 static void Handle_USBAsynchXfer (void *pdev);
 
 /*********************************************
-   AUDIO Requests management functions
+   MIDI Requests management functions
  *********************************************/
-static uint8_t  *USBD_audio_GetCfgDesc (uint8_t speed, uint16_t *length);
+static uint8_t  *USBD_midi_GetCfgDesc (uint8_t speed, uint16_t *length);
 
 __ALIGN_BEGIN uint8_t USB_Rx_Buffer   [MIDI_MAX_PACKET_SIZE] __ALIGN_END ;
 
 
-/* Main Buffer for Audio Control Rrequests transfers and its relative variables */
-uint8_t  AudioCtl[64];
-uint8_t  AudioCtlCmd = 0;
-uint32_t AudioCtlLen = 0;
-uint8_t  AudioCtlUnit = 0;
+/* Main Buffer for Midi Control Rrequests transfers and its relative variables */
+uint8_t  MidiCtl[64];
+uint8_t  MidiCtlCmd = 0;
+uint32_t MidiCtlLen = 0;
+uint8_t  MidiCtlUnit = 0;
 
-static __IO uint32_t  usbd_audio_AltSet = 0;
-static uint8_t usbd_audio_CfgDesc[AUDIO_CONFIG_DESC_SIZE];
+static __IO uint32_t  usbd_midi_AltSet = 0;
+static uint8_t usbd_midi_CfgDesc[MIDI_CONFIG_DESC_SIZE];
 
 __ALIGN_BEGIN uint8_t USB_Rx_Buffer   [MIDI_MAX_PACKET_SIZE] __ALIGN_END ;
 
@@ -41,33 +41,33 @@ volatile uint32_t APP_Rx_length  = 0;
 
 uint8_t  USB_Tx_State = 0;
 
-/* AUDIO interface class callbacks structure */
-USBD_Class_cb_TypeDef  AUDIO_cb = 
+/* MIDI interface class callbacks structure */
+USBD_Class_cb_TypeDef  MIDI_device_callbacks = 
 {
-  usbd_audio_Init,
-  usbd_audio_DeInit,
-  usbd_audio_Setup,
+  usbd_midi_Init,
+  usbd_midi_DeInit,
+  usbd_midi_Setup,
   NULL, /* EP0_TxSent */
-  usbd_audio_EP0_RxReady,
-  usbd_audio_DataIn,
-  usbd_audio_DataOut,
-  usbd_audio_SOF,
+  usbd_midi_EP0_RxReady,
+  usbd_midi_DataIn,
+  usbd_midi_DataOut,
+  usbd_midi_SOF,
   NULL,
-  NULL, /* usbd_audio_OUT_Incplt */
-  USBD_audio_GetCfgDesc,
+  NULL, /* usbd_midi_OUT_Incplt */
+  USBD_midi_GetCfgDesc,
 #ifdef USB_OTG_HS_CORE  
-  USBD_audio_GetCfgDesc, /* use same config as per FS */
+  USBD_midi_GetCfgDesc, /* use same config as per FS */
 #endif    
 };
 
-/* USB AUDIO device Configuration Descriptor */
-static uint8_t usbd_audio_CfgDesc[AUDIO_CONFIG_DESC_SIZE] =
+/* USB MIDI device Configuration Descriptor */
+static uint8_t usbd_midi_CfgDesc[MIDI_CONFIG_DESC_SIZE] =
 {
   /* Configuration 1 */
   0x09,                                 /* bLength */
   0x02,                                 /* bDescriptorType */
-  LOBYTE(AUDIO_CONFIG_DESC_SIZE),       /* wTotalLength */
-  HIBYTE(AUDIO_CONFIG_DESC_SIZE),       /* wTotalLength */
+  LOBYTE(MIDI_CONFIG_DESC_SIZE),       /* wTotalLength */
+  HIBYTE(MIDI_CONFIG_DESC_SIZE),       /* wTotalLength */
   0x02,                                 /* bNumInterfaces */
   0x01,                                 /* bConfigurationValue */
   0x00,                                 /* iConfiguration */
@@ -168,7 +168,7 @@ static uint8_t usbd_audio_CfgDesc[AUDIO_CONFIG_DESC_SIZE] =
   /* MIDI Adapter Standard Bulk OUT Endpoint Descriptor */
   0x09,                                 /* bLength */
   0x05,                                 /* bDescriptorType */
-  AUDIO_OUT_EP,                         /* bEndpointAddress */
+  MIDI_OUT_EP,                         /* bEndpointAddress */
   0x02,                                 /* bmAttributes */
   0x40,					/* wMaxPacketSize */
   0x00,                                 /* wMaxPacketSize */
@@ -188,7 +188,7 @@ static uint8_t usbd_audio_CfgDesc[AUDIO_CONFIG_DESC_SIZE] =
   /* MIDI Adapter Standard Bulk IN Endpoint Descriptor */
   0x09,                                 /* bLength */
   0x05,                                 /* bDescriptorType */
-  AUDIO_IN_EP,                          /* bEndpointAddress */
+  MIDI_IN_EP,                          /* bEndpointAddress */
   0x02,                                 /* bmAttributes */
   0x40,					/* wMaxPacketSize */
   0x00,                                 /* wMaxPacketSize */
@@ -209,30 +209,30 @@ static uint8_t usbd_audio_CfgDesc[AUDIO_CONFIG_DESC_SIZE] =
 
 
 /**
-* @brief  usbd_audio_Init
-*         Initilaizes the AUDIO interface.
+* @brief  usbd_midi_Init
+*         Initilaizes the MIDI interface.
 * @param  pdev: device instance
 * @param  cfgidx: Configuration index
 * @retval status
 */
-static uint8_t  usbd_audio_Init (void  *pdev, 
+static uint8_t  usbd_midi_Init (void  *pdev, 
                                  uint8_t cfgidx)
 {
 	  /* Open EP IN */
 	  DCD_EP_Open(pdev,
-	              AUDIO_IN_EP,
+	              MIDI_IN_EP,
 	              MIDI_MAX_PACKET_SIZE,
 	              USB_OTG_EP_BULK);
 
 	  /* Open EP OUT */
 	  DCD_EP_Open(pdev,
-	              AUDIO_OUT_EP,
+	              MIDI_OUT_EP,
 	              MIDI_MAX_PACKET_SIZE,
 	              USB_OTG_EP_BULK);
 
   /* Prepare Out endpoint to receive MIDI data */
   DCD_EP_PrepareRx(pdev,
-                   AUDIO_OUT_EP,
+                   MIDI_OUT_EP,
                    (uint8_t*)USB_Rx_Buffer,
                    MIDI_MAX_PACKET_SIZE);
   
@@ -242,18 +242,18 @@ static uint8_t  usbd_audio_Init (void  *pdev,
 }
 
 /**
-* @brief  usbd_audio_DeInit
-*         DeInitializes the AUDIO layer.
+* @brief  usbd_midi_DeInit
+*         DeInitializes the MIDI layer.
 * @param  pdev: device instance
 * @param  cfgidx: Configuration index
 * @retval status
 */
-static uint8_t  usbd_audio_DeInit (void  *pdev, 
+static uint8_t  usbd_midi_DeInit (void  *pdev, 
                                    uint8_t cfgidx)
 { 
 	/* Close USB endpoints */
-	DCD_EP_Close (pdev, AUDIO_OUT_EP);
-	DCD_EP_Close (pdev, AUDIO_IN_EP);
+	DCD_EP_Close (pdev, MIDI_OUT_EP);
+	DCD_EP_Close (pdev, MIDI_IN_EP);
 
 	/* Could do any hardware de-init here but for now, there's nothing to do */
 
@@ -261,30 +261,30 @@ static uint8_t  usbd_audio_DeInit (void  *pdev,
 }
 
 /**
-  * @brief  usbd_audio_Setup
-  *         Handles the Audio control request parsing.
+  * @brief  usbd_midi_Setup
+  *         Handles the Midi control request parsing.
   * @param  pdev: instance
   * @param  req: usb requests
   * @retval status
   */
-static uint8_t  usbd_audio_Setup (void  *pdev, 
+static uint8_t  usbd_midi_Setup (void  *pdev, 
                                   USB_SETUP_REQ *req)
 {
-  uint16_t len=USB_AUDIO_DESC_SIZ;
-  uint8_t  *pbuf=usbd_audio_CfgDesc + 18;
+  uint16_t len=USB_MIDI_DESC_SIZ;
+  uint8_t  *pbuf=usbd_midi_CfgDesc + 18;
   
   switch (req->bmRequest & USB_REQ_TYPE_MASK)
   {
-    /* AUDIO Class Requests -------------------------------*/
+    /* MIDI Class Requests -------------------------------*/
   case USB_REQ_TYPE_CLASS :    
     switch (req->bRequest)
     {
-    case AUDIO_REQ_GET_CUR:
-      //AUDIO_Req_GetCurrent(pdev, req); // Left over from USB-audio. Delete me if not needed
+    case MIDI_REQ_GET_CUR:
+      //MIDI_Req_GetCurrent(pdev, req); // Left over from USB-midi. Delete me if not needed
       break;
       
-    case AUDIO_REQ_SET_CUR:
-      //AUDIO_Req_SetCurrent(pdev, req); // Left over from USB-audio. Delete me if not needed
+    case MIDI_REQ_SET_CUR:
+      //MIDI_Req_SetCurrent(pdev, req); // Left over from USB-midi. Delete me if not needed
       break;
 
     default:
@@ -298,14 +298,14 @@ static uint8_t  usbd_audio_Setup (void  *pdev,
     switch (req->bRequest)
     {
     case USB_REQ_GET_DESCRIPTOR: 
-      if( (req->wValue >> 8) == AUDIO_DESCRIPTOR_TYPE)
+      if( (req->wValue >> 8) == MIDI_DESCRIPTOR_TYPE)
       {
 #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
-        pbuf = usbd_audio_Desc;   
+        pbuf = usbd_midi_Desc;   
 #else
-        pbuf = usbd_audio_CfgDesc + 18;
+        pbuf = usbd_midi_CfgDesc + 18;
 #endif 
-        len = MIN(USB_AUDIO_DESC_SIZ , req->wLength);
+        len = MIN(USB_MIDI_DESC_SIZ , req->wLength);
       }
       
       USBD_CtlSendData (pdev, 
@@ -315,14 +315,14 @@ static uint8_t  usbd_audio_Setup (void  *pdev,
       
     case USB_REQ_GET_INTERFACE :
       USBD_CtlSendData (pdev,
-                        (uint8_t *)&usbd_audio_AltSet,
+                        (uint8_t *)&usbd_midi_AltSet,
                         1);
       break;
       
     case USB_REQ_SET_INTERFACE :
-      if ((uint8_t)(req->wValue) < AUDIO_TOTAL_IF_NUM)
+      if ((uint8_t)(req->wValue) < MIDI_TOTAL_IF_NUM)
       {
-        usbd_audio_AltSet = (uint8_t)(req->wValue);
+        usbd_midi_AltSet = (uint8_t)(req->wValue);
       }
       else
       {
@@ -336,23 +336,23 @@ static uint8_t  usbd_audio_Setup (void  *pdev,
 }
 
 /**
-  * @brief  usbd_audio_EP0_RxReady
-  *         Handles audio control requests data.
+  * @brief  usbd_midi_EP0_RxReady
+  *         Handles midi control requests data.
   * @param  pdev: device device instance
   * @retval status
   */
-static uint8_t  usbd_audio_EP0_RxReady (void  *pdev)
+static uint8_t  usbd_midi_EP0_RxReady (void  *pdev)
 { 
-  /* Check if an AudioControl request has been issued */
-  if (AudioCtlCmd == AUDIO_REQ_SET_CUR)
+  /* Check if an MidiControl request has been issued */
+  if (MidiCtlCmd == MIDI_REQ_SET_CUR)
   {/* In this driver, to simplify code, only SET_CUR request is managed */
-    /* Check for which addressed unit the AudioControl request has been issued */
-    if (AudioCtlUnit == AUDIO_OUT_STREAMING_CTRL)
+    /* Check for which addressed unit the MidiControl request has been issued */
+    if (MidiCtlUnit == MIDI_OUT_STREAMING_CTRL)
     {/* In this driver, to simplify code, only one unit is manage */
       
-      /* Reset the AudioCtlCmd variable to prevent re-entering this function */
-      AudioCtlCmd = 0;
-      AudioCtlLen = 0;
+      /* Reset the MidiCtlCmd variable to prevent re-entering this function */
+      MidiCtlCmd = 0;
+      MidiCtlLen = 0;
     }
   } 
   
@@ -360,13 +360,13 @@ static uint8_t  usbd_audio_EP0_RxReady (void  *pdev)
 }
 
 /**
-  * @brief  usbd_audio_DataIn
-  *         Handles the audio IN data stage.
+  * @brief  usbd_midi_DataIn
+  *         Handles the midi IN data stage.
   * @param  pdev: instance
   * @param  epnum: endpoint number
   * @retval status
   */
-static uint8_t  usbd_audio_DataIn (void *pdev, uint8_t epnum)
+static uint8_t  usbd_midi_DataIn (void *pdev, uint8_t epnum)
 {
 	uint16_t USB_Tx_ptr;
 	uint16_t USB_Tx_length;
@@ -397,7 +397,7 @@ static uint8_t  usbd_audio_DataIn (void *pdev, uint8_t epnum)
 
 		  /* Prepare the available data buffer to be sent on IN endpoint */
 		  DCD_EP_Tx (pdev,
-					 AUDIO_IN_EP,
+					 MIDI_IN_EP,
 					 (uint8_t*)&APP_Rx_Buffer[USB_Tx_ptr],
 					 USB_Tx_length);
 		}
@@ -407,15 +407,15 @@ static uint8_t  usbd_audio_DataIn (void *pdev, uint8_t epnum)
 }
 
 /**
-  * @brief  usbd_audio_DataOut
-  *         Handles the Audio Out data stage.
+  * @brief  usbd_midi_DataOut
+  *         Handles the Midi Out data stage.
   * @param  pdev: instance
   * @param  epnum: endpoint number
   * @retval status
   */
-static uint8_t  usbd_audio_DataOut (void *pdev, uint8_t epnum)
+static uint8_t  usbd_midi_DataOut (void *pdev, uint8_t epnum)
 {     
-  if (epnum == AUDIO_OUT_EP)
+  if (epnum == MIDI_OUT_EP)
   {    
 	  uint16_t USB_Rx_Cnt;
 
@@ -428,7 +428,7 @@ static uint8_t  usbd_audio_DataOut (void *pdev, uint8_t epnum)
 
 	  /* Prepare Out endpoint to receive next packet */
 	  DCD_EP_PrepareRx(pdev,
-	                   AUDIO_OUT_EP,
+	                   MIDI_OUT_EP,
 	                   (uint8_t*)(USB_Rx_Buffer),
 	                   MIDI_MAX_PACKET_SIZE);
   }
@@ -437,13 +437,13 @@ static uint8_t  usbd_audio_DataOut (void *pdev, uint8_t epnum)
 }
 
 /**
-  * @brief  usbd_audio_SOF
+  * @brief  usbd_midi_SOF
   *         Handles the SOF event (data buffer update and synchronization).
   * @param  pdev: instance
   * @param  epnum: endpoint number
   * @retval status
   */
-static uint8_t  usbd_audio_SOF (void *pdev)
+static uint8_t  usbd_midi_SOF (void *pdev)
 {     
 	static uint32_t FrameCount = 0;
 
@@ -515,7 +515,7 @@ static void Handle_USBAsynchXfer (void *pdev)
     USB_Tx_State = 1;
 
     DCD_EP_Tx (pdev,
-               AUDIO_IN_EP,
+               MIDI_IN_EP,
                (uint8_t*)&APP_Rx_Buffer[USB_Tx_ptr],
                USB_Tx_length);
   }
@@ -523,14 +523,14 @@ static void Handle_USBAsynchXfer (void *pdev)
 }
 
 /**
-  * @brief  USBD_audio_GetCfgDesc 
+  * @brief  USBD_midi_GetCfgDesc 
   *         Returns configuration descriptor.
   * @param  speed : current device speed
   * @param  length : pointer data length
   * @retval pointer to descriptor buffer
   */
-static uint8_t  *USBD_audio_GetCfgDesc (uint8_t speed, uint16_t *length)
+static uint8_t  *USBD_midi_GetCfgDesc (uint8_t speed, uint16_t *length)
 {
-  *length = sizeof (usbd_audio_CfgDesc);
-  return usbd_audio_CfgDesc;
+  *length = sizeof (usbd_midi_CfgDesc);
+  return usbd_midi_CfgDesc;
 }

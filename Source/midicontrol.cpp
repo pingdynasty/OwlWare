@@ -2,7 +2,7 @@
 #include "armcontrol.h"
 #include "owlcontrol.h"
 #include "usbd_conf.h"
-#include "usbd_audio_core.h"
+#include "usbd_midi_core.h"
 #include "MidiHandler.hpp"
 #include <string.h>
 

@@ -146,7 +146,8 @@
 #define USB_DM_PIN                   GPIO_Pin_11
 #define USB_DATA_GPIO_PORT           GPIOA
 #define USB_DATA_GPIO_CLK            RCC_AHB1Periph_GPIOA
-
+#define USB_ID_PIN                   GPIO_Pin_10
+#define USB_ID_GPIO_PORT             GPIOA
 #define USB_VBUS_PIN                 GPIO_Pin_9
 #define USB_VBUS_GPIO_PORT           GPIOA
 #define USB_VBUS_GPIO_CLK            RCC_AHB1Periph_GPIOA

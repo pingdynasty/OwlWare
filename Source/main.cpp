@@ -48,4 +48,5 @@ int main(void){
 
   vTaskStartScheduler();  // should never return
   for (;;);
+  return 0;
 }
