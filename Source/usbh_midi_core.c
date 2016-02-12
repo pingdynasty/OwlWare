@@ -2,7 +2,7 @@
 #include "usbd_midi_core.h"
 #include "midicontrol.h"
 
-#ifndef MIOS32_DONT_USE_USB_HOST
+#ifndef MBOX_DONT_USE_USB_HOST
 
 #include <usbd_core.h>
 #include <usbd_def.h>
@@ -55,8 +55,8 @@ static void USBH_USR_UnrecoveredError (void)
  */
 static void USBH_USR_DeviceDisconnected (void)
 {
-#ifdef MIOS32_MIDI_USBH_DEBUG
-  MIOS32_USB_MIDI_ChangeConnectionState(0);
+#ifdef MBOX_MIDI_USBH_DEBUG
+  MBOX_USB_MIDI_ChangeConnectionState(0);
 #endif
 }
 
@@ -122,12 +122,12 @@ static void USBH_USR_Configuration_DescAvailable(USBH_CfgDesc_TypeDef * cfgDesc,
  */
 static void USBH_USR_Manufacturer_String(void *ManufacturerString)
 {
-#ifdef MIOS32_MIDI_USBH_DEBUG
+#ifdef MBOX_MIDI_USBH_DEBUG
   // Debug Output via UART0
-  mios32_midi_port_t prev_port = MIOS32_MIDI_DebugPortGet();
-  MIOS32_MIDI_DebugPortSet(UART0);
-  MIOS32_MIDI_SendDebugMessage("[USBH_USR] Manufacturer: %s", ManufacturerString);
-  MIOS32_MIDI_DebugPortSet(prev_port);
+  mbox_midi_port_t prev_port = MBOX_MIDI_DebugPortGet();
+  MBOX_MIDI_DebugPortSet(UART0);
+  MBOX_MIDI_SendDebugMessage("[USBH_USR] Manufacturer: %s", ManufacturerString);
+  MBOX_MIDI_DebugPortSet(prev_port);
 #endif
 }
 
@@ -139,12 +139,12 @@ static void USBH_USR_Manufacturer_String(void *ManufacturerString)
  */
 static void USBH_USR_Product_String(void *ProductString)
 {
-#ifdef MIOS32_MIDI_USBH_DEBUG
+#ifdef MBOX_MIDI_USBH_DEBUG
   // Debug Output via UART0
-  mios32_midi_port_t prev_port = MIOS32_MIDI_DebugPortGet();
-  MIOS32_MIDI_DebugPortSet(UART0);
-  MIOS32_MIDI_SendDebugMessage("[USBH_USR] Product: %s", ProductString);
-  MIOS32_MIDI_DebugPortSet(prev_port);
+  mbox_midi_port_t prev_port = MBOX_MIDI_DebugPortGet();
+  MBOX_MIDI_DebugPortSet(UART0);
+  MBOX_MIDI_SendDebugMessage("[USBH_USR] Product: %s", ProductString);
+  MBOX_MIDI_DebugPortSet(prev_port);
 #endif
 }
 
@@ -156,12 +156,12 @@ static void USBH_USR_Product_String(void *ProductString)
  */
 static void USBH_USR_SerialNum_String(void *SerialNumString)
 {
-#ifdef MIOS32_MIDI_USBH_DEBUG
+#ifdef MBOX_MIDI_USBH_DEBUG
   // Debug Output via UART0
-  mios32_midi_port_t prev_port = MIOS32_MIDI_DebugPortGet();
-  MIOS32_MIDI_DebugPortSet(UART0);
-  MIOS32_MIDI_SendDebugMessage("[USBH_USR] Serial Number: %s", SerialNumString);
-  MIOS32_MIDI_DebugPortSet(prev_port);
+  mbox_midi_port_t prev_port = MBOX_MIDI_DebugPortGet();
+  MBOX_MIDI_DebugPortSet(UART0);
+  MBOX_MIDI_SendDebugMessage("[USBH_USR] Serial Number: %s", SerialNumString);
+  MBOX_MIDI_DebugPortSet(prev_port);
 #endif
 } 
 
@@ -251,4 +251,4 @@ static void USBH_USR_DeInit(void)
   USBH_USR_UnrecoveredError
 };
 
-#endif /* MIOS32_DONT_USE_USB */
+#endif /* MBOX_DONT_USE_USB */

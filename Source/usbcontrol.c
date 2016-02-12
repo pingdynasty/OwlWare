@@ -14,9 +14,9 @@
 
 __ALIGN_BEGIN USB_OTG_CORE_HANDLE    USB_OTG_dev __ALIGN_END;
 
-#ifndef MIOS32_DONT_USE_USB_HOST
+#ifndef MBOX_DONT_USE_USB_HOST
 __ALIGN_BEGIN USBH_HOST USB_Host __ALIGN_END;
-extern const USBH_Class_cb_TypeDef MIOS32_MIDI_USBH_Callbacks; // implemented in mios32_usb_midi.c
+extern const USBH_Class_cb_TypeDef MBOX_MIDI_USBH_Callbacks; // implemented in mbox_usb_midi.c
 #endif
 
 /* De-initialise the USB peripheral.
@@ -76,12 +76,12 @@ void usb_init(void){
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 
-#ifndef MIOS32_DONT_USE_USB_HOST  
+#ifndef MBOX_DONT_USE_USB_HOST  
   /* Init Host Library */
   USBH_Init(&USB_OTG_dev, 
             USB_OTG_FS_CORE_ID,
             &USB_Host,
-            (USBH_Class_cb_TypeDef *)&MIOS32_MIDI_USBH_Callbacks, 
+            (USBH_Class_cb_TypeDef *)&MBOX_MIDI_USBH_Callbacks, 
             (USBH_Usr_cb_TypeDef *)&USBH_USR_Callbacks);
 #endif
 
@@ -99,7 +99,7 @@ void usb_init(void){
     /* USBD_Init(&USB_OTG_dev, */
     /* 	      USB_OTG_FS_CORE_ID, */
     /* 	      (USBD_DEVICE *)&USR_desc, */
-    /* 	      (USBD_Class_cb_TypeDef *)&MIOS32_USB_CLASS_cb, */
+    /* 	      (USBD_Class_cb_TypeDef *)&MBOX_USB_CLASS_cb, */
     /* 	      (USBD_Usr_cb_TypeDef *)&USBD_USR_Callbacks); */
 
     // disconnect device
@@ -111,9 +111,9 @@ void usb_init(void){
     // connect device
     DCD_DevConnect(&USB_OTG_dev);
 
-#ifndef MIOS32_DONT_USE_USB_HOST
+#ifndef MBOX_DONT_USE_USB_HOST
   // switch to host or device mode depending on the ID pin (Bootloader allows to overrule this pin)
-//  if( MIOS32_USB_ForceDeviceMode() || MIOS32_SYS_STM_PINGET(GPIOA, GPIO_Pin_10) ) {
+//  if( MBOX_USB_ForceDeviceMode() || MBOX_SYS_STM_PINGET(GPIOA, GPIO_Pin_10) ) {
   if(getPin(USB_ID_GPIO_PORT, USB_ID_PIN) ) { // todo: check pin assignment
     USB_OTG_SetCurrentMode(&USB_OTG_dev, DEVICE_MODE);
   } else {
@@ -137,7 +137,7 @@ void OTG_FS_IRQHandler(void){
 
 void USB_OTG_BSP_DriveVBUS(USB_OTG_CORE_HANDLE *pdev, uint8_t state)
 {
-#ifndef MIOS32_DONT_USE_USB_HOST
+#ifndef MBOX_DONT_USE_USB_HOST
   /*
   On-chip 5 V VBUS generation is not supported. For this reason, a charge pump 
   or, if 5 V are available on the application board, a basic power switch, must 
@@ -171,7 +171,7 @@ void USB_OTG_BSP_DriveVBUS(USB_OTG_CORE_HANDLE *pdev, uint8_t state)
   */
 void  USB_OTG_BSP_ConfigVBUS(USB_OTG_CORE_HANDLE *pdev)
 {
-#ifndef MIOS32_DONT_USE_USB_HOST
+#ifndef MBOX_DONT_USE_USB_HOST
   /* GPIO_InitTypeDef GPIO_InitStructure;  */
   
   /* RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);   */

@@ -13,7 +13,7 @@
 #include <usb_hcd_int.h>
 #include <usb_regs.h>
 
-#ifndef MIOS32_DONT_USE_USB_HOST
+#ifndef MBOX_DONT_USE_USB_HOST
 extern const USBH_Usr_cb_TypeDef USBH_USR_Callbacks; // implemented in usbh_midi_core.c
 #endif
 

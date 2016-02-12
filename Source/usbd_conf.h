@@ -38,7 +38,7 @@
 #define MIDI_IN_EP                     0x82
 
 // created in STM32_USB_Device_Library/Core/src/usbd_req.c
-// used in mios32_usb.c as temporary string buffer
+// used in mbox_usb.c as temporary string buffer
 #define USB_MAX_STR_DESC_SIZ            100
 extern uint8_t USBD_StrDesc[USB_MAX_STR_DESC_SIZ];
 #define APP_RX_DATA_SIZE                2048 /* Total size of IN buffer */

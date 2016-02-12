@@ -111,7 +111,7 @@
 /****************** USB OTG MODE CONFIGURATION ********************************/
 
 #define USE_DEVICE_MODE
-#ifndef MIOS32_DONT_USE_USB_HOST
+#ifndef MBOX_DONT_USE_USB_HOST
 #define USE_HOST_MODE
 #define USE_OTG_MODE
 #endif
