@@ -26,7 +26,7 @@ PERIPH += $(BUILD)/stm32f4xx_flash.o $(BUILD)/stm32f4xx_fsmc.o
 PERIPH += $(BUILD)/misc.o # stm32f4xx_comp.o 
 USB_OTG = $(BUILD)/usb_dcd.o $(BUILD)/usb_core.o $(BUILD)/usb_dcd_int.o
 USB_DEVICE = $(BUILD)/usbd_core.o $(BUILD)/usbd_ioreq.o $(BUILD)/usbd_req.o
-USB_HOST = $(BUILD)/usbh_core.o $(BUILD)/usbh_ioreq.o $(BUILD)/usbh_stdreq.o $(BUILD)/usbh_hcs.o
+USB_HOST = $(BUILD)/usbh_core.o $(BUILD)/usbh_ioreq.o $(BUILD)/usbh_stdreq.o $(BUILD)/usbh_hcs.o $(BUILD)/usb_hcd.o
 
 # Compilation Flags
 ARCH_FLAGS = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
