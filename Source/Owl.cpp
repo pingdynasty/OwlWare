@@ -61,6 +61,22 @@ void clearButton(PatchButtonId bid){
 // #endif
 }
 
+void setPushbutton(){
+  setGate();
+  setLed(RED);
+  setButton(RED_BUTTON);
+  setButton(PUSHBUTTON);
+  clearButton(GREEN_BUTTON);
+}
+
+void clearPushbutton(){
+  clearGate();
+  setLed(GREEN);
+  setButton(GREEN_BUTTON);
+  clearButton(RED_BUTTON);
+  clearButton(PUSHBUTTON);
+}
+
 void setButton(PatchButtonId bid, bool on){
   if(on)
     setButton(bid);
@@ -71,7 +87,10 @@ void setButton(PatchButtonId bid, bool on){
 void buttonChanged(int bid, bool on){
   switch(bid){
   case PUSHBUTTON:
-    togglePushButton();
+    if(on)
+      setPushbutton();
+    else
+      clearPushbutton();
     break;
   case GREEN_BUTTON:
     setButton(GREEN_BUTTON, on);
@@ -108,17 +127,10 @@ void updateBypassMode(){
 }
 
 void togglePushButton(){
-  if(getLed() == GREEN){
-    setGate();
-    setLed(RED);
-    setButton(RED_BUTTON);
-    clearButton(GREEN_BUTTON);
-  }else{ // if(getLed() == RED){
-    clearGate();
-    setLed(GREEN);
-    setButton(GREEN_BUTTON);
-    clearButton(RED_BUTTON);
-  }
+  if(getLed() == GREEN)
+    setPushbutton();
+  else // if(getLed() == RED){
+    clearPushbutton();
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
@@ -148,20 +160,10 @@ void pushButtonCallback(){
   // DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
   if(isPushButtonPressed()){
     pushButtonPressed = getSysTicks();
-    setButton(PUSHBUTTON);
-    setGate();
-    // setPushButton(RED);
-    setLed(RED);
-    setButton(RED_BUTTON);
-    clearButton(GREEN_BUTTON);
+    setPushbutton();
   }else{
     pushButtonPressed = 0;
-    clearButton(PUSHBUTTON);
-    clearGate();
-    // setPushButton(GREEN);
-    setLed(GREEN);
-    setButton(GREEN_BUTTON);
-    clearButton(RED_BUTTON);
+    clearPushbutton();
   }
   DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
   midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
