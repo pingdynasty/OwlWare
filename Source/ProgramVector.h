@@ -9,6 +9,7 @@
 
 #define OWL_PEDAL_HARDWARE    0x11
 #define OWL_MODULAR_HARDWARE  0x12
+#define OWL_RACK_HARDWARE     0x13
 
    typedef enum { 
      AUDIO_IDLE_STATUS = 0, 

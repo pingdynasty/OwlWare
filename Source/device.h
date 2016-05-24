@@ -29,7 +29,7 @@
 #define PATCHRAM                    ((uint32_t)0x2000c000)
 #define EXTRAM                      ((uint32_t)0x68000000)
 
-#ifdef OWLMODULAR
+#if defined OWLMODULAR || defined OWLRACK
 /* +0db in and out */
 #define AUDIO_INPUT_GAIN_LEFT        0x017
 #define AUDIO_INPUT_GAIN_RIGHT       0x017

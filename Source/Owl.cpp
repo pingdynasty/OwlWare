@@ -236,8 +236,10 @@ void setParameterValues(uint16_t* values, int size){
 
 void updateProgramVector(ProgramVector* vector){
   vector->checksum = sizeof(ProgramVector);
-#ifdef OWLMODULAR
+#if defined OWLMODULAR
   vector->hardware_version = OWL_MODULAR_HARDWARE;
+#elif defined OWLRACK
+  vector->hardware_version = OWL_RACK_HARDWARE;
 #else
   vector->hardware_version = OWL_PEDAL_HARDWARE;
 #endif
