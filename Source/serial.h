@@ -9,6 +9,7 @@
 
    void setupSerialPort1(uint32_t baudrate);
    void setupSerialPort2(uint32_t baudrate);
+   void setupSerialPort4(uint32_t baudrate);
    void printString(const char* s);
    void printByte(char c);
    void printInteger(long n);
@@ -16,6 +17,9 @@
    void printOctal(unsigned long n);
    void printBinary(unsigned long n);
    void printDouble(double d, uint8_t precision);
+
+   void serial_read(uint8_t* data, uint16_t size);
+   void serial_write(uint8_t* data, uint16_t size);
 
 #ifdef __cplusplus
 }

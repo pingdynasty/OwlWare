@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include "device.h"
+#include "owlcontrol.h"
 #include "OpenWareMidiControl.h"
 #include "MidiReader.hpp"
 #include "MidiController.h"

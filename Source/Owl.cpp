@@ -12,8 +12,8 @@
 #include "ProgramManager.h"
 #include "ServiceCall.h"
 #include "bkp_sram.h"
-
-// #include "serial.h"
+#include "serial.h"
+#include "bus.h"
 #include "clock.h"
 #include "device.h"
 #include "codec.h"
@@ -108,7 +108,7 @@ void buttonChanged(int bid, bool on){
 }
 
 void updateBypassMode(){
-#ifdef OWLMODULAR
+#if defined OWLMODULAR || defined OWLRACK
   bypass = false;
 #else
   if(isStompSwitchPressed()){
@@ -289,21 +289,25 @@ void setup(){
   if(isPushButtonPressed())
     jump_to_bootloader();
 
+#ifndef OWLRACK
   adcSetup();
+#endif
   clockSetup();
-#ifdef OWLMODULAR
+#if defined OWLMODULAR
   setupSwitchA(pushGateCallback);
-#else
+#elif !defined OWLRACK
   setupSwitchA(footSwitchCallback);
 #endif
+#ifndef OWLRACK
   setupSwitchB(pushButtonCallback);
+#endif
 
   settings.init();
   midi.init(MIDI_CHANNEL);
   registry.init();
 
 #ifdef EXPRESSION_PEDAL
-#ifndef OWLMODULAR
+#if !(defined OWLMODULAR || defined OWLRACK)
   setupExpressionPedal();
 #endif
 #endif
@@ -331,6 +335,9 @@ void setup(){
 
 #if SERIAL_PORT == 1
   setupSerialPort1(115200);
+#elif SERIAL_PORT == 4
+  setupSerialPort4(115200); // Digital Bus
+  setupBus();
 #elif SERIAL_PORT == 2
   setupSerialPort2(115200); // expression pedal
 #warning expression pedal jack configured as serial port

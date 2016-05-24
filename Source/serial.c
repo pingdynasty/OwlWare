@@ -66,6 +66,37 @@ void setupSerialPort2(uint32_t baudrate){
   usart = USART2;
 }
 
+void setupSerialPort4(uint32_t baudrate){
+  GPIO_InitTypeDef GPIO_InitStruct;
+  USART_InitTypeDef USART_InitStruct;
+  NVIC_InitTypeDef NVIC_InitStructure;
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+  GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1; // PA0 TX PA1 RX
+  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
+  GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(GPIOA, &GPIO_InitStruct);
+  GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4);
+  GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4);
+  USART_InitStruct.USART_BaudRate = baudrate;
+  USART_InitStruct.USART_WordLength = USART_WordLength_8b;
+  USART_InitStruct.USART_StopBits = USART_StopBits_1;
+  USART_InitStruct.USART_Parity = USART_Parity_No;
+  USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  USART_InitStruct.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+  USART_Init(UART4, &USART_InitStruct);
+  USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
+  NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = SERIAL_PORT_PRIORITY;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = SERIAL_PORT_SUBPRIORITY;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
+  USART_Cmd(UART4, ENABLE);
+  usart = UART4;
+}
+
 void USART_puts(USART_TypeDef* USARTx, volatile const char *s){
   while(*s){
     // wait until data register is empty
@@ -153,5 +184,13 @@ void printDouble(double val, uint8_t precision){
     while(padding--)
       printByte('0');
     printInteger(frac);
+  }
+}
+
+void serial_write(uint8_t* data, uint16_t size){
+  for(int i=0; i<size; ++i){
+    // wait until data register is empty
+    while( !(usart->SR & 0x00000040) );
+    USART_SendData(usart, data[i]);
   }
 }

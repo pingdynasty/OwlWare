@@ -1,10 +1,11 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "Bollard B"
+#define FIRMWARE_VERSION             "Bollard A"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
 /* #define SERIAL_PORT                  1 */
+#define SERIAL_PORT                  4
 
 /* #define DEBUG_AUDIO */
 #define DEBUG_DWT
@@ -88,7 +89,7 @@
 #define SWITCH_A_PIN_LINE            EXTI_Line6           /* Line 6 connects to all Px6 pins, et c */
 #define SWITCH_A_IRQ                 EXTI9_5_IRQn
 #define SWITCH_A_HANDLER             EXTI9_5_IRQHandler
-#else /* OWLMODULAR */
+#else /* not OWLMODULAR */
 /* Switch A: bypass foot switch on OWL Pedal */
 #define SWITCH_A_PORT                GPIOE
 #define SWITCH_A_CLOCK               RCC_AHB1Periph_GPIOE

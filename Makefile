@@ -23,7 +23,7 @@ ifeq ($(PLATFORM),Modular)
   CPPFLAGS   += -DOWLMODULAR
 endif
 
-ifeq ($(PLATFORM),Racl)
+ifeq ($(PLATFORM),Rack)
   CPPFLAGS   += -DOWLRACK
 endif
 
@@ -48,7 +48,7 @@ C_SRC += system_hse.c
 C_SRC += usbd_desc.c usb_bsp.c usbd_usr.c
 C_SRC += usbd_audio_core.c 
 C_SRC += armcontrol.c usbcontrol.c owlcontrol.c midicontrol.c eepromcontrol.c
-C_SRC += clock.c operators.c gpio.c sysex.c # serial.c 
+C_SRC += clock.c operators.c gpio.c sysex.c serial.c 
 C_SRC += bkp_sram.c
 C_SRC += sramalloc.c
 C_SRC += basicmaths.c
@@ -67,6 +67,7 @@ CPP_SRC += Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cp
 CPP_SRC += PatchRegistry.cpp ProgramManager.cpp
 CPP_SRC += FactoryPatches.cpp ServiceCall.cpp
 CPP_SRC += PatchProcessor.cpp StompBox.cpp FloatArray.cpp
+CPP_SRC += bus.cpp
 
 OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o) $(FREERTOS_SRC:%.c=Build/%.o)
 vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/

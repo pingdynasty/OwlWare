@@ -6,9 +6,11 @@
 #include "device.h"
 #include "gpio.h"
 
-#ifdef OWLMODULAR
+#if defined OWLMODULAR
 #define HARDWARE_VERSION             "OWL Modular"
-#else /* OWLMODULAR */
+#elif defined OWLRACK
+#define HARDWARE_VERSION             "OWL Rack"
+#else
 #define HARDWARE_VERSION             "OWL Pedal"
 #endif /* OWLMODULAR */
 
