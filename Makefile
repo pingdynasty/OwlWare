@@ -23,6 +23,10 @@ ifeq ($(PLATFORM),Modular)
   CPPFLAGS   += -DOWLMODULAR
 endif
 
+ifeq ($(PLATFORM),Racl)
+  CPPFLAGS   += -DOWLRACK
+endif
+
 LDFLAGS += -Wl,--gc-sections
 LDSCRIPT = Source/flash.ld
 
