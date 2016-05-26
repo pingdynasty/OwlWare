@@ -28,7 +28,14 @@ PatchRegistry registry;
 volatile bool bypass = false;
 
 uint16_t getParameterValue(uint8_t pid){
-  return getProgramVector()->parameters[pid];
+  if(getProgramVector()->parameters_size < pid)
+    return getProgramVector()->parameters[pid];
+  return 0;
+}
+
+void setParameterValue(uint8_t pid, uint16_t value){
+  if(getProgramVector()->parameters_size < pid)
+    getProgramVector()->parameters[pid] = value;
 }
 
 bool getButton(uint8_t bid){
@@ -337,23 +344,10 @@ void setup(){
 
   usb_init();
 
-// #if SERIAL_PORT == 1
-//   setupSerialPort1(115200);
-// #elif SERIAL_PORT == 2
-//   setupSerialPort2(115200); // expression pedal
-// #warning expression pedal jack configured as serial port
-// #ifdef EXPRESSION_PEDAL
-// #error invalid configuration
-// #endif
-// #elif SERIAL_PORT == 4
-//   setupSerialPort4(115200); // Digital Bus
-//   setupBus();
-// #endif
 #ifdef USART_PERIPH
   serial_setup(USART_BAUDRATE);
-  setupBus();
+  bus_setup();
 #endif
-
 
   codec.setup();
   codec.init(settings);
@@ -363,6 +357,10 @@ void setup(){
   program.startProgram(false);
 
   updateBypassMode();
+
+#ifdef OWLRACK
+  midi.useMidiParameters(true);
+#endif
 
   codec.start();
 }

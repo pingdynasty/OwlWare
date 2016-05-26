@@ -23,6 +23,7 @@
 
    uint16_t getAnalogValue(uint8_t index);
    uint16_t getParameterValue(uint8_t index);
+   void setParameterValue(uint8_t index, uint16_t value);
    void audioCallback(int16_t *src, int16_t *dst);
    bool getButton(uint8_t bid);
    void setButton(uint8_t bid, bool on);   

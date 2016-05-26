@@ -324,6 +324,9 @@ void ProgramManager::programReady(){
 #elif defined AUDIO_TASK_DIRECT
   while(audioStatus != AUDIO_READY_STATUS);
   audioStatus = AUDIO_PROCESSING_STATUS;
+#ifdef OWLRACK
+  debugToggle();
+#endif
 #else
   #error "Invalid AUDIO_TASK setting"
 #endif

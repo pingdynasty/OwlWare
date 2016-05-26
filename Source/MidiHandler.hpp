@@ -11,9 +11,8 @@
 #include "ApplicationSettings.h"
 #include "FirmwareLoader.hpp"
 #include "ProgramManager.h"
+#include "Owl.h"
 
-#define NOF_MIDI_PARAMETERS NOF_PARAMETERS
-static uint16_t midi_values[NOF_MIDI_PARAMETERS];
 static FirmwareLoader loader;
 
 class MidiHandler : public MidiReader {
@@ -21,7 +20,6 @@ private:
   uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
 public:
   MidiHandler() : MidiReader(buffer, sizeof(buffer)) {
-    memset(midi_values, 0, NOF_MIDI_PARAMETERS*sizeof(uint16_t));
   }
 
   void handleProgramChange(uint8_t status, uint8_t pid){
@@ -39,44 +37,39 @@ public:
     switch(cc){
 #ifdef OWLMODULAR
     case PATCH_PARAMETER_A:
-      midi_values[PARAMETER_A] = (127-value)<<5; // invert and scale from 7bit to 12bit value
+      setParameterValue(PARAMETER_A, (127-value)<<5); // invert and scale from 7bit to 12bit value
       break;
     case PATCH_PARAMETER_B:
-      midi_values[PARAMETER_B] = (127-value)<<5;
+      setParameterValue(PARAMETER_B, (127-value)<<5);
       break;
     case PATCH_PARAMETER_C:
-      midi_values[PARAMETER_C] = (127-value)<<5;
+      setParameterValue(PARAMETER_C, (127-value)<<5);
       break;
     case PATCH_PARAMETER_D:
-      midi_values[PARAMETER_D] = (127-value)<<5;
+      setParameterValue(PARAMETER_D, (127-value)<<5);
       break;
     case PATCH_PARAMETER_E:
-      midi_values[PARAMETER_E] = value<<5;
+      setParameterValue(PARAMETER_E, value<<5);
       break;
 #else /* OWLMODULAR */
     case PATCH_PARAMETER_A:
-      midi_values[PARAMETER_A] = value<<5; // scale from 7bit to 12bit value
+      setParameterValue(PARAMETER_A, value<<5); // scale from 7bit to 12bit value
       break;
     case PATCH_PARAMETER_B:
-      midi_values[PARAMETER_B] = value<<5;
+      setParameterValue(PARAMETER_B, value<<5);
       break;
     case PATCH_PARAMETER_C:
-      midi_values[PARAMETER_C] = value<<5;
+      setParameterValue(PARAMETER_C, value<<5);
       break;
     case PATCH_PARAMETER_D:
-      midi_values[PARAMETER_D] = value<<5;
+      setParameterValue(PARAMETER_D, value<<5);
       break;
     case PATCH_PARAMETER_E:
-      midi_values[PARAMETER_E] = value<<5;
+      setParameterValue(PARAMETER_E, value<<5);
       break;
 #endif /* OWLMODULAR */
     case PATCH_CONTROL:
-      if(value == 127){
-	memcpy(midi_values, getAnalogValues(), NOF_MIDI_PARAMETERS*sizeof(uint16_t));
-	setParameterValues(midi_values, NOF_MIDI_PARAMETERS);
-      }else{
-	setParameterValues(getAnalogValues(), NOF_PARAMETERS);
-      }
+      midi.useMidiParameters(value == 127);
       break;
     case PATCH_BUTTON:
       if(value == 127)

@@ -11,6 +11,7 @@ extern MidiController midi;
 class MidiController {
 private:
   uint8_t channel;
+  uint16_t midi_values[NOF_MIDI_PARAMETERS];
 
 public:
   void init(uint8_t channel);
@@ -31,6 +32,7 @@ public:
   void sendDeviceId();
   void sendSelfTest();
   void sendProgramMessage();
+  void useMidiParameters(bool midi);
 };
 
 #endif /* __MIDI_CONTROLLER_H */
