@@ -57,8 +57,8 @@ void serial_setup(uint32_t baudrate) {
   /* Enable the USART Interrupt */
   NVIC_InitTypeDef NVIC_InitStructure;
   NVIC_InitStructure.NVIC_IRQChannel = USART_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = SERIAL_PORT_PRIORITY;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = SERIAL_PORT_SUBPRIORITY;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = USART_PRIORITY;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = USART_SUBPRIORITY;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 

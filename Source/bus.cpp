@@ -1,6 +1,5 @@
 #include "bus.h"
 #include "serial.h"
-// #include "MidiReader.hpp"
 #include "MidiHandler.hpp"
 
 static MidiHandler bushandler;
@@ -10,55 +9,50 @@ void setupBus(){
 
 extern "C" {
 void USART_IRQHandler(void){
-  if(USART_GetITStatus(USART_PERIPH, USART_IT_RXNE) != RESET){
-    // Reading the receive data register clears the RXNE flag implicitly
-    char c = USART_ReceiveData(USART_PERIPH);
-  }
+  static uint8_t index = 0;
+  static uint8_t frame[4];
   /* If overrun condition occurs, clear the ORE flag and recover communication */
   if(USART_GetFlagStatus(USART_PERIPH, USART_FLAG_ORE) != RESET)
     USART_ReceiveData(USART_PERIPH);
+  else if(USART_GetITStatus(USART_PERIPH, USART_IT_RXNE) != RESET){    
+    // Reading the receive data register clears the RXNE flag implicitly
+    char c = USART_ReceiveData(USART_PERIPH);
+    // pass it on
+    printByte(c);
+    // printByte() blocks but presumably 
+    // sending data will be as fast as receiving it
+    frame[index++] = c;
+    if(index == 4){
+      index = 0;
+      // skip first of four bytes
+      MidiReaderStatus status;
+      switch(frame[0]){
+      case USB_COMMAND_MISC:
+      case USB_COMMAND_CABLE_EVENT:
+	// ignore
+	break;
+      case USB_COMMAND_SINGLE_BYTE:
+      case USB_COMMAND_SYSEX_EOX1:
+	// one byte message
+	status = bushandler.read(frame[1]);
+	break;
+      case USB_COMMAND_2BYTE_SYSTEM_COMMON:
+      case USB_COMMAND_SYSEX_EOX2:
+      case USB_COMMAND_PROGRAM_CHANGE:
+      case USB_COMMAND_CHANNEL_PRESSURE:
+	bushandler.read(frame[1]);
+	status = bushandler.read(frame[2]);
+	break;
+      default:
+	// three byte message
+	bushandler.read(frame[1]);
+	bushandler.read(frame[2]);
+	status = bushandler.read(frame[3]);
+	break;
+      }
+      if(status == ERROR_STATUS)
+	bushandler.clear();
+    }
+  }
 }
 }
-
-// void UART4_IRQHandler(void){
-//   static uint8_t index = 0;
-//   static uint8_t buf[4];
-//   // PE (Parity error), FE (Framing error), NE (Noise error), ORE (OverRun error) and IDLE (Idle line detected) pending bits are cleared by USART_GetITStatus() followed by USART_ReceiveData().
-//   if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET){
-//     // Reading the receive data register clears the RXNE flag implicitly
-//     char c = USART_ReceiveData(UART4);
-//     // pass it on
-//     // printByte() blocks but presumably 
-//     // sending data will be as fast as receiving it
-//     buf[index++] = c;
-//     if(index == 4){
-//       index = 0;
-//       // skip first of four bytes
-//       MidiReaderStatus status;
-//       bushandler.read(buf[1]);
-//       bushandler.read(buf[2]);
-//       status = bushandler.read(buf[3]);
-//       if(status == ERROR_STATUS)
-// 	bushandler.clear();
-//     }
-//     // // printByte(c);
-//     // if(index == 4){
-//     //   index = 0;
-//     //   // skip first of four bytes
-//     //   MidiReaderStatus status;
-//     //   bushandler.read(buf[1]);
-//     //   bushandler.read(buf[2]);
-//     //   status = bushandler.read(buf[3]);
-//     //   if(status == ERROR_STATUS)
-//     // 	bushandler.clear();
-//     //   // // pass it on
-//     //   // serial_write(buf, 4);
-//     // }
-//     // USART_ClearITPendingBit(UART4, USART_IT_RXNE);
-//   }
-//   // if(USART_GetITStatus(UART4, USART_IT_ERR) != RESET)
-//   //   USART_ClearITPendingBit(UART4, USART_IT_ERR);
-//   /* If overrun condition occurs, clear the ORE flag and recover communication */
-//   if (USART_GetFlagStatus(UART4, USART_FLAG_ORE) != RESET)
-//     USART_ReceiveData(UART4);
-// }
