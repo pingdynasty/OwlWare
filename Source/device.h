@@ -5,7 +5,52 @@
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
 /* #define SERIAL_PORT                  1 */
-#define SERIAL_PORT                  4
+/* #define SERIAL_PORT                  2 */
+
+
+/* untested: pins probably require remap */
+/* #define USART_PERIPH                 USART1 */
+/* #define USART_CLK                    RCC_APB1Periph_USART1 */
+/* #define USART_CLK_CMD(x, y)          RCC_APB2PeriphClockCmd(x, y) */
+/* #define USART_GPIO_CLK               RCC_AHB1Periph_GPIOB */
+/* #define USART_GPIO_CLK_CMD(x, y)     RCC_AHB1PeriphClockCmd(x, y) */
+/* #define USART_GPIO_PORT              GPIOB */
+/* #define USART_GPIO_AF                GPIO_AF_USART1 */
+/* #define USART_TX_PIN                 GPIO_Pin_6 */
+/* #define USART_TX_PINSOURCE           GPIO_PinSource6 */
+/* #define USART_RX_PIN                 GPIO_Pin_7 */
+/* #define USART_RX_PINSOURCE           GPIO_PinSource7 */
+/* #define USART_IRQHandler             USART1_IRQHandler */
+/* #define USART_IRQn                   USART1_IRQn */
+
+#define USART_BAUDRATE               115200
+#define USART_PERIPH                 USART2
+#define USART_CLK                    RCC_APB1Periph_USART2
+#define USART_CLK_CMD(x, y)          RCC_APB1PeriphClockCmd(x, y)
+#define USART_GPIO_CLK               RCC_AHB1Periph_GPIOA
+#define USART_GPIO_CLK_CMD(x, y)     RCC_AHB1PeriphClockCmd(x, y)
+#define USART_GPIO_PORT              GPIOA
+#define USART_GPIO_AF                GPIO_AF_USART2
+#define USART_TX_PIN                 GPIO_Pin_2
+#define USART_TX_PINSOURCE           GPIO_PinSource2
+#define USART_RX_PIN                 GPIO_Pin_3
+#define USART_RX_PINSOURCE           GPIO_PinSource3
+#define USART_IRQn                   USART2_IRQn
+#define USART_IRQHandler             USART2_IRQHandler
+
+/* #define USART_PERIPH                 USART4 */
+/* #define USART_CLK                    RCC_APB1Periph_USART4 */
+/* #define USART_CLK_CMD(x, y)          RCC_APB1PeriphClockCmd(x, y) */
+/* #define USART_GPIO_CLK               RCC_AHB1Periph_GPIOA */
+/* #define USART_GPIO_CLK_CMD(x, y)     RCC_AHB1PeriphClockCmd(x, y) */
+/* #define USART_GPIO_PORT              GPIOA */
+/* #define USART_GPIO_AF                GPIO_AF_UART4 */
+/* #define USART_TX_PIN                 GPIO_Pin_0 */
+/* #define USART_TX_PINSOURCE           GPIO_PinSource0 */
+/* #define USART_RX_PIN                 GPIO_Pin_1 */
+/* #define USART_RX_PINSOURCE           GPIO_PinSource1 */
+/* #define USART_IRQHandler             USART4_IRQHandler */
+/* #define USART_IRQn                   USART4_IRQn */
 
 /* #define DEBUG_AUDIO */
 #define DEBUG_DWT
@@ -102,7 +147,10 @@
 #endif /* OWLMODULAR */
 
 /* Expression input */
+#if !(defined OWLMODULAR || defined OWLRACK)
 #define EXPRESSION_PEDAL
+#endif
+
 #ifdef OWLMODULAR
 #define EXPRESSION_PEDAL_TIP_PORT    GPIOA
 #define EXPRESSION_PEDAL_TIP_PIN     GPIO_Pin_3

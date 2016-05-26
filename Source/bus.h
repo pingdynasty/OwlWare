@@ -8,7 +8,6 @@
 #endif
 
    void setupBus();
-   void UART4_IRQHandler(void);
 
 #ifdef __cplusplus
 }

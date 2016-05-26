@@ -2,8 +2,71 @@
 #include "device.h"
 #include "stm32f4xx.h"
 
-USART_TypeDef* usart = 0;
+/* Initialize the serial port */
+void serial_setup(uint32_t baudrate) {
+  /* Enable clocks */
+  USART_CLK_CMD(USART_CLK, ENABLE);
+  USART_GPIO_CLK_CMD(USART_GPIO_CLK, ENABLE);
 
+  GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitStruct.GPIO_Pin = USART_TX_PIN | USART_RX_PIN;
+  GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
+  GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(USART_GPIO_PORT, &GPIO_InitStruct);
+
+  GPIO_PinAFConfig(USART_GPIO_PORT, USART_TX_PINSOURCE, USART_GPIO_AF);
+  GPIO_PinAFConfig(USART_GPIO_PORT, USART_RX_PINSOURCE, USART_GPIO_AF);
+
+  /* /\* Configure USART Tx as alternate function push-pull *\/ */
+  /* GPIO_InitTypeDef GPIO_InitStruct; */
+  /* GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF; */
+  /* GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz; */
+  /* GPIO_InitStruct.GPIO_OType = GPIO_OType_PP; */
+  /* /\* GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP; *\/ */
+  /* GPIO_InitStruct.GPIO_Pin = USART_TX_PIN; */
+  /* GPIO_Init(USART_TX_GPIO_PORT, &GPIO_InitStruct); */
+
+  /* /\* Configure USART Rx as open drain *\/ */
+  /* /\* GPIO_InitStruct.GPIO_Mode = GPIO_OType_OD; *\/ */
+  /* GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING; */
+  /* /\* GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL; *\/ */
+  /* GPIO_InitStruct.GPIO_Pin = USART_RX_PIN; */
+  /* GPIO_Init(USART_RX_GPIO_PORT, &GPIO_InitStruct); */
+
+  /* USART configuration */
+  USART_InitTypeDef USART_InitStruct;
+  USART_InitStruct.USART_BaudRate = baudrate;
+  USART_InitStruct.USART_WordLength = USART_WordLength_8b;
+  USART_InitStruct.USART_StopBits = USART_StopBits_1;
+  USART_InitStruct.USART_Parity = USART_Parity_No;
+  USART_InitStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  USART_InitStruct.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+  USART_Init(USART_PERIPH, &USART_InitStruct);
+
+  /* Enable the Transmit interrupt: this interrupt is generated when the 
+     transmit data register is empty */  
+  /* USART_ITConfig(USART_PERIPH, USART_IT_TXE, ENABLE); */
+  /* Enable the Receive interrupt: this interrupt is generated when the 
+     receive data register is not empty */
+  USART_ITConfig(USART_PERIPH, USART_IT_RXNE, ENABLE);
+  /* Enable the Error interrupt: Frame error, noise error, overrun error */
+  USART_ITConfig(USART_PERIPH, USART_IT_ERR, ENABLE);
+
+  /* Enable the USART Interrupt */
+  NVIC_InitTypeDef NVIC_InitStructure;
+  NVIC_InitStructure.NVIC_IRQChannel = USART_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = SERIAL_PORT_PRIORITY;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = SERIAL_PORT_SUBPRIORITY;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
+
+  /* Enable USART */
+  USART_Cmd(USART_PERIPH, ENABLE);
+}
+
+#if 0
 void setupSerialPort1(uint32_t baudrate){
   GPIO_InitTypeDef GPIO_InitStruct;
   USART_InitTypeDef USART_InitStruct;
@@ -16,8 +79,9 @@ void setupSerialPort1(uint32_t baudrate){
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_Init(GPIOB, &GPIO_InitStruct);
-  GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_USART1); //
-  GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_USART1);
+  GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_USART1); // PB6 TX
+  GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_USART1); // PB7 RX
+  // alternate function pin remap: todo?
   USART_InitStruct.USART_BaudRate = baudrate;
   USART_InitStruct.USART_WordLength = USART_WordLength_8b;
   USART_InitStruct.USART_StopBits = USART_StopBits_1;
@@ -41,14 +105,14 @@ void setupSerialPort2(uint32_t baudrate){
   NVIC_InitTypeDef NVIC_InitStructure;
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-  GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+  GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_Init(GPIOA, &GPIO_InitStruct);
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2); //
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2);
+  GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_USART2); // PA2 TX
+  GPIO_PinAFConfig(GPIOA, GPIO_PinSource3, GPIO_AF_USART2); // PA3 RX
   USART_InitStruct.USART_BaudRate = baudrate;
   USART_InitStruct.USART_WordLength = USART_WordLength_8b;
   USART_InitStruct.USART_StopBits = USART_StopBits_1;
@@ -72,14 +136,15 @@ void setupSerialPort4(uint32_t baudrate){
   NVIC_InitTypeDef NVIC_InitStructure;
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-  GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1; // PA0 TX PA1 RX
+  GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
   GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
+  /* GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP; */
+  GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOA, &GPIO_InitStruct);
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4);
-  GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4);
+  GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4); // PA0 TX
+  GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4); // PA1 RX
   USART_InitStruct.USART_BaudRate = baudrate;
   USART_InitStruct.USART_WordLength = USART_WordLength_8b;
   USART_InitStruct.USART_StopBits = USART_StopBits_1;
@@ -96,29 +161,32 @@ void setupSerialPort4(uint32_t baudrate){
   USART_Cmd(UART4, ENABLE);
   usart = UART4;
 }
+#endif
 
 void USART_puts(USART_TypeDef* USARTx, volatile const char *s){
   while(*s){
     // wait until data register is empty
-    while( !(USARTx->SR & 0x00000040) );
+    while(USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET);
     USART_SendData(USARTx, *s);
     *s++;
   }
 }
 
 void USART_putc(USART_TypeDef* USARTx, char c){
-  while( !(USARTx->SR & 0x00000040) );
+  while(USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET);
   USART_SendData(USARTx, c);
 }
 
 void printString(const char* s){
-  if(usart)
-    USART_puts(usart, s);
+#ifdef USART_PERIPH
+  USART_puts(USART_PERIPH, s);
+#endif
 }
 
 void printByte(char c){
-  if(usart)
-    USART_putc(usart, c);
+#ifdef USART_PERIPH
+  USART_putc(USART_PERIPH, c);
+#endif
 }
 
 void printIntegerInBase(unsigned long n, unsigned long base){ 
@@ -188,9 +256,11 @@ void printDouble(double val, uint8_t precision){
 }
 
 void serial_write(uint8_t* data, uint16_t size){
+#ifdef USART_PERIPH
   for(int i=0; i<size; ++i){
     // wait until data register is empty
-    while( !(usart->SR & 0x00000040) );
-    USART_SendData(usart, data[i]);
+    while(USART_GetFlagStatus(USART_PERIPH, USART_FLAG_TXE) == RESET);
+    USART_SendData(USART_PERIPH, data[i]);
   }
+#endif
 }

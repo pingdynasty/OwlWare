@@ -309,9 +309,7 @@ void setup(){
   registry.init();
 
 #ifdef EXPRESSION_PEDAL
-#if !(defined OWLMODULAR || defined OWLRACK)
   setupExpressionPedal();
-#endif
 #endif
 
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); // DEBUG
@@ -335,18 +333,23 @@ void setup(){
 
   usb_init();
 
-#if SERIAL_PORT == 1
-  setupSerialPort1(115200);
-#elif SERIAL_PORT == 4
-  setupSerialPort4(115200); // Digital Bus
+// #if SERIAL_PORT == 1
+//   setupSerialPort1(115200);
+// #elif SERIAL_PORT == 2
+//   setupSerialPort2(115200); // expression pedal
+// #warning expression pedal jack configured as serial port
+// #ifdef EXPRESSION_PEDAL
+// #error invalid configuration
+// #endif
+// #elif SERIAL_PORT == 4
+//   setupSerialPort4(115200); // Digital Bus
+//   setupBus();
+// #endif
+#ifdef USART_PERIPH
+  serial_setup(USART_BAUDRATE);
   setupBus();
-#elif SERIAL_PORT == 2
-  setupSerialPort2(115200); // expression pedal
-#warning expression pedal jack configured as serial port
-#ifdef EXPRESSION_PEDAL
-#error invalid configuration
 #endif
-#endif
+
 
   codec.setup();
   codec.init(settings);
