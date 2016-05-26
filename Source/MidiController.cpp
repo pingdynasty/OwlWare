@@ -328,9 +328,10 @@ void MidiController::sendSysEx(uint8_t* data, uint16_t size){
 
 void MidiController::useMidiParameters(bool midi){
   if(midi){
-    memcpy(midi_values, getAnalogValues(), NOF_MIDI_PARAMETERS*sizeof(uint16_t));
+    // memcpy(midi_values, getAnalogValues(), NOF_MIDI_PARAMETERS*sizeof(uint16_t));
     setParameterValues(midi_values, NOF_MIDI_PARAMETERS);
   }else{
+    // memcpy(getAnalogValues(), midi_values, NOF_MIDI_PARAMETERS*sizeof(uint16_t));
     setParameterValues(getAnalogValues(), NOF_PARAMETERS);
   }
 }

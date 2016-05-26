@@ -259,8 +259,10 @@ void updateProgramVector(ProgramVector* vector){
   vector->audio_bitdepth = settings.audio_bitdepth;
   vector->audio_blocksize = settings.audio_blocksize;
   vector->audio_samplingrate = settings.audio_samplingrate;
+#ifndef OWLRACK
   vector->parameters = getAnalogValues();
   vector->parameters_size = NOF_PARAMETERS;
+#endif
   // todo: pass real-time updates from MidiHandler
   vector->buttons = (1<<GREEN_BUTTON);
   vector->registerPatch = registerPatch;
