@@ -10,6 +10,7 @@
 #include "OpenWareMidiControl.h"
 #include "ProgramVector.h"
 #include "ProgramManager.h"
+#include "Owl.h"
 #include <math.h> /* for ceilf */
 
 uint32_t log2(uint32_t x){ 
@@ -21,17 +22,17 @@ void MidiController::init(uint8_t ch){
 }
 
 void MidiController::sendPatchParameterValues(){
-  sendCc(PATCH_PARAMETER_A, (uint8_t)(getAnalogValue(PARAMETER_A)>>5) & 0x7f);
-  sendCc(PATCH_PARAMETER_B, (uint8_t)(getAnalogValue(PARAMETER_B)>>5) & 0x7f);
-  sendCc(PATCH_PARAMETER_C, (uint8_t)(getAnalogValue(PARAMETER_C)>>5) & 0x7f);
-  sendCc(PATCH_PARAMETER_D, (uint8_t)(getAnalogValue(PARAMETER_D)>>5) & 0x7f);
-  sendCc(PATCH_PARAMETER_E, (uint8_t)(getAnalogValue(PARAMETER_E)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_A, (uint8_t)(getParameterValue(PARAMETER_A)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_B, (uint8_t)(getParameterValue(PARAMETER_B)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_C, (uint8_t)(getParameterValue(PARAMETER_C)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_D, (uint8_t)(getParameterValue(PARAMETER_D)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_E, (uint8_t)(getParameterValue(PARAMETER_E)>>5) & 0x7f);
 }
 
 void MidiController::sendSettings(){
   sendPc(settings.program_index);
   sendPatchParameterValues();
-  sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
+  sendCc(PATCH_BUTTON, getButton(PUSHBUTTON) ? 127 : 0);
   sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
   sendCc(LEFT_INPUT_GAIN, codec.getInputGainLeft()<<2);
   sendCc(RIGHT_INPUT_GAIN, codec.getInputGainRight()<<2);

@@ -27,7 +27,11 @@ ApplicationSettings settings;
 PatchRegistry registry;
 volatile bool bypass = false;
 
-bool getButton(PatchButtonId bid){
+uint16_t getParameterValue(uint8_t pid){
+  return getProgramVector()->parameters[pid];
+}
+
+bool getButton(uint8_t bid){
   return getProgramVector()->buttons & (1<<bid);
 }
 
@@ -84,7 +88,7 @@ void setButton(PatchButtonId bid, bool on){
     clearButton(bid);
 }
 
-void buttonChanged(int bid, bool on){
+void buttonChanged(uint8_t bid, bool on){
   switch(bid){
   case PUSHBUTTON:
     if(on)
