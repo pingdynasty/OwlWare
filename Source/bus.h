@@ -7,7 +7,7 @@
  extern "C" {
 #endif
 
-   void bus_setup();
+   void setupBus();
 
 #ifdef __cplusplus
 }

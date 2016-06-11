@@ -28,14 +28,7 @@ PatchRegistry registry;
 volatile bool bypass = false;
 
 uint16_t getParameterValue(uint8_t pid){
-  if(getProgramVector()->parameters_size < pid)
-    return getProgramVector()->parameters[pid];
-  return 0;
-}
-
-void setParameterValue(uint8_t pid, uint16_t value){
-  if(getProgramVector()->parameters_size < pid)
-    getProgramVector()->parameters[pid] = value;
+  return getProgramVector()->parameters[pid];
 }
 
 bool getButton(uint8_t bid){
@@ -259,10 +252,8 @@ void updateProgramVector(ProgramVector* vector){
   vector->audio_bitdepth = settings.audio_bitdepth;
   vector->audio_blocksize = settings.audio_blocksize;
   vector->audio_samplingrate = settings.audio_samplingrate;
-#ifndef OWLRACK
   vector->parameters = getAnalogValues();
   vector->parameters_size = NOF_PARAMETERS;
-#endif
   // todo: pass real-time updates from MidiHandler
   vector->buttons = (1<<GREEN_BUTTON);
   vector->registerPatch = registerPatch;
@@ -346,10 +337,23 @@ void setup(){
 
   usb_init();
 
+// #if SERIAL_PORT == 1
+//   setupSerialPort1(115200);
+// #elif SERIAL_PORT == 2
+//   setupSerialPort2(115200); // expression pedal
+// #warning expression pedal jack configured as serial port
+// #ifdef EXPRESSION_PEDAL
+// #error invalid configuration
+// #endif
+// #elif SERIAL_PORT == 4
+//   setupSerialPort4(115200); // Digital Bus
+//   setupBus();
+// #endif
 #ifdef USART_PERIPH
   serial_setup(USART_BAUDRATE);
-  bus_setup();
+  setupBus();
 #endif
+
 
   codec.setup();
   codec.init(settings);
@@ -359,10 +363,6 @@ void setup(){
   program.startProgram(false);
 
   updateBypassMode();
-
-#ifdef OWLRACK
-  midi.useMidiParameters(true);
-#endif
 
   codec.start();
 }
