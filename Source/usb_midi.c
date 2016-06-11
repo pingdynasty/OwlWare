@@ -17,8 +17,8 @@ static u8  USBH_BulkInEpSize;
 static u8  USBH_tx_count;
 static u16 USBH_BulkOutEpSize;
 
-#define MBOX_USB_MIDI_RX_BUFFER_SIZE 256
-#define MBOX_USB_MIDI_TX_BUFFER_SIZE 256
+#define MBOX_USB_MIDI_RX_BUFFER_SIZE 64
+#define MBOX_USB_MIDI_TX_BUFFER_SIZE 64
 #define MBOX_USB_MIDI_NUM_PORTS 1
 
 /* #if 0 */
