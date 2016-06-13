@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "Bollard A v1"
+#define FIRMWARE_VERSION             "Bollard B v1"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */

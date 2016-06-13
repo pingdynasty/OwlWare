@@ -181,9 +181,6 @@ public:
     }
   }
 
-  void handleSystemCommon(uint8_t){
-  }
-
   void updateCodecSettings(){
     codec.softMute(true);
     codec.stop();

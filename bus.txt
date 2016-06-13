@@ -1,4 +1,19 @@
 
+----
+
+Minerva was the Roman goddess of wisdom and sponsor of arts, trade, and strategy. 
+She is often depicted with her sacred creature, an owl usually named as the "owl of Minerva", which symbolised her association with wisdom and knowledge.
+
+Athena is the goddess of wisdom, courage, inspiration, civilization, law and justice, mathematics, strength, war strategy, the arts, crafts, and skill in ancient Greek religion and mythology. Minerva is the Roman goddess identified with Athena.
+The bird which sees well in the night is closely associated with the goddess of wisdom: in archaic images, Athena is frequently depicted with an owl (or "owl of Athena" and later under the Roman Empire, "owl of Minerva") perched on her hand. This pairing evolved in tandem so that even today the owl is a symbol of perspicacity and erudition. Unsurprisingly, the owl became a sort of Athenian mascot. 
+
+Strix (pl. striges or strixes), in the Ancient Roman and Greek legends was a bird of ill omen, product of metamorphosis, that fed on human flesh and blood. The name, in Greek, means "owl".
+
+Owls are divided into two families: the true owls or typical owls, Strigidae; and the barn-owls, Tytonidae.
+
+----
+
+
 send discover : seq : uid
 with seq = 0
 
