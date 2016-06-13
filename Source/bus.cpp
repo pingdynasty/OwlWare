@@ -28,7 +28,7 @@ discovery process:
 enumeration process:
 - to initiate, send ENUM with UID=0
 - on receipt (and UID not set), claim UID+1 and send ENUM with UID+1
-- downstream UID = local UID+1
+- downstream UID = local UID+1 (or 0)
 - on receipt with UID already set, restart discovery process
 
 identification process:
@@ -40,10 +40,10 @@ communication process:
 - send midi, parameter, or data with UID
 - on receipt with UID != mine and UID != upstream, pass along.
 
-DISC:  0x10, 24bit random ID
-ENUM:  0x20|UID, 8bit version, 16bit parameters
-IDENT: 0x30|UID, VERSION, PRODUCT, UUID 8bit
-IDENT: 0x30|UID, UUID 24bit (x5)
+DISCOVER: 0x10, 24bit random ID
+ENUM:     0x20|UID, 8bit version, 16bit parameters
+IDENT:    0x30|UID, VERSION, PRODUCT, UUID 8bit
+IDENT:    0x30|UID, UUID 24bit (x5) (out of sequence messages possible?)
 
 - what to do with USB MIDI messages? no room for UID?
 
@@ -64,6 +64,9 @@ private:
   static const uint8_t PARAMETERS = 5; // number of parameters defined by this product
 public:
   DigitalBusDiscovery() : uid(0xff), downstream(0xff), token(0xffffffff), peers(0), parameterOffset(0) {}
+  void sendMessage(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4){
+    // send a 4-byte message
+  }
   uint32_t generateToken(){
     uint32_t tok = (VERSION << 16) | (UUID[15] << 8) | UUID[14];
     tok ^= (UUID[13] << 16) | (UUID[12] << 8) | UUID[11];
@@ -78,7 +81,7 @@ public:
     sendDiscover(token);
   }
   void sendDiscover(uint32_t token){
-    sendMessage(OWL_COMMAND_DISC, (token>>16)&0x0f, (token>>8)&0x0f, token&0x0f);
+    sendMessage(OWL_COMMAND_DISCOVER, (token>>16)&0x0f, (token>>8)&0x0f, token&0x0f);
   }
   void handleDiscover(uint32_t other){
     if(token == other){

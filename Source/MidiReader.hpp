@@ -212,12 +212,13 @@ public:
 	break;
       case OWL_COMMAND_SYNC:
 	// 0xc0 until 0xff at end of frame
+	// use ASCII SYN instead?
 	break;
       }
-      if((frame[0] & 0x0f) != luid){
-	// we are not the originator
-	// forward message
-      }
+      // if((frame[0] & 0x0f) != uid && (frame[0] & 0x0f) != (uid+1)){
+      // 	// we are not the originator
+      // 	// forward message
+      // }
       // ignore
     }
     return status;
