@@ -35,6 +35,7 @@ public:
   virtual void handleNoteOn(uint8_t, uint8_t, uint8_t){}
   virtual void handlePitchBend(uint8_t, uint8_t, uint8_t){}
   virtual void handleSysEx(uint8_t* data, uint16_t size){}
+  virtual void handleParameterChange(uint8_t pid, uint16_t value){}
 
   void clear(){
     runningStatus = message[0];
@@ -160,6 +161,64 @@ public:
       }else{
 	status = ERROR_STATUS;
       }
+    }
+    return status;
+  }
+
+  // read a 4-byte USB data frame
+  // todo: dispatch directly to handleXYZ() methods
+  MidiReaderStatus readFrame(unsigned char* frame){
+    MidiReaderStatus status = INCOMPLETE_STATUS;
+    switch(frame[0]){
+    case USB_COMMAND_MISC:
+    case USB_COMMAND_CABLE_EVENT:
+      // ignore
+      break;
+    case USB_COMMAND_SINGLE_BYTE:
+    case USB_COMMAND_SYSEX_EOX1:
+      // one byte message
+      status = read(frame[1]);
+      break;
+    case USB_COMMAND_2BYTE_SYSTEM_COMMON:
+    case USB_COMMAND_SYSEX_EOX2:
+    case USB_COMMAND_PROGRAM_CHANGE:
+    case USB_COMMAND_CHANNEL_PRESSURE:
+      read(frame[1]);
+      status = read(frame[2]);
+      break;
+    case USB_COMMAND_NOTE_OFF:
+    case USB_COMMAND_NOTE_ON:
+    case USB_COMMAND_POLY_KEY_PRESSURE:
+    case USB_COMMAND_CONTROL_CHANGE:
+    case USB_COMMAND_PITCH_BEND_CHANGE:
+      // three byte message
+      read(frame[1]);
+      read(frame[2]);
+      status = read(frame[3]);
+      break;
+    default:
+      switch(frame[0] & 0xf0){
+      case OWL_COMMAND_DISCOVER:
+	break;
+      case OWL_COMMAND_PARAMETER:
+	// parameter change
+	handleParameterChange(frame[1], (frame[2]<<8) | frame[3]);
+	status = READY_STATUS;
+	break;
+      case OWL_COMMAND_DATA:
+	// OSC, firmware or file data
+	// 0x30, type, sizeH, sizeL
+	// uint16_t size = (frame[2]<<8) | frame[3]);
+	break;
+      case OWL_COMMAND_SYNC:
+	// 0xc0 until 0xff at end of frame
+	break;
+      }
+      if((frame[0] & 0x0f) != luid){
+	// we are not the originator
+	// forward message
+      }
+      // ignore
     }
     return status;
   }

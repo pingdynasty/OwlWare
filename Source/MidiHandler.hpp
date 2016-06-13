@@ -1,5 +1,5 @@
-#ifndef _MidiHandler_H_
-#define _MidiHandler_H_
+#ifndef _MidiHandler_HPP_
+#define _MidiHandler_HPP_
 
 #include <string.h>
 #include "device.h"
@@ -306,4 +306,4 @@ public:
   }
 };
 
-#endif /* _MidiHandler_H_ */
+#endif /* _MidiHandler_HPP_ */
