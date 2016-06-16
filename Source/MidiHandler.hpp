@@ -12,12 +12,10 @@
 #include "ProgramManager.h"
 #include "Owl.h"
 
-#define NOF_MIDI_PARAMETERS NOF_PARAMETERS
-
 class MidiHandler : public MidiReader {
 private:
   uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
-  uint16_t midi_values[NOF_MIDI_PARAMETERS];
+  uint16_t midi_values[NOF_PARAMETERS];
   FirmwareLoader loader;
   // state variables to track monophonic note
   uint8_t note;
@@ -29,7 +27,7 @@ public:
   MidiHandler() : MidiReader(buffer, sizeof(buffer)) {
     note = 0;
     pitchbend = 8192;
-    memset(midi_values, 0, NOF_MIDI_PARAMETERS*sizeof(uint16_t));
+    memset(midi_values, 0, NOF_PARAMETERS*sizeof(uint16_t));
   }
 
   void handlePitchBend(uint8_t status, uint16_t value){
@@ -102,8 +100,8 @@ public:
 #endif /* OWLMODULAR */
     case PATCH_CONTROL:
       if(value == 127){
-	memcpy(midi_values, getAnalogValues(), NOF_MIDI_PARAMETERS*sizeof(uint16_t));
-	setParameterValues(midi_values, NOF_MIDI_PARAMETERS);
+	memcpy(midi_values, getAnalogValues(), NOF_PARAMETERS*sizeof(uint16_t));
+	setParameterValues(midi_values, NOF_PARAMETERS);
       }else{
 	setParameterValues(getAnalogValues(), NOF_PARAMETERS);
       }
@@ -209,10 +207,31 @@ public:
 	updateCodecSettings();
       }
       break;
+    case MIDI_CC_MODULATION:
+      setParameter(PARAMETER_MIDI_MODULATION, value<<5);
+      break;
+    case MIDI_CC_BREATH:
+      setParameter(PARAMETER_MIDI_BREATH, value<<5);
+      break;
+    case MIDI_CC_VOLUME:
+      setParameter(PARAMETER_MIDI_VOLUME, value<<5);
+      break;
+    case MIDI_CC_BALANCE:
+      setParameter(PARAMETER_MIDI_BALANCE, value<<5);
+      break;
+    case MIDI_CC_PAN:
+      setParameter(PARAMETER_MIDI_PAN, value<<5);
+      break;
+    case MIDI_CC_EXPRESSION:
+      setParameter(PARAMETER_MIDI_EXPRESSION, value<<5);
+      break;
+    case MIDI_CC_EFFECT_CTRL_1:
+      setParameter(PARAMETER_MIDI_EFFECT_CTRL_1, value<<5);
+      break;
+    case MIDI_CC_EFFECT_CTRL_2:
+      setParameter(PARAMETER_MIDI_EFFECT_CTRL_2, value<<5);
+      break;
     }
-  }
-
-  void handleSystemCommon(uint8_t){
   }
 
   void updateCodecSettings(){

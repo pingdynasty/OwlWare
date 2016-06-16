@@ -10,6 +10,7 @@
 #include "OpenWareMidiControl.h"
 #include "ProgramVector.h"
 #include "ProgramManager.h"
+#include "Owl.h"
 #include <math.h> /* for ceilf */
 
 uint32_t log2(uint32_t x){ 
@@ -21,11 +22,11 @@ void MidiController::init(uint8_t ch){
 }
 
 void MidiController::sendPatchParameterValues(){
-  sendCc(PATCH_PARAMETER_A, (uint8_t)(getAnalogValue(PARAMETER_A)>>5) & 0x7f);
-  sendCc(PATCH_PARAMETER_B, (uint8_t)(getAnalogValue(PARAMETER_B)>>5) & 0x7f);
-  sendCc(PATCH_PARAMETER_C, (uint8_t)(getAnalogValue(PARAMETER_C)>>5) & 0x7f);
-  sendCc(PATCH_PARAMETER_D, (uint8_t)(getAnalogValue(PARAMETER_D)>>5) & 0x7f);
-  sendCc(PATCH_PARAMETER_E, (uint8_t)(getAnalogValue(PARAMETER_E)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_A, (uint8_t)(getParameterValue(PARAMETER_A)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_B, (uint8_t)(getParameterValue(PARAMETER_B)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_C, (uint8_t)(getParameterValue(PARAMETER_C)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_D, (uint8_t)(getParameterValue(PARAMETER_D)>>5) & 0x7f);
+  sendCc(PATCH_PARAMETER_E, (uint8_t)(getParameterValue(PARAMETER_E)>>5) & 0x7f);
 }
 
 void MidiController::sendSettings(){
@@ -157,7 +158,7 @@ void MidiController::sendProgramStats(){
     p = stpcpy(p, itoa(stack, 10));
     p = stpcpy(p, (const char*)" Heap: ");
 #else
-    p = stpcpy(p, (const char*)"Heap: ");
+    p = stpcpy(p, (const char*)"Memory: ");
 #endif /* DEBUG_STACK */
     int mem = program.getHeapMemoryUsed();
     p = stpcpy(p, itoa(mem, 10));

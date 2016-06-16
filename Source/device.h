@@ -8,7 +8,7 @@
 
 /* #define DEBUG_AUDIO */
 #define DEBUG_DWT
-#define DEBUG_STACK
+/* #define DEBUG_STACK */
 
 #define DEFAULT_PROGRAM              1
 #define BUTTON_PROGRAM_CHANGE
@@ -53,7 +53,7 @@
 #define MIDI_CHANNEL                 0
 #define MIDI_MAX_MESSAGE_SIZE        256
 #define NOF_ADC_VALUES               5
-#define NOF_PARAMETERS               10
+#define NOF_PARAMETERS               18
 #define NOF_BUTTONS                  5
 #define MAX_BUFFERS_PER_PATCH        8
 #define MAX_SYSEX_FIRMWARE_SIZE      ((16+16+64+128+128)*1024) // FLASH sectors 2-6

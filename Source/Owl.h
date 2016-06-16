@@ -21,10 +21,10 @@
 #define abs(x) ((x)>0?(x):-(x))
 #endif /* abs */
 
-   uint16_t getAnalogValue(uint8_t index);
    void audioCallback(int16_t *src, int16_t *dst);
    void setButton(uint8_t bid, uint8_t state);
    void setParameter(uint8_t pid, uint16_t value);
+   uint16_t getParameterValue(uint8_t index);
    void setup(); // main OWL setup
 
 #ifdef __cplusplus

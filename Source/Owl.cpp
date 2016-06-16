@@ -46,11 +46,6 @@ void clearGate(){
 #endif
 }
 
-// called from midi and digital bus irq
-void setParameter(uint8_t pid, uint16_t value){
-  getProgramVector()->parameters[pid] = value;
-}
-
 void setButtonState(LedPin led){
   switch(led){
   case GREEN:
@@ -295,6 +290,17 @@ __attribute__ ((section (".coderam")))
        if(getProgramVector()->buttonChangedCallback != NULL)
 	 getProgramVector()->buttonChangedCallback(bid, state, getSampleCounter());
      }
+   }
+
+   // called from midi irq
+   void setParameter(uint8_t pid, uint16_t value){
+     ASSERT(pid < getProgramVector()->parameters_size, "Parameter ID out of range");
+     getProgramVector()->parameters[pid] = value;
+   }
+
+   uint16_t getParameterValue(uint8_t pid){
+     ASSERT(pid < getProgramVector()->parameters_size, "Parameter ID out of range");
+     return getProgramVector()->parameters[pid];
    }
 
 #ifdef __cplusplus
