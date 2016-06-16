@@ -25,7 +25,10 @@ CodecController codec;
 MidiController midi;
 ApplicationSettings settings;
 PatchRegistry registry;
-volatile bool bypass = false;
+
+// there are only really 2 timestamps needed: LED pushbutton and midi gate
+uint16_t timestamps[NOF_BUTTONS]; 
+uint16_t stateChanged;
 
 bool getButton(PatchButtonId bid){
   return getProgramVector()->buttons & (1<<bid);
@@ -43,87 +46,68 @@ void clearGate(){
 #endif
 }
 
+// called from midi and digital bus irq
+void setParameter(uint8_t pid, uint16_t value){
+  getProgramVector()->parameters[pid] = value;
+}
+
+void setButtonState(LedPin led){
+  switch(led){
+  case GREEN:
+    setLed(GREEN);
+    getProgramVector()->buttons |= (1<<GREEN_BUTTON);
+    getProgramVector()->buttons &= ~(1<<RED_BUTTON);
+    break;
+  case RED:
+    setLed(RED);
+    getProgramVector()->buttons &= ~(1<<GREEN_BUTTON);
+    getProgramVector()->buttons |= (1<<RED_BUTTON);
+    break;
+  default:
+    setLed(NONE);
+    getProgramVector()->buttons &= ~(1<<RED_BUTTON);
+    getProgramVector()->buttons &= ~(1<<GREEN_BUTTON);
+    break;
+  }
+}
+
+// called from incoming button trigger irq
 void setButton(PatchButtonId bid){
-  ProgramVector* pv = getProgramVector();
-  pv->buttons |= (1<<bid);
-  pv->parameters[PARAMETER_F+bid] = getSampleCounter();
-// #ifdef OWLMODULAR
-//   if(bid == PUSHBUTTON)
-//     clearPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output high
-// #endif
+  timestamps[bid] = getSampleCounter();
+  stateChanged |=  (1<<bid);
+  getProgramVector()->buttons |= (1<<bid);
 }
 
 void clearButton(PatchButtonId bid){
+  timestamps[bid] = getSampleCounter();
+  stateChanged |=  (1<<bid);
   getProgramVector()->buttons &= ~(1<<bid);
-// #ifdef OWLMODULAR
-//   if(bid == PUSHBUTTON)
-//     setPin(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN); // OWL Modular digital output low
-// #endif
 }
 
 void setPushbutton(){
   setGate();
-  setLed(RED);
-  setButton(RED_BUTTON);
   setButton(PUSHBUTTON);
-  clearButton(GREEN_BUTTON);
+  setButtonState(RED);
 }
 
 void clearPushbutton(){
   clearGate();
-  setLed(GREEN);
-  setButton(GREEN_BUTTON);
-  clearButton(RED_BUTTON);
   clearButton(PUSHBUTTON);
-}
-
-void setButton(PatchButtonId bid, bool on){
-  if(on)
-    setButton(bid);
-  else
-    clearButton(bid);
-}
-
-void buttonChanged(int bid, bool on){
-  switch(bid){
-  case PUSHBUTTON:
-    if(on)
-      setPushbutton();
-    else
-      clearPushbutton();
-    break;
-  case GREEN_BUTTON:
-    setButton(GREEN_BUTTON, on);
-    setButton(RED_BUTTON, !on);
-    setLed(on ? GREEN : RED);
-    break;
-  case RED_BUTTON:
-    setButton(RED_BUTTON, on);
-    setButton(GREEN_BUTTON, !on);
-    setLed(on ? RED : GREEN);
-    break;
-  default:
-    break;
-  }
+  setButtonState(GREEN);
 }
 
 void updateBypassMode(){
-#ifdef OWLMODULAR
-  bypass = false;
-#else
   if(isStompSwitchPressed()){
-    setButton(BYPASS_BUTTON);
-    bypass = true;
-    setLed(NONE);    
+    getProgramVector()->buttons |= (1<<BYPASS_BUTTON);
+    setButtonState(NONE);
   }else{
+    getProgramVector()->buttons &= ~(1<<BYPASS_BUTTON);  
     clearButton(BYPASS_BUTTON);
-    bypass = false;
     if(getButton(RED_BUTTON))
-      setLed(RED);
+      setButtonState(RED);
     else
-      setLed(GREEN);
+      setButtonState(GREEN);
   }
-#endif
 }
 
 void togglePushButton(){
@@ -131,21 +115,17 @@ void togglePushButton(){
     setPushbutton();
   else // if(getLed() == RED){
     clearPushbutton();
-  midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
 }
 
 #ifdef OWLMODULAR
 void pushGateCallback(){
   if(isPushGatePressed()){
     setButton(PUSHBUTTON);
-    setLed(RED);
-    setButton(RED_BUTTON);
-    clearButton(GREEN_BUTTON);
+    setButtonState(RED);
+    // we don't call setPushButton() because we don't want to set gate
   }else{
     clearButton(PUSHBUTTON);
-    setLed(GREEN);
-    setButton(GREEN_BUTTON);
-    clearButton(RED_BUTTON);
+    setButtonState(GREEN);
   }
 }
 #else
@@ -198,8 +178,9 @@ void updateProgramIndex(uint8_t index){
        vec->message = (char*)msg;
    }
 
-   PatchDefinition dynamicPatchDefinition;
-   void registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
+   // called from program
+   void onRegisterPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
+     static PatchDefinition dynamicPatchDefinition;
      dynamicPatchDefinition.name = name;
      dynamicPatchDefinition.inputs = inputChannels;
      dynamicPatchDefinition.outputs = outputChannels;
@@ -207,22 +188,113 @@ void updateProgramIndex(uint8_t index){
      midi.sendPatchName(0);
    }
 
-   void registerPatchParameter(uint8_t id, const char* name){
+   // called from program
+   void onRegisterPatchParameter(uint8_t id, const char* name){
      midi.sendPatchParameterName((PatchParameterId)id, name);
    }
 
 __attribute__ ((section (".coderam")))
-   void programReady(){
+   // called from program
+   void onProgramReady(){
      // while(audioStatus != AUDIO_READY_STATUS);
      program.programReady();
    }
 
-   void programStatus(ProgramVectorAudioStatus status){
+   // called from program
+   void onProgramStatus(ProgramVectorAudioStatus status){
      program.programStatus(status);
    }
 
-   void setParameter(int pid, uint16_t value){
-     getAnalogValues()[pid] = value;
+   // called from program
+   void onSetButton(uint8_t bid, uint8_t state){
+     if(bid == PUSHBUTTON){
+       if(state){
+	 // we don't call setPushbutton() because we don't want to 
+	 // call setButton (and set timestamp / stateChanged)
+	 setGate();
+	 setButtonState(RED);
+	 getProgramVector()->buttons |= (1<<bid);
+       }else{
+	 clearGate();
+	 setButtonState(GREEN);
+	 getProgramVector()->buttons &= ~(1<<bid);
+       }
+     }else if(bid < NOF_BUTTONS){
+       if(state)
+	 getProgramVector()->buttons |= (1<<bid);
+       else
+	 getProgramVector()->buttons &= ~(1<<bid);
+     }else if(bid >= MIDI_NOTE_BUTTON){
+       if(state)
+	 midi.sendNoteOn(bid-MIDI_NOTE_BUTTON, state & 0x7f);
+       else
+	 midi.sendNoteOff(bid-MIDI_NOTE_BUTTON, 0);
+     }
+   }
+
+   // called from program
+   void onSetPatchParameter(uint8_t pid, uint16_t value){     
+     if(pid < NOF_PARAMETERS){
+       getProgramVector()->parameters[pid] = value;
+     }
+     switch(pid){
+     case PARAMETER_A:
+     case PARAMETER_B:
+     case PARAMETER_C:
+     case PARAMETER_D:
+     case PARAMETER_E:
+     case PARAMETER_F:
+     case PARAMETER_G:
+     case PARAMETER_H:
+       getProgramVector()->parameters[pid] = value;
+       break;
+       // case PARAMETER_MIDI_PITCH:
+       // case PARAMETER_MIDI_AMPLITUDE:
+     case PARAMETER_MIDI_MODULATION: // CC1
+       midi.sendCc(1, (value>>5) & 0x7f);
+       break;
+     case PARAMETER_MIDI_BREATH:     // CC2
+       midi.sendCc(2, (value>>5) & 0x7f);
+       break;
+     case PARAMETER_MIDI_VOLUME:     // CC7
+       midi.sendCc(7, (value>>5) & 0x7f);
+       break;
+     case PARAMETER_MIDI_BALANCE:    // CC8
+       midi.sendCc(8, (value>>5) & 0x7f);
+       break;
+     case PARAMETER_MIDI_PAN:        // CC10
+       midi.sendCc(10, (value>>5) & 0x7f);
+       break;
+     case PARAMETER_MIDI_EXPRESSION: // CC11
+       midi.sendCc(11, (value>>5) & 0x7f);
+       break;
+     case PARAMETER_MIDI_EFFECT_CTRL_1:    // CC12
+       midi.sendCc(12, (value>>5) & 0x7f);
+       break;
+     case PARAMETER_MIDI_EFFECT_CTRL_2:    // CC13
+       midi.sendCc(13, (value>>5) & 0x7f);
+       break;
+     default:
+       if(pid >= PARAMETER_MIDI_NOTE){
+	 if(value == 0)
+	   midi.sendNoteOff(pid-PARAMETER_MIDI_NOTE, 0);
+	 else
+	   midi.sendNoteOn(pid-PARAMETER_MIDI_NOTE, value);
+       }
+     }
+   }
+
+   // called from midi irq
+   void setButton(uint8_t bid, uint8_t state){
+     if(bid < NOF_BUTTONS){
+       if(state)
+	 setButton((PatchButtonId)bid);
+       else
+	 clearButton((PatchButtonId)bid);
+     }else if(bid >= MIDI_NOTE_BUTTON){
+       if(getProgramVector()->buttonChangedCallback != NULL)
+	 getProgramVector()->buttonChangedCallback(bid, state, getSampleCounter());
+     }
    }
 
 #ifdef __cplusplus
@@ -250,14 +322,20 @@ void updateProgramVector(ProgramVector* vector){
   vector->parameters_size = NOF_PARAMETERS;
   // todo: pass real-time updates from MidiHandler
   vector->buttons = (1<<GREEN_BUTTON);
-  vector->registerPatch = registerPatch;
-  vector->registerPatchParameter = registerPatchParameter;
+  vector->registerPatch = onRegisterPatch;
+  vector->registerPatchParameter = onRegisterPatchParameter;
   vector->cycles_per_block = 0;
   vector->heap_bytes_used = 0;
-  vector->programReady = programReady;
-  vector->programStatus = programStatus;
+  vector->programReady = onProgramReady;
+  vector->programStatus = onProgramStatus;
   vector->serviceCall = serviceCall;
   vector->message = NULL;
+
+  vector->setButton = onSetButton;
+  vector->setPatchParameter = onSetPatchParameter;
+
+  vector->buttonChangedCallback = NULL;
+  vector->encoderChangedCallback = NULL;
 }
 
 void setup(){

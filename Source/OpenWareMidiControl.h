@@ -11,14 +11,50 @@ enum PatchParameterId {
   PARAMETER_C,
   PARAMETER_D,
   PARAMETER_E,
-  PARAMETER_F
+  PARAMETER_F,
+  PARAMETER_G,
+  PARAMETER_H,
+  PARAMETER_MIDI_PITCH,
+  PARAMETER_MIDI_AMPLITUDE,
+  PARAMETER_MIDI_MODULATION, // CC1
+  PARAMETER_MIDI_BREATH,     // CC2
+  PARAMETER_MIDI_VOLUME,     // CC7
+  PARAMETER_MIDI_BALANCE,    // CC8
+  PARAMETER_MIDI_PAN,        // CC10
+  PARAMETER_MIDI_EXPRESSION, // CC11
+  PARAMETER_MIDI_EFFECT_CTRL_1,    // CC12
+  PARAMETER_MIDI_EFFECT_CTRL_2,    // CC13
+  /*
+  // CC16-19 General Purpose Controllers 1-4
+  // Sound controller 1 to 10, CC70 to CC79
+  PARAMETER_MIDI_CC70, // Sound Variation
+  PARAMETER_MIDI_CC71, // Timbre / Harmonic Content
+  PARAMETER_MIDI_CC72, // Release
+  PARAMETER_MIDI_CC73, // Attack
+  PARAMETER_MIDI_CC74, // Brightness
+  PARAMETER_MIDI_CC75,
+  PARAMETER_MIDI_CC76,
+  PARAMETER_MIDI_CC77,
+  PARAMETER_MIDI_CC78,
+  PARAMETER_MIDI_CC79,
+  // CC80-83 General Purpose Controllers 5-8
+  // generic on/off switch CC80 to CC83
+  // Effect 1 depth CC91 Reverb
+  // Effect 2 depth CC92 Tremolo
+  // Effect 3 depth CC93 Chorus
+  // Effect 4 depth CC94 Detune
+  // Effect 5 depth CC95 Phaser
+  */
+  PARAMETER_MIDI_NOTE = 0x80 // values over 127 are mapped to note numbers
 };
 
 enum PatchButtonId {
   BYPASS_BUTTON,
   PUSHBUTTON,
   GREEN_BUTTON,
-  RED_BUTTON
+  RED_BUTTON,
+  MIDI_GATE_BUTTON,
+  MIDI_NOTE_BUTTON = 0x80 // values over 127 are mapped to note numbers
 };
 
 #define SYSEX_CONFIGURATION_AUDIO_RATE            "FS"

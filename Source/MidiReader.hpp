@@ -33,7 +33,8 @@ public:
   virtual void handleControlChange(uint8_t, uint8_t, uint8_t){}
   virtual void handleNoteOff(uint8_t, uint8_t, uint8_t){}
   virtual void handleNoteOn(uint8_t, uint8_t, uint8_t){}
-  virtual void handlePitchBend(uint8_t, uint8_t, uint8_t){}
+  virtual void handlePitchBend(uint8_t, uint16_t){}
+  virtual void handlePolyKeyPressure(uint8_t, uint8_t, uint8_t){}
   virtual void handleSysEx(uint8_t* data, uint16_t size){}
 
   void clear(){
@@ -86,7 +87,10 @@ public:
     case NOTE_ON:
       if(pos == 3){
 	status = READY_STATUS;
-	handleNoteOn(message[0], message[1], message[2]);
+	if(message[2] == 0)
+	  handleNoteOff(message[0], message[1], message[2]);
+	else
+	  handleNoteOn(message[0], message[1], message[2]);
       }else{
 	status = INCOMPLETE_STATUS;
       }
@@ -94,7 +98,7 @@ public:
     case POLY_KEY_PRESSURE:
       if(pos == 3){
 	status = READY_STATUS;
-	handlePitchBend(message[0], message[1], message[2]);
+	handlePolyKeyPressure(message[0], message[1], message[2]);
       }else{
 	status = INCOMPLETE_STATUS;
       }
@@ -110,7 +114,7 @@ public:
     case PITCH_BEND_CHANGE:
       if(pos == 3){
 	status = READY_STATUS;
-	handlePitchBend(message[0], message[1], message[2]);
+	handlePitchBend(message[0], (message[2]<<7) | message[1]);
       }else{
 	status = INCOMPLETE_STATUS;
       }

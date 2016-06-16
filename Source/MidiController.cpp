@@ -277,6 +277,24 @@ void MidiController::sendCc(uint8_t cc, uint8_t value){
   }
 }
 
+void MidiController::sendNoteOff(uint8_t note, uint8_t velocity){
+  if(midi_device_connected()){
+    uint8_t packet[4] = { USB_COMMAND_NOTE_OFF,
+			  (uint8_t)(NOTE_OFF | channel),
+			  note, velocity };
+    midi_send_usb_buffer(packet, sizeof(packet));
+  }
+}
+
+void MidiController::sendNoteOn(uint8_t note, uint8_t velocity){
+  if(midi_device_connected()){
+    uint8_t packet[4] = { USB_COMMAND_NOTE_ON,
+			  (uint8_t)(NOTE_ON | channel),
+			  note, velocity };
+    midi_send_usb_buffer(packet, sizeof(packet));
+  }
+}
+
 /**
  * 
  */

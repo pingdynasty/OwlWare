@@ -35,7 +35,6 @@ ProgramManager program;
 ProgramVector staticVector;
 ProgramVector* programVector = &staticVector;
 extern "C" ProgramVector* getProgramVector() { return programVector; }
-uint16_t buttons;
 
 #if defined AUDIO_TASK_DIRECT
 volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
@@ -95,7 +94,6 @@ extern "C" {
     ProgramVector* vector = def->getProgramVector();
     if(def != NULL && vector != NULL){
       updateProgramVector(vector);
-      buttons = vector->buttons;
       programVector = vector;
       audioStatus = AUDIO_IDLE_STATUS;
       setErrorStatus(NO_ERROR);
@@ -297,15 +295,6 @@ void ProgramManager::audioReady(){
 /* called by the program when a block has been processed */
 __attribute__ ((section (".coderam")))
 void ProgramManager::programReady(){
-  // updateButtons(getProgramVector()->buttons);
-  //   static uint16_t buttons = programVector->buttons;
-  //  if(buttons & (1<<PUSHBUTTON) != getProgramVector()->buttons & (1<<PUSHBUTTON))
-  //    togglePushButton();
-  if(buttons != programVector->buttons){
-    for(int i=1; i<NOF_BUTTONS; ++i) // skip bypass button
-      if((buttons & (1<<i)) != (programVector->buttons & (1<<i)))
-  	buttonChanged(i, programVector->buttons & (1<<i));
-  }
 #ifdef DEBUG_DWT
   programVector->cycles_per_block = *DWT_CYCCNT;
   // getProgramVector()->cycles_per_block = *DWT_CYCCNT;
@@ -333,7 +322,6 @@ void ProgramManager::programReady(){
 #ifdef DEBUG_AUDIO
   setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
 #endif
-  buttons = programVector->buttons;
 }
 
 /* called by the program when an error or anomaly has occured */

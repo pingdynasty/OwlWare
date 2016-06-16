@@ -23,9 +23,8 @@
 
    uint16_t getAnalogValue(uint8_t index);
    void audioCallback(int16_t *src, int16_t *dst);
-   void setButton(int bid, bool on);   
-   void buttonChanged(int bid, bool on);   
-   void updateButtons(uint16_t bid);   
+   void setButton(uint8_t bid, uint8_t state);
+   void setParameter(uint8_t pid, uint16_t value);
    void setup(); // main OWL setup
 
 #ifdef __cplusplus
