@@ -11,6 +11,7 @@
 #include "ProgramVector.h"
 #include "ProgramManager.h"
 #include "ServiceCall.h"
+#include "MidiStatus.h"
 #include "bkp_sram.h"
 
 // #include "serial.h"
@@ -238,39 +239,41 @@ __attribute__ ((section (".coderam")))
      case PARAMETER_C:
      case PARAMETER_D:
      case PARAMETER_E:
-     case PARAMETER_F:
-     case PARAMETER_G:
-     case PARAMETER_H:
+     // case PARAMETER_F:
+     // case PARAMETER_G:
+     // case PARAMETER_H:
        getProgramVector()->parameters[pid] = value;
        break;
        // case PARAMETER_MIDI_PITCH:
        // case PARAMETER_MIDI_AMPLITUDE:
-     case PARAMETER_MIDI_MODULATION: // CC1
-       midi.sendCc(1, (value>>5) & 0x7f);
+     case PARAMETER_F: // CC1
+       midi.sendCc(MIDI_CC_MODULATION, (value>>5) & 0x7f);
        break;
-     case PARAMETER_MIDI_BREATH:     // CC2
-       midi.sendCc(2, (value>>5) & 0x7f);
+     // case PARAMETER_MIDI_BREATH:     // CC2
+     //   midi.sendCc(2, (value>>5) & 0x7f);
+     //   break;
+     // case PARAMETER_MIDI_VOLUME:     // CC7
+     //   midi.sendCc(7, (value>>5) & 0x7f);
+     //   break;
+     // case PARAMETER_MIDI_BALANCE:    // CC8
+     //   midi.sendCc(8, (value>>5) & 0x7f);
+     //   break;
+     // case PARAMETER_MIDI_PAN:        // CC10
+     //   midi.sendCc(10, (value>>5) & 0x7f);
+     //   break;
+     // case PARAMETER_MIDI_EXPRESSION: // CC11
+     //   midi.sendCc(11, (value>>5) & 0x7f);
+     //   break;
+     case PARAMETER_G:    // CC12
+       midi.sendCc(MIDI_CC_EFFECT_CTRL_1, (value>>5) & 0x7f);
        break;
-     case PARAMETER_MIDI_VOLUME:     // CC7
-       midi.sendCc(7, (value>>5) & 0x7f);
-       break;
-     case PARAMETER_MIDI_BALANCE:    // CC8
-       midi.sendCc(8, (value>>5) & 0x7f);
-       break;
-     case PARAMETER_MIDI_PAN:        // CC10
-       midi.sendCc(10, (value>>5) & 0x7f);
-       break;
-     case PARAMETER_MIDI_EXPRESSION: // CC11
-       midi.sendCc(11, (value>>5) & 0x7f);
-       break;
-     case PARAMETER_MIDI_EFFECT_CTRL_1:    // CC12
-       midi.sendCc(12, (value>>5) & 0x7f);
-       break;
-     case PARAMETER_MIDI_EFFECT_CTRL_2:    // CC13
-       midi.sendCc(13, (value>>5) & 0x7f);
+     case PARAMETER_H:    // CC13
+       midi.sendCc(MIDI_CC_EFFECT_CTRL_2, (value>>5) & 0x7f);
        break;
      default:
-       if(pid >= PARAMETER_MIDI_NOTE){
+       if(pid >= PARAMETER_AA && pid <= PARAMETER_BH){
+	 midi.sendCc(70+(pid-PARAMETER_AA), (value>>5) & 0x7f);	 
+       }else if(pid >= PARAMETER_MIDI_NOTE){
 	 if(value == 0)
 	   midi.sendNoteOff(pid-PARAMETER_MIDI_NOTE, 0);
 	 else

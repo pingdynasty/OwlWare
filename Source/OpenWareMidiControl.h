@@ -14,16 +14,41 @@ enum PatchParameterId {
   PARAMETER_F,
   PARAMETER_G,
   PARAMETER_H,
-  PARAMETER_MIDI_MODULATION, // CC1
-  PARAMETER_MIDI_BREATH,     // CC2
-  PARAMETER_MIDI_VOLUME,     // CC7
-  PARAMETER_MIDI_BALANCE,    // CC8
-  PARAMETER_MIDI_PAN,        // CC10
-  PARAMETER_MIDI_EXPRESSION, // CC11
-  PARAMETER_MIDI_EFFECT_CTRL_1,    // CC12
-  PARAMETER_MIDI_EFFECT_CTRL_2,    // CC13
-  PARAMETER_MIDI_PITCH,
-  PARAMETER_MIDI_AMPLITUDE,
+
+  PARAMETER_AA,
+  PARAMETER_AB,
+  PARAMETER_AC,
+  PARAMETER_AD,
+  PARAMETER_AE,
+  PARAMETER_AF,
+  PARAMETER_AG,
+  PARAMETER_AH,
+
+  PARAMETER_BA,
+  PARAMETER_BB,
+  PARAMETER_BC,
+  PARAMETER_BD,
+  PARAMETER_BE,
+  PARAMETER_BF,
+  PARAMETER_BG,
+  PARAMETER_BH,
+
+  // need to map parameters in a non-implementation-specific way
+  // PARAMETER_AA
+  // PARAMETER_AB...
+  // PARAMETER_BA
+  // PARAMETER_BB...
+  /* PARAMETER_MIDI_MODULATION, // CC1 */
+  /* PARAMETER_MIDI_BREATH,     // CC2 */
+  /* PARAMETER_MIDI_VOLUME,     // CC7 */
+  /* PARAMETER_MIDI_BALANCE,    // CC8 */
+  /* PARAMETER_MIDI_PAN,        // CC10 */
+  /* PARAMETER_MIDI_EXPRESSION, // CC11 */
+  /* PARAMETER_MIDI_EFFECT_CTRL_1,    // CC12 */
+  /* PARAMETER_MIDI_EFFECT_CTRL_2,    // CC13 */
+  /* PARAMETER_MIDI_PITCH, */
+  /* PARAMETER_MIDI_AMPLITUDE, */
+
   /*
   // CC16-19 General Purpose Controllers 1-4
   // Sound controller 1 to 10, CC70 to CC79
@@ -141,7 +166,11 @@ enum OpenWareMidiControl {
   SAVE_SETTINGS          = 68, /* save settings to device */
   DEVICE_FIRMWARE_UPDATE = 69, /* enter Device Firmware Upgrade mode */
   FACTORY_RESET          = 70, /* reset all settings */
-  DEVICE_STATUS          = 71
+  DEVICE_STATUS          = 71,
+
+  PATCH_PARAMETER_F      = 24,
+  PATCH_PARAMETER_G      = 24,
+  PATCH_PARAMETER_H      = 24,
 };
 
 #endif  // OPENWAREMIDICONTROL_H_INCLUDED

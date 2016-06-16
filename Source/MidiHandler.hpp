@@ -38,16 +38,16 @@ public:
     note = n;
     pitch = note*4095/127 + (pitchbend-8192)*(4095/63)/16383;
     amplitude = velocity/127.0f;
-    setButton(MIDI_GATE_BUTTON, true);
-    setParameter(PARAMETER_MIDI_AMPLITUDE, amplitude);
-    setParameter(PARAMETER_MIDI_NOTE, pitch);
+    // setButton(MIDI_GATE_BUTTON, true);
+    // setParameter(PARAMETER_MIDI_AMPLITUDE, amplitude);
+    // setParameter(PARAMETER_MIDI_PITCH, pitch);
     setButton(MIDI_NOTE_BUTTON+note, velocity);
     setParameter(PARAMETER_MIDI_NOTE+note, amplitude);
   }
 
   void handleNoteOff(uint8_t status, uint8_t note, uint8_t velocity){
     amplitude = 0;
-    setButton(MIDI_GATE_BUTTON, false);
+    // setButton(MIDI_GATE_BUTTON, false);
     setButton(MIDI_NOTE_BUTTON+note, 0);
     setParameter(PARAMETER_MIDI_NOTE+note, 0);
   }
@@ -208,28 +208,32 @@ public:
       }
       break;
     case MIDI_CC_MODULATION:
-      setParameter(PARAMETER_MIDI_MODULATION, value<<5);
+      setParameter(PARAMETER_F, value<<5);
       break;
-    case MIDI_CC_BREATH:
-      setParameter(PARAMETER_MIDI_BREATH, value<<5);
-      break;
-    case MIDI_CC_VOLUME:
-      setParameter(PARAMETER_MIDI_VOLUME, value<<5);
-      break;
-    case MIDI_CC_BALANCE:
-      setParameter(PARAMETER_MIDI_BALANCE, value<<5);
-      break;
-    case MIDI_CC_PAN:
-      setParameter(PARAMETER_MIDI_PAN, value<<5);
-      break;
-    case MIDI_CC_EXPRESSION:
-      setParameter(PARAMETER_MIDI_EXPRESSION, value<<5);
-      break;
+    // case MIDI_CC_BREATH:
+    //   setParameter(PARAMETER_MIDI_BREATH, value<<5);
+    //   break;
+    // case MIDI_CC_VOLUME:
+    //   setParameter(PARAMETER_MIDI_VOLUME, value<<5);
+    //   break;
+    // case MIDI_CC_BALANCE:
+    //   setParameter(PARAMETER_MIDI_BALANCE, value<<5);
+    //   break;
+    // case MIDI_CC_PAN:
+    //   setParameter(PARAMETER_MIDI_PAN, value<<5);
+    //   break;
+    // case MIDI_CC_EXPRESSION:
+    //   setParameter(PARAMETER_MIDI_EXPRESSION, value<<5);
+    //   break;
     case MIDI_CC_EFFECT_CTRL_1:
-      setParameter(PARAMETER_MIDI_EFFECT_CTRL_1, value<<5);
+      setParameter(PARAMETER_G, value<<5);
       break;
     case MIDI_CC_EFFECT_CTRL_2:
-      setParameter(PARAMETER_MIDI_EFFECT_CTRL_2, value<<5);
+      setParameter(PARAMETER_H, value<<5);
+      break;
+    default:
+      if(cc >= 70 && cc <= 85)
+	setParameter(PARAMETER_AA+(cc-70), value<<5);
       break;
     }
   }
