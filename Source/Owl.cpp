@@ -272,7 +272,7 @@ __attribute__ ((section (".coderam")))
        break;
      default:
        if(pid >= PARAMETER_AA && pid <= PARAMETER_BH){
-	 midi.sendCc(70+(pid-PARAMETER_AA), (value>>5) & 0x7f);	 
+	 midi.sendCc(PATCH_PARAMETER_AA+(pid-PARAMETER_AA), (value>>5) & 0x7f);	 
        }else if(pid >= PARAMETER_MIDI_NOTE){
 	 if(value == 0)
 	   midi.sendNoteOff(pid-PARAMETER_MIDI_NOTE, 0);
