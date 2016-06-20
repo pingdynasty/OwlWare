@@ -11,6 +11,9 @@ extern "C" {
 #define OWL_MODULAR_HARDWARE  0x12
 #define OWL_RACK_HARDWARE     0x13
 
+#define PROGRAM_VECTOR_CHECKSUM_V11 0xff
+#define PROGRAM_VECTOR_CHECKSUM_V12 0x80
+
   typedef enum { 
     AUDIO_IDLE_STATUS = 0, 
     AUDIO_READY_STATUS, 
@@ -40,10 +43,10 @@ extern "C" {
     // outgoing
     uint32_t heap_bytes_used;
     char* message;
-    void (*setButton)(uint8_t id, uint8_t state);
+    void (*setButton)(uint8_t id, uint16_t state, uint16_t samples);
     void (*setPatchParameter)(uint8_t id, uint16_t value);
-    void (*buttonChangedCallback)(uint8_t bid, uint8_t state, uint16_t samples);
-    void (*encoderChangedCallback)(uint8_t bid, int32_t delta, uint16_t samples);
+    void (*buttonChangedCallback)(uint8_t bid, uint16_t state, uint16_t samples);
+    void (*encoderChangedCallback)(uint8_t bid, int16_t delta, uint16_t samples);
   } ProgramVector;
 
 #define CHECKSUM_ERROR_STATUS      -10

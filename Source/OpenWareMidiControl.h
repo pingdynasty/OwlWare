@@ -147,6 +147,9 @@ enum OpenWareMidiControl {
   FACTORY_RESET          = 70, /* reset all settings */
   DEVICE_STATUS          = 71,
 
+  /* PATCH_PARAMETER_F      = 72, */
+  /* PATCH_PARAMETER_G      = 73, */
+  /* PATCH_PARAMETER_H      = 74, */
   PATCH_PARAMETER_AA     = 75,
   PATCH_PARAMETER_AB     = 76,
   PATCH_PARAMETER_AC     = 77,

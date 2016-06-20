@@ -18,38 +18,36 @@ private:
   uint16_t midi_values[NOF_PARAMETERS];
   FirmwareLoader loader;
   // state variables to track monophonic note
-  uint8_t note;
-  uint16_t pitchbend;
-  uint16_t pitch;
-  float amplitude;
-  static constexpr float PBRANGE = 2/128.0f; // 2 semitones
+  // uint8_t note;
+  // uint16_t pitchbend;
+  // uint16_t pitch;
+  // float amplitude;
+  // static constexpr float PBRANGE = 2/128.0f; // 2 semitones
 public:
   MidiHandler() : MidiReader(buffer, sizeof(buffer)) {
-    note = 0;
-    pitchbend = 8192;
+    // note = 0;
+    // pitchbend = 8192;
     memset(midi_values, 0, NOF_PARAMETERS*sizeof(uint16_t));
   }
 
   void handlePitchBend(uint8_t status, uint16_t value){
-    pitchbend = value;
+    // pitchbend = value;
   }
 
-  void handleNoteOn(uint8_t status, uint8_t n, uint8_t velocity){
-    note = n;
-    pitch = note*4095/127 + (pitchbend-8192)*(4095/63)/16383;
-    amplitude = velocity/127.0f;
+  void handleNoteOn(uint8_t status, uint8_t note, uint8_t velocity){
+    // note = n;
+    // pitch = note*4095/127 + (pitchbend-8192)*(4095/63)/16383;
+    // amplitude = velocity/127.0f;
     // setButton(MIDI_GATE_BUTTON, true);
     // setParameter(PARAMETER_MIDI_AMPLITUDE, amplitude);
     // setParameter(PARAMETER_MIDI_PITCH, pitch);
-    setButton(MIDI_NOTE_BUTTON+note, velocity);
-    setParameter(PARAMETER_MIDI_NOTE+note, amplitude);
+    setButton(MIDI_NOTE_BUTTON+note, velocity<<5);
   }
 
   void handleNoteOff(uint8_t status, uint8_t note, uint8_t velocity){
-    amplitude = 0;
+    // amplitude = 0;
     // setButton(MIDI_GATE_BUTTON, false);
     setButton(MIDI_NOTE_BUTTON+note, 0);
-    setParameter(PARAMETER_MIDI_NOTE+note, 0);
   }
 
   void handleProgramChange(uint8_t status, uint8_t pid){

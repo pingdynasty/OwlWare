@@ -18,6 +18,7 @@
 #include "clock.h"
 #include "device.h"
 #include "codec.h"
+#include "BitState.hpp"
 
 #define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; \
 if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
@@ -29,7 +30,7 @@ PatchRegistry registry;
 
 // there are only really 2 timestamps needed: LED pushbutton and midi gate
 uint16_t timestamps[NOF_BUTTONS]; 
-uint16_t stateChanged;
+BitState32 stateChanged;
 
 bool getButton(PatchButtonId bid){
   return getProgramVector()->buttons & (1<<bid);
@@ -68,27 +69,27 @@ void setButtonState(LedPin led){
 }
 
 // called from incoming button trigger irq
-void setButton(PatchButtonId bid){
+void setButtonEvent(PatchButtonId bid){
   timestamps[bid] = getSampleCounter();
-  stateChanged |=  (1<<bid);
+  stateChanged.set(bid);
   getProgramVector()->buttons |= (1<<bid);
 }
 
-void clearButton(PatchButtonId bid){
+void clearButtonEvent(PatchButtonId bid){
   timestamps[bid] = getSampleCounter();
-  stateChanged |=  (1<<bid);
+  stateChanged.clear(bid);
   getProgramVector()->buttons &= ~(1<<bid);
 }
 
 void setPushbutton(){
   setGate();
-  setButton(PUSHBUTTON);
+  setButtonEvent(PUSHBUTTON);
   setButtonState(RED);
 }
 
 void clearPushbutton(){
   clearGate();
-  clearButton(PUSHBUTTON);
+  clearButtonEvent(PUSHBUTTON);
   setButtonState(GREEN);
 }
 
@@ -98,7 +99,7 @@ void updateBypassMode(){
     setButtonState(NONE);
   }else{
     getProgramVector()->buttons &= ~(1<<BYPASS_BUTTON);  
-    clearButton(BYPASS_BUTTON);
+    clearButtonEvent(BYPASS_BUTTON);
     if(getButton(RED_BUTTON))
       setButtonState(RED);
     else
@@ -116,11 +117,11 @@ void togglePushButton(){
 #ifdef OWLMODULAR
 void pushGateCallback(){
   if(isPushGatePressed()){
-    setButton(PUSHBUTTON);
+    setButtonEvent(PUSHBUTTON);
     setButtonState(RED);
     // we don't call setPushButton() because we don't want to set gate
   }else{
-    clearButton(PUSHBUTTON);
+    clearButtonEvent(PUSHBUTTON);
     setButtonState(GREEN);
   }
 }
@@ -189,11 +190,38 @@ void updateProgramIndex(uint8_t index){
      midi.sendPatchParameterName((PatchParameterId)id, name);
    }
 
-__attribute__ ((section (".coderam")))
+#ifdef DEBUG_DWT
+extern volatile uint32_t *DWT_CYCCNT;
+#endif /* DEBUG_DWT */
+extern volatile ProgramVectorAudioStatus audioStatus;
+
+   __attribute__ ((section (".coderam")))
    // called from program
    void onProgramReady(){
-     // while(audioStatus != AUDIO_READY_STATUS);
-     program.programReady();
+     // program.programReady();
+#ifdef DEBUG_DWT
+     getProgramVector()->cycles_per_block = *DWT_CYCCNT;
+#endif /* DEBUG_DWT */
+#ifdef DEBUG_AUDIO
+     clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+#endif
+     while(audioStatus != AUDIO_READY_STATUS);
+     audioStatus = AUDIO_PROCESSING_STATUS;
+#ifdef DEBUG_DWT
+     *DWT_CYCCNT = 0; // reset the performance counter
+#endif /* DEBUG_DWT */
+#ifdef DEBUG_AUDIO
+     setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
+#endif
+     if(getProgramVector()->buttonChangedCallback != NULL && stateChanged.getState()){
+       int bid = stateChanged.getFirstSetIndex();
+       do{
+	 getProgramVector()->buttonChangedCallback(bid, 4095, timestamps[bid]);
+	 timestamps[bid] = 0;
+	 bid = stateChanged.getFirstSetIndex();
+       }while(bid > 0); // bid 0 is bypass button which we ignore
+     }
+     stateChanged.clear();
    }
 
    // called from program
@@ -202,7 +230,7 @@ __attribute__ ((section (".coderam")))
    }
 
    // called from program
-   void onSetButton(uint8_t bid, uint8_t state){
+   void onSetButton(uint8_t bid, uint16_t state, uint16_t samples){
      if(bid == PUSHBUTTON){
        if(state){
 	 // we don't call setPushbutton() because we don't want to 
@@ -222,7 +250,7 @@ __attribute__ ((section (".coderam")))
 	 getProgramVector()->buttons &= ~(1<<bid);
      }else if(bid >= MIDI_NOTE_BUTTON){
        if(state)
-	 midi.sendNoteOn(bid-MIDI_NOTE_BUTTON, state & 0x7f);
+	 midi.sendNoteOn(bid-MIDI_NOTE_BUTTON, (state>>5) & 0x7f);
        else
 	 midi.sendNoteOff(bid-MIDI_NOTE_BUTTON, 0);
      }
@@ -283,12 +311,12 @@ __attribute__ ((section (".coderam")))
    }
 
    // called from midi irq
-   void setButton(uint8_t bid, uint8_t state){
+   void setButton(uint8_t bid, uint16_t state){
      if(bid < NOF_BUTTONS){
        if(state)
-	 setButton((PatchButtonId)bid);
+	 setButtonEvent((PatchButtonId)bid);
        else
-	 clearButton((PatchButtonId)bid);
+	 clearButtonEvent((PatchButtonId)bid);
      }else if(bid >= MIDI_NOTE_BUTTON){
        if(getProgramVector()->buttonChangedCallback != NULL)
 	 getProgramVector()->buttonChangedCallback(bid, state, getSampleCounter());
@@ -404,7 +432,7 @@ void setup(){
   RCC_AHB1PeriphClockCmd(PUSH_GATE_OUT_CLK, ENABLE);
   configureDigitalOutput(PUSH_GATE_OUT_PORT, PUSH_GATE_OUT_PIN);
 #endif
-  clearButton(PUSHBUTTON);
+  clearButtonEvent(PUSHBUTTON);
 
 #ifdef DEBUG_AUDIO
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); // DEBUG
@@ -447,7 +475,6 @@ void setup(){
 #include "clock.h"
 #endif /* BUTTON_PROGRAM_CHANGE */
 
-extern volatile ProgramVectorAudioStatus audioStatus;
 __attribute__ ((section (".coderam")))
 void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
