@@ -32,7 +32,7 @@ public:
     stackSize = (uint32_t)header->stackEnd - (uint32_t)header->stackBegin;
     jumpAddress = header->jumpAddress;
     programVector = header->programVector;
-    strlcpy(programName, header->programName, sizeof(programName));
+    strncpy(programName, header->programName, sizeof(programName));
     programFunction = (ProgramFunction)jumpAddress;
     return true;
   }

@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <string.h>
 #include "owlcontrol.h"
 #include "midicontrol.h"
@@ -69,7 +68,8 @@ void MidiController::sendPatchParameterNames(){
 }
 
 void MidiController::sendPatchParameterName(PatchParameterId pid, const char* name){
-  uint8_t size = strnlen(name, 24);
+  uint8_t size = strlen(name);
+  // uint8_t size = strnlen(name, 24);
   uint8_t buffer[size+2];
   buffer[0] = SYSEX_PARAMETER_NAME_COMMAND;
   buffer[1] = pid;
@@ -86,7 +86,8 @@ void MidiController::sendPatchNames(){
 void MidiController::sendPatchName(uint8_t index){
   const char* name = registry.getName(index);
   if(name != NULL){
-    uint8_t size = strnlen(name, 24);
+    // uint8_t size = strnlen(name, 24);
+    uint8_t size = strlen(name);
     uint8_t buffer[size+2];
     buffer[0] = SYSEX_PRESET_NAME_COMMAND;
     buffer[1] = index;
