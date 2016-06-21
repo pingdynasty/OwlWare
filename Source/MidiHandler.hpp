@@ -105,9 +105,10 @@ public:
       }
       break;
     case PATCH_BUTTON:
-      if(value == 127)
+      if(value == 127){
 	togglePushButton();
-      midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
+	midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
+      }
       break;
     case LED:
       if(value < 42){
@@ -177,7 +178,17 @@ public:
 	midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
 	break;
       case LED:
-	midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
+	switch(getLed()){
+	case NONE:
+	  midi.sendCc(LED, 0);
+	  break;
+	case GREEN:
+	  midi.sendCc(LED, 42);
+	  break;
+	case RED:
+	  midi.sendCc(LED, 84);
+	  break;
+	}
 	break;
       case PATCH_PARAMETER_A:
       case PATCH_PARAMETER_B:

@@ -85,20 +85,8 @@ static void setButtonEvent(PatchButtonId bid){
 
 static void clearButtonEvent(PatchButtonId bid){
   timestamps[bid] = getSampleCounter();
-  stateChanged.clear(bid);
+  stateChanged.set(bid);
   clearButtonState(bid);
-}
-
-static void setPushbutton(){
-  setGate();
-  setButtonEvent(PUSHBUTTON);
-  setButtonColour(RED);
-}
-
-static void clearPushbutton(){
-  clearGate();
-  clearButtonEvent(PUSHBUTTON);
-  setButtonColour(GREEN);
 }
 
 static void updateBypassMode(){
@@ -107,7 +95,6 @@ static void updateBypassMode(){
     setButtonColour(NONE);
   }else{
     clearButtonState(BYPASS_BUTTON);
-    clearButtonEvent(BYPASS_BUTTON);
     if(getButton(RED_BUTTON))
       setButtonColour(RED);
     else
@@ -115,11 +102,15 @@ static void updateBypassMode(){
   }
 }
 
+// called from midi irq
 void togglePushButton(){
-  if(getLed() == GREEN)
-    setPushbutton();
-  else // if(getLed() == RED){
-    clearPushbutton();
+  if(getButton(PUSHBUTTON)){
+    clearButtonEvent(PUSHBUTTON);
+    setButtonColour(GREEN);
+  }else{
+    setButtonEvent(PUSHBUTTON);
+    setButtonColour(RED);
+  }
 }
 
 #ifdef OWLMODULAR
@@ -128,7 +119,6 @@ static void pushGateCallback(){
     if(!getButton(PUSHBUTTON)){
       setButtonEvent(PUSHBUTTON);
       setButtonColour(RED);
-      // we don't call setPushButton() because we don't want to set gate
     }
   }else{
     if(getButton(PUSHBUTTON)){
@@ -146,17 +136,21 @@ static void footSwitchCallback(){
 
 volatile uint32_t pushButtonPressed;
 static void pushButtonCallback(){
-  DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
+  // DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
   if(isPushButtonPressed()){
     if(!getButton(PUSHBUTTON)){
       pushButtonPressed = getSysTicks();
-      setPushbutton();
+      setButtonEvent(PUSHBUTTON);
+      setGate();
+      setButtonColour(RED);
       midi.sendCc(LED, 84);
     }
   }else{
     if(getButton(PUSHBUTTON)){
       pushButtonPressed = 0;
-      clearPushbutton();
+      clearButtonEvent(PUSHBUTTON);
+      clearGate();
+      setButtonColour(GREEN);
       midi.sendCc(LED, 42);
     }
   }
@@ -215,8 +209,9 @@ extern volatile ProgramVectorAudioStatus audioStatus;
    // called from program
    void onProgramReady(){
      // program.programReady();
+     ProgramVector* vec = getProgramVector();
 #ifdef DEBUG_DWT
-     getProgramVector()->cycles_per_block = *DWT_CYCCNT;
+     vec->cycles_per_block = *DWT_CYCCNT;
 #endif /* DEBUG_DWT */
 #ifdef DEBUG_AUDIO
      clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
@@ -229,10 +224,10 @@ extern volatile ProgramVectorAudioStatus audioStatus;
 #ifdef DEBUG_AUDIO
      setPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
 #endif
-     if(getProgramVector()->buttonChangedCallback != NULL && stateChanged.getState()){
+     if(vec->buttonChangedCallback != NULL && stateChanged.getState()){
        int bid = stateChanged.getFirstSetIndex();
        do{
-	 getProgramVector()->buttonChangedCallback(bid, 4095, timestamps[bid]);
+	 vec->buttonChangedCallback(bid, getButton((PatchButtonId)bid)?4095:0, timestamps[bid]);
 	 timestamps[bid] = 0;
  	 stateChanged.clear(bid);
 	 bid = stateChanged.getFirstSetIndex();
@@ -249,8 +244,6 @@ extern volatile ProgramVectorAudioStatus audioStatus;
    void onSetButton(uint8_t bid, uint16_t state, uint16_t samples){
      if(bid == PUSHBUTTON){
        if(state){
-	 // we don't call setPushbutton() because we don't want to 
-	 // call setButtonEvent (and set timestamp / stateChanged)
 	 if(!getButton(PUSHBUTTON)){
 	   setGate();
 	   setButtonColour(RED);
