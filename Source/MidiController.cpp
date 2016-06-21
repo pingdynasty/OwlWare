@@ -21,10 +21,17 @@ void MidiController::init(uint8_t ch){
 }
 
 void MidiController::sendPatchParameterValues(){
+#ifdef OWLMODULAR
+  sendCc(PATCH_PARAMETER_A, (uint8_t)(127-(getParameterValue(PARAMETER_A)>>5)) & 0x7f);
+  sendCc(PATCH_PARAMETER_B, (uint8_t)(127-(getParameterValue(PARAMETER_B)>>5)) & 0x7f);
+  sendCc(PATCH_PARAMETER_C, (uint8_t)(127-(getParameterValue(PARAMETER_C)>>5)) & 0x7f);
+  sendCc(PATCH_PARAMETER_D, (uint8_t)(127-(getParameterValue(PARAMETER_D)>>5)) & 0x7f);
+#else /* OWLMODULAR */
   sendCc(PATCH_PARAMETER_A, (uint8_t)(getParameterValue(PARAMETER_A)>>5) & 0x7f);
   sendCc(PATCH_PARAMETER_B, (uint8_t)(getParameterValue(PARAMETER_B)>>5) & 0x7f);
   sendCc(PATCH_PARAMETER_C, (uint8_t)(getParameterValue(PARAMETER_C)>>5) & 0x7f);
   sendCc(PATCH_PARAMETER_D, (uint8_t)(getParameterValue(PARAMETER_D)>>5) & 0x7f);
+#endif /* OWLMODULAR */
   sendCc(PATCH_PARAMETER_E, (uint8_t)(getParameterValue(PARAMETER_E)>>5) & 0x7f);
 }
 
