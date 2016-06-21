@@ -125,12 +125,16 @@ void togglePushButton(){
 #ifdef OWLMODULAR
 static void pushGateCallback(){
   if(isPushGatePressed()){
-    setButtonEvent(PUSHBUTTON);
-    setButtonColour(RED);
-    // we don't call setPushButton() because we don't want to set gate
+    if(!getButton(PUSHBUTTON)){
+      setButtonEvent(PUSHBUTTON);
+      setButtonColour(RED);
+      // we don't call setPushButton() because we don't want to set gate
+    }
   }else{
-    clearButtonEvent(PUSHBUTTON);
-    setButtonColour(GREEN);
+    if(getButton(PUSHBUTTON)){
+      clearButtonEvent(PUSHBUTTON);
+      setButtonColour(GREEN);
+    }
   }
 }
 #else
@@ -142,16 +146,20 @@ static void footSwitchCallback(){
 
 volatile uint32_t pushButtonPressed;
 static void pushButtonCallback(){
-  // DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
-  if(isPushButtonPressed()){
-    pushButtonPressed = getSysTicks();
-    setPushbutton();
-  }else{
-    pushButtonPressed = 0;
-    clearPushbutton();
-  }
   DEBOUNCE(pushbutton, PUSHBUTTON_DEBOUNCE);
-  midi.sendCc(LED, getLed() == GREEN ? 42 : 84);
+  if(isPushButtonPressed()){
+    if(!getButton(PUSHBUTTON)){
+      pushButtonPressed = getSysTicks();
+      setPushbutton();
+      midi.sendCc(LED, 84);
+    }
+  }else{
+    if(getButton(PUSHBUTTON)){
+      pushButtonPressed = 0;
+      clearPushbutton();
+      midi.sendCc(LED, 42);
+    }
+  }
 }
 
 void exitProgram(bool isr){
@@ -226,10 +234,10 @@ extern volatile ProgramVectorAudioStatus audioStatus;
        do{
 	 getProgramVector()->buttonChangedCallback(bid, 4095, timestamps[bid]);
 	 timestamps[bid] = 0;
+ 	 stateChanged.clear(bid);
 	 bid = stateChanged.getFirstSetIndex();
        }while(bid > 0); // bid 0 is bypass button which we ignore
      }
-     stateChanged.clear();
    }
 
    // called from program
@@ -247,14 +255,14 @@ extern volatile ProgramVectorAudioStatus audioStatus;
 	   setGate();
 	   setButtonColour(RED);
 	   setButtonState(bid);
-	   midi.sendCc(LED, RED);
+	   midi.sendCc(LED, 84);
 	 }
        }else{
 	 if(getButton(PUSHBUTTON)){
 	   clearGate();
 	   setButtonColour(GREEN);
 	   clearButtonState(bid);
-	   midi.sendCc(LED, GREEN);
+	   midi.sendCc(LED, 42);
 	 }
        }
      }else if(bid < NOF_BUTTONS){
@@ -272,45 +280,24 @@ extern volatile ProgramVectorAudioStatus audioStatus;
 
    // called from program
    void onSetPatchParameter(uint8_t pid, uint16_t value){     
-     // if(pid < NOF_PARAMETERS){
-     //   getProgramVector()->parameters[pid] = value;
-     // }
+     if(pid < NOF_PARAMETERS)
+       getProgramVector()->parameters[pid] = value;
      switch(pid){
      case PARAMETER_A:
      case PARAMETER_B:
      case PARAMETER_C:
      case PARAMETER_D:
      case PARAMETER_E:
-     // case PARAMETER_F:
-     // case PARAMETER_G:
-     // case PARAMETER_H:
-       // getProgramVector()->parameters[pid] = value;
+       midi.sendCc(PATCH_PARAMETER_A+pid, (value>>5) & 0x7f);
        break;
-       // case PARAMETER_MIDI_PITCH:
-       // case PARAMETER_MIDI_AMPLITUDE:
-     case PARAMETER_F: // CC1
-       midi.sendCc(MIDI_CC_MODULATION, (value>>5) & 0x7f);
+     case PARAMETER_F:
+       midi.sendCc(PATCH_PARAMETER_F, (value>>5) & 0x7f);
        break;
-     // case PARAMETER_MIDI_BREATH:     // CC2
-     //   midi.sendCc(2, (value>>5) & 0x7f);
-     //   break;
-     // case PARAMETER_MIDI_VOLUME:     // CC7
-     //   midi.sendCc(7, (value>>5) & 0x7f);
-     //   break;
-     // case PARAMETER_MIDI_BALANCE:    // CC8
-     //   midi.sendCc(8, (value>>5) & 0x7f);
-     //   break;
-     // case PARAMETER_MIDI_PAN:        // CC10
-     //   midi.sendCc(10, (value>>5) & 0x7f);
-     //   break;
-     // case PARAMETER_MIDI_EXPRESSION: // CC11
-     //   midi.sendCc(11, (value>>5) & 0x7f);
-     //   break;
-     case PARAMETER_G:    // CC12
-       midi.sendCc(MIDI_CC_EFFECT_CTRL_1, (value>>5) & 0x7f);
+     case PARAMETER_G:
+       midi.sendCc(PATCH_PARAMETER_G, (value>>5) & 0x7f);
        break;
-     case PARAMETER_H:    // CC13
-       midi.sendCc(MIDI_CC_EFFECT_CTRL_2, (value>>5) & 0x7f);
+     case PARAMETER_H:
+       midi.sendCc(PATCH_PARAMETER_H, (value>>5) & 0x7f);
        break;
      default:
        if(pid >= PARAMETER_AA && pid <= PARAMETER_BH){

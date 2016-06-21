@@ -135,7 +135,7 @@
 #endif /* OWLMODULAR */
 
 #define BYPASS_DEBOUNCE              200
-#define PUSHBUTTON_DEBOUNCE          100 // 40Hz
+#define PUSHBUTTON_DEBOUNCE          40
 
 #define LED_PORT                     GPIOE
 #define LED_GREEN                    GPIO_Pin_5

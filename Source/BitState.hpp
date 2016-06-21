@@ -22,7 +22,7 @@ public:
     state = 0xffff;
   }
   inline int getFirstSetIndex(){
-    return 32-countLeadingZeros();
+    return 31-countLeadingZeros();
   }
   inline int countLeadingZeros(){
     return __builtin_clz(state);
