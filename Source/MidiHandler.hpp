@@ -15,7 +15,7 @@
 class MidiHandler : public MidiReader {
 private:
   uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
-  uint16_t midi_values[NOF_PARAMETERS];
+  int16_t midi_values[NOF_PARAMETERS];
   FirmwareLoader loader;
   // state variables to track monophonic note
   // uint8_t note;
@@ -32,6 +32,8 @@ public:
 
   void handlePitchBend(uint8_t status, uint16_t value){
     // pitchbend = value;
+    // setParameter(PARAMETER_G, value>>2);
+    setParameter(PARAMETER_G, ((int16_t)value - 8192)>>1);
   }
 
   void handleNoteOn(uint8_t status, uint8_t note, uint8_t velocity){

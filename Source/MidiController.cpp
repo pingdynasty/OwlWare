@@ -304,6 +304,15 @@ void MidiController::sendNoteOn(uint8_t note, uint8_t velocity){
   }
 }
 
+void MidiController::sendPitchBend(uint16_t value){
+  if(midi_device_connected()){
+    uint8_t packet[4] = { USB_COMMAND_PITCH_BEND_CHANGE,
+			  (uint8_t)(PITCH_BEND_CHANGE | channel),
+			  (uint8_t)(value & 0x7f), (uint8_t)((value>>7) & 0x7f) };
+    midi_send_usb_buffer(packet, sizeof(packet));
+  }
+}
+
 /**
  * 
  */

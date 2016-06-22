@@ -53,8 +53,8 @@
    void ledSetup();
 
    void adcSetup();
-   uint16_t getAnalogValue(uint8_t index);
-   uint16_t* getAnalogValues();
+   int16_t getAnalogValue(uint8_t index);
+   int16_t* getAnalogValues();
 
    inline bool isStompSwitchPressed(){
      return getPin(SWITCH_A_PORT, SWITCH_A_PIN);
@@ -81,7 +81,7 @@
    int8_t getErrorStatus();
    void setErrorStatus(int8_t err);
    void setErrorMessage(int8_t err, const char* msg);
-   void setParameterValues(uint16_t* values, int size);
+   void setParameterValues(int16_t* values, int size);
 #define ASSERT(cond, msg) do{if(!(cond))setErrorMessage(PROGRAM_ERROR, msg);}while(0)
 
 #define NO_ERROR         0x00

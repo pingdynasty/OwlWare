@@ -32,45 +32,6 @@ enum PatchParameterId {
   PARAMETER_BF,
   PARAMETER_BG,
   PARAMETER_BH,
-
-  // need to map parameters in a non-implementation-specific way
-  // PARAMETER_AA
-  // PARAMETER_AB...
-  // PARAMETER_BA
-  // PARAMETER_BB...
-  /* PARAMETER_MIDI_MODULATION, // CC1 */
-  /* PARAMETER_MIDI_BREATH,     // CC2 */
-  /* PARAMETER_MIDI_VOLUME,     // CC7 */
-  /* PARAMETER_MIDI_BALANCE,    // CC8 */
-  /* PARAMETER_MIDI_PAN,        // CC10 */
-  /* PARAMETER_MIDI_EXPRESSION, // CC11 */
-  /* PARAMETER_MIDI_EFFECT_CTRL_1,    // CC12 */
-  /* PARAMETER_MIDI_EFFECT_CTRL_2,    // CC13 */
-  /* PARAMETER_MIDI_PITCH, */
-  /* PARAMETER_MIDI_AMPLITUDE, */
-
-  /*
-  // CC16-19 General Purpose Controllers 1-4
-  // Sound controller 1 to 10, CC70 to CC79
-  PARAMETER_MIDI_CC70, // Sound Variation
-  PARAMETER_MIDI_CC71, // Timbre / Harmonic Content
-  PARAMETER_MIDI_CC72, // Release
-  PARAMETER_MIDI_CC73, // Attack
-  PARAMETER_MIDI_CC74, // Brightness
-  PARAMETER_MIDI_CC75,
-  PARAMETER_MIDI_CC76,
-  PARAMETER_MIDI_CC77,
-  PARAMETER_MIDI_CC78,
-  PARAMETER_MIDI_CC79,
-  // CC80-83 General Purpose Controllers 5-8
-  // generic on/off switch CC80 to CC83
-  // Effect 1 depth CC91 Reverb
-  // Effect 2 depth CC92 Tremolo
-  // Effect 3 depth CC93 Chorus
-  // Effect 4 depth CC94 Detune
-  // Effect 5 depth CC95 Phaser
-  */
-  PARAMETER_MIDI_NOTE = 0x80 // values over 127 are mapped to note numbers
 };
 
 enum PatchButtonId {
@@ -78,7 +39,6 @@ enum PatchButtonId {
   PUSHBUTTON,
   GREEN_BUTTON,
   RED_BUTTON,
-  MIDI_GATE_BUTTON,
   MIDI_NOTE_BUTTON = 0x80 // values over 127 are mapped to note numbers
 };
 
@@ -122,9 +82,9 @@ enum OpenWareMidiControl {
   PATCH_PARAMETER_C      = 22, /* Parameter C */
   PATCH_PARAMETER_D      = 23, /* Parameter D */
   PATCH_PARAMETER_E      = 24, /* Expression pedal / input */
-  PATCH_PARAMETER_F      = 1,  /* Extended parameter Modulation CC */
-  PATCH_PARAMETER_G      = 12, /* Extended parameter Effect Ctrl 1 CC */
-  PATCH_PARAMETER_H      = 13, /* Extended parameter Effect Ctrl 2 CC */
+  PATCH_PARAMETER_F      = 1,  /* Extended parameter Modulation */
+  PATCH_PARAMETER_G      = 12, /* Extended parameter Effect Ctrl 1 */
+  PATCH_PARAMETER_H      = 13, /* Extended parameter Effect Ctrl 2 */
 
   PATCH_BUTTON           = 25, /* LED Pushbutton: 0=not pressed, 127=pressed */
   PATCH_CONTROL          = 26, /* Remote control: 0=local, 127=MIDI */
@@ -147,9 +107,6 @@ enum OpenWareMidiControl {
   FACTORY_RESET          = 70, /* reset all settings */
   DEVICE_STATUS          = 71,
 
-  /* PATCH_PARAMETER_F      = 72, */
-  /* PATCH_PARAMETER_G      = 73, */
-  /* PATCH_PARAMETER_H      = 74, */
   PATCH_PARAMETER_AA     = 75,
   PATCH_PARAMETER_AB     = 76,
   PATCH_PARAMETER_AC     = 77,

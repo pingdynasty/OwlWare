@@ -102,13 +102,13 @@ void ledSetup(){
   clearPin(LED_PORT, LED_RED|LED_GREEN);
 }
 
-uint16_t adc_values[NOF_PARAMETERS];
+int16_t adc_values[NOF_PARAMETERS];
 void adcSetup(){
   memset(adc_values, 0, sizeof(adc_values));
   adcSetupDMA(&adc_values[0]);
 }
 
-uint16_t getAnalogValue(uint8_t index){
+int16_t getAnalogValue(uint8_t index){
   /* assert_param(index < sizeof(adc_values)); */
 #ifdef OWLMODULAR
   if(index < 4)
@@ -117,7 +117,7 @@ uint16_t getAnalogValue(uint8_t index){
   return adc_values[index];
 }
 
-uint16_t* getAnalogValues(){
+int16_t* getAnalogValues(){
   return adc_values;
 }
 

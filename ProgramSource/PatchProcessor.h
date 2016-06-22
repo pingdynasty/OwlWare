@@ -14,11 +14,11 @@ public:
   void setPatch(Patch* patch);
   void run();
   float getParameterValue(PatchParameterId pid);
-  void setParameterValues(uint16_t *parameters);
+  void setParameterValues(int16_t *parameters);
 private:
   Patch* patch;
   SampleBuffer buffer;
-  uint16_t parameterValues[NOF_ADC_VALUES];
+  int16_t parameterValues[NOF_ADC_VALUES];
 };
 
 #endif // __PatchProcessor_h__

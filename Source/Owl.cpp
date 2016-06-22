@@ -200,9 +200,7 @@ void updateProgramIndex(uint8_t index){
      midi.sendPatchParameterName((PatchParameterId)id, name);
    }
 
-#ifdef DEBUG_DWT
-extern volatile uint32_t *DWT_CYCCNT;
-#endif /* DEBUG_DWT */
+#define DWT_CYCCNT ((volatile unsigned int *)0xE0001004)
 extern volatile ProgramVectorAudioStatus audioStatus;
 
    __attribute__ ((section (".coderam")))
@@ -272,7 +270,7 @@ extern volatile ProgramVectorAudioStatus audioStatus;
    }
 
    // called from program
-   void onSetPatchParameter(uint8_t pid, uint16_t value){     
+   void onSetPatchParameter(uint8_t pid, int16_t value){     
      if(pid < NOF_PARAMETERS)
        getProgramVector()->parameters[pid] = value;
      switch(pid){
@@ -288,19 +286,14 @@ extern volatile ProgramVectorAudioStatus audioStatus;
        break;
      case PARAMETER_G:
        midi.sendCc(PATCH_PARAMETER_G, (value>>5) & 0x7f);
+       // midi.sendPitchBend(value<<1);
        break;
      case PARAMETER_H:
        midi.sendCc(PATCH_PARAMETER_H, (value>>5) & 0x7f);
        break;
      default:
-       if(pid >= PARAMETER_AA && pid <= PARAMETER_BH){
+       if(pid >= PARAMETER_AA && pid <= PARAMETER_BH)
 	 midi.sendCc(PATCH_PARAMETER_AA+(pid-PARAMETER_AA), (value>>5) & 0x7f);	 
-       }else if(pid >= PARAMETER_MIDI_NOTE){
-	 if(value == 0)
-	   midi.sendNoteOff(pid-PARAMETER_MIDI_NOTE, 0);
-	 else
-	   midi.sendNoteOn(pid-PARAMETER_MIDI_NOTE, value);
-       }
      }
    }
 
@@ -318,12 +311,12 @@ extern volatile ProgramVectorAudioStatus audioStatus;
    }
 
    // called from midi irq
-   void setParameter(uint8_t pid, uint16_t value){
+   void setParameter(uint8_t pid, int16_t value){
      ASSERT(pid < getProgramVector()->parameters_size, "Parameter ID out of range");
      getProgramVector()->parameters[pid] = value;
    }
 
-   uint16_t getParameterValue(uint8_t pid){
+   int16_t getParameterValue(uint8_t pid){
      ASSERT(pid < getProgramVector()->parameters_size, "Parameter ID out of range");
      return getProgramVector()->parameters[pid];
    }
@@ -332,7 +325,7 @@ extern volatile ProgramVectorAudioStatus audioStatus;
 }
 #endif
 
-void setParameterValues(uint16_t* values, int size){
+void setParameterValues(int16_t* values, int size){
   getProgramVector()->parameters = values;
   getProgramVector()->parameters_size = size;
 }

@@ -44,7 +44,7 @@ float PatchProcessor::getParameterValue(PatchParameterId pid){
 #define SMOOTH_HYSTERESIS
 #define SMOOTH_FACTOR 3
 __attribute__ ((section (".coderam")))
-void PatchProcessor::setParameterValues(uint16_t *params){
+void PatchProcessor::setParameterValues(int16_t *params){
   /* Implements an exponential moving average (leaky integrator) to smooth ADC values
    * y(n) = (1-alpha)*y(n-1) + alpha*y(n)
    * with alpha=0.5, fs=48k, bs=128, then w0 ~= 18hz

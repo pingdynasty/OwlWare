@@ -37,10 +37,10 @@ enum MidiControlChange {
   MIDI_CC_BREATH        = 0x02,
   MIDI_CC_VOLUME        = 0x07,
   MIDI_CC_BALANCE       = 0x08,
-  MIDI_CC_PAN           = 0x010,
-  MIDI_CC_EXPRESSION    = 0x011,
-  MIDI_CC_EFFECT_CTRL_1 = 0x012,
-  MIDI_CC_EFFECT_CTRL_2 = 0x013,
+  MIDI_CC_PAN           = 0x0a,
+  MIDI_CC_EXPRESSION    = 0x0b,
+  MIDI_CC_EFFECT_CTRL_1 = 0x0c,
+  MIDI_CC_EFFECT_CTRL_2 = 0x0d,
 };
 
 enum UsbMidi {
