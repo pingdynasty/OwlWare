@@ -4,19 +4,19 @@
 #include <inttypes.h>
 #include "MidiStatus.h"
 #include "MidiHandler.h"
-#include "DigitalBusHandler.h"
 
 enum MidiReaderStatus {
   READY_STATUS, INCOMPLETE_STATUS, ERROR_STATUS
 };
 
-class MidiReader : public DigitalBusHandler { // public MidiHandler {
-private:
+class MidiReader : public MidiHandler {
+protected:
   uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
   static const int size = MIDI_MAX_MESSAGE_SIZE;
   MidiReaderStatus status; // state, should be status: READY / INCOMPLETE / ERROR
   unsigned char runningStatus;
   int pos;
+private:
 public:
   MidiReader() : 
     status(READY_STATUS), 
@@ -39,10 +39,6 @@ public:
   }
 
   MidiReaderStatus read(unsigned char data);
-  // read a 4-byte data frame
-  void readFrame(uint8_t* frame);
-private:
-  void readSysex(uint8_t* data, int size);
 };
 
 

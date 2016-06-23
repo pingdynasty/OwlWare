@@ -66,7 +66,7 @@ CPP_SRC = main.cpp
 CPP_SRC += Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp
 CPP_SRC += PatchRegistry.cpp ProgramManager.cpp
 CPP_SRC += FactoryPatches.cpp ServiceCall.cpp 
-CPP_SRC += MidiHandler.cpp DigitalBusHandler.cpp MidiReader.cpp 
+CPP_SRC += MidiHandler.cpp MidiReader.cpp DigitalBusHandler.cpp DigitalBusReader.cpp
 CPP_SRC += PatchProcessor.cpp StompBox.cpp FloatArray.cpp
 CPP_SRC += bus.cpp
 

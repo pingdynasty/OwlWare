@@ -1,9 +1,9 @@
 #ifndef _DigitalBusHandler_h_
 #define _DigitalBusHandler_h_
 
-#include "MidiHandler.h"
+#include "MidiReader.h"
 
-class DigitalBusHandler : public MidiHandler {
+class DigitalBusHandler : public MidiReader {
 private:
   uint8_t downstream;
   uint32_t token;
@@ -23,7 +23,6 @@ public:
   // send a 4-byte message
   void sendMessage(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4);
   void writeFrame(uint8_t* frame);
-
   uint32_t generateToken();
   void startDiscover();
   void sendDiscover(uint8_t seq, uint32_t token);
