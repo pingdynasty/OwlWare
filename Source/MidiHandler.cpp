@@ -1,6 +1,3 @@
-#ifndef _MidiHandler_HPP_
-#define _MidiHandler_HPP_
-
 #include <string.h>
 #include "device.h"
 #include "owlcontrol.h"
@@ -12,10 +9,10 @@
 #include "FirmwareLoader.hpp"
 #include "ProgramManager.h"
 #include "Owl.h"
+#include "MidiHandler.h"
 
-class MidiHandler : public MidiReader {
+class MidiHandler {
 private:
-  uint8_t buffer[MIDI_MAX_MESSAGE_SIZE];
   int16_t midi_values[NOF_PARAMETERS];
   FirmwareLoader loader;
   // state variables to track monophonic note
@@ -31,13 +28,24 @@ public:
     memset(midi_values, 0, NOF_PARAMETERS*sizeof(uint16_t));
   }
 
-  void handlePitchBend(uint8_t status, uint16_t value){
+  // virtual void handleSystemCommon(uint8_t){}
+  // virtual void handleProgramChange(uint8_t, uint8_t){}
+  // virtual void handleChannelPressure(uint8_t, uint8_t){}
+  // virtual void handleControlChange(uint8_t, uint8_t, uint8_t){}
+  // virtual void handleNoteOff(uint8_t, uint8_t, uint8_t){}
+  // virtual void handleNoteOn(uint8_t, uint8_t, uint8_t){}
+  // virtual void handlePitchBend(uint8_t, uint16_t){}
+  // virtual void handlePolyKeyPressure(uint8_t, uint8_t, uint8_t){}
+  // virtual void handleSysEx(uint8_t* data, uint16_t size){}
+  // virtual void handleParameterChange(uint8_t pid, uint16_t value){}
+
+  void MidiHandler::handlePitchBend(uint8_t status, uint16_t value){
     // pitchbend = value;
     // setParameter(PARAMETER_G, value>>2);
     setParameter(PARAMETER_G, ((int16_t)value - 8192)>>1);
   }
 
-  void handleNoteOn(uint8_t status, uint8_t note, uint8_t velocity){
+  void MidiHandler::handleNoteOn(uint8_t status, uint8_t note, uint8_t velocity){
     // note = n;
     // pitch = note*4095/127 + (pitchbend-8192)*(4095/63)/16383;
     // amplitude = velocity/127.0f;
@@ -47,13 +55,13 @@ public:
     setButton(MIDI_NOTE_BUTTON+note, velocity<<5);
   }
 
-  void handleNoteOff(uint8_t status, uint8_t note, uint8_t velocity){
+  void MidiHandler::handleNoteOff(uint8_t status, uint8_t note, uint8_t velocity){
     // amplitude = 0;
     // setButton(MIDI_GATE_BUTTON, false);
     setButton(MIDI_NOTE_BUTTON+note, 0);
   }
 
-  void handleProgramChange(uint8_t status, uint8_t pid){
+  void MidiHandler::handleProgramChange(uint8_t status, uint8_t pid){
     if(pid == 0 && loader.isReady()){
       program.loadDynamicProgram(loader.getData(), loader.getSize());
       loader.clear();
@@ -64,7 +72,7 @@ public:
     }
   }
 
-  void handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
+  void MidiHandler::handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
     switch(cc){
 #ifdef OWLMODULAR
     case PATCH_PARAMETER_A:
@@ -250,7 +258,7 @@ public:
     }
   }
 
-  void updateCodecSettings(){
+  void MidiHandler::updateCodecSettings(){
     codec.softMute(true);
     codec.stop();
     codec.init(settings);
@@ -258,7 +266,7 @@ public:
     program.resetProgram(true);
   }
 
-  void handleConfigurationCommand(uint8_t* data, uint16_t size){
+  void MidiHandler::handleConfigurationCommand(uint8_t* data, uint16_t size){
     if(size < 4)
       return;
     char* p = (char*)data;
@@ -296,7 +304,7 @@ public:
     updateCodecSettings();
   }
 
-  void handleFirmwareUploadCommand(uint8_t* data, uint16_t size){
+  void MidiHandler::handleFirmwareUploadCommand(uint8_t* data, uint16_t size){
     int32_t ret = loader.handleFirmwareUpload(data, size);
     if(ret > 0){
       // firmware upload complete: wait for run or store
@@ -306,7 +314,7 @@ public:
     }// else error
   }
 
-  void handleFirmwareRunCommand(uint8_t* data, uint16_t size){
+  void MidiHandler::handleFirmwareRunCommand(uint8_t* data, uint16_t size){
     if(loader.isReady()){
       program.loadDynamicProgram(loader.getData(), loader.getSize());
       loader.clear();
@@ -316,7 +324,7 @@ public:
     }      
   }
 
-  void handleFirmwareFlashCommand(uint8_t* data, uint16_t size){
+  void MidiHandler::handleFirmwareFlashCommand(uint8_t* data, uint16_t size){
     if(loader.isReady() && size == 5){
       uint32_t checksum = loader.decodeInt(data);
       if(checksum == loader.getChecksum()){
@@ -330,7 +338,7 @@ public:
     }
   }
 
-  void handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
+  void MidiHandler::handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
     if(loader.isReady() && size == 5){
       uint32_t slot = loader.decodeInt(data);
       if(slot >= 0 && slot < MAX_USER_PATCHES){
@@ -344,7 +352,7 @@ public:
     }
   }
 
-  void handleSysEx(uint8_t* data, uint16_t size){
+  void MidiHandler::handleSysEx(uint8_t* data, uint16_t size){
     if(size < 3 || 
        data[0] != MIDI_SYSEX_MANUFACTURER || 
        data[1] != MIDI_SYSEX_DEVICE)

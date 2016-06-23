@@ -3,21 +3,22 @@ ELF=$(BUILD)/OwlWare.elf
 BIN=$(BUILD)/OwlWare.bin
 
 # Tool path
-TOOLROOT ?= $(TEMPLATEROOT)/Tools/gcc-arm-none-eabi-5_2-2015q4/bin
+# TOOLROOT ?= Tools/gcc-arm-none-eabi-5_3-2016q1/bin/ # missing strnlen/strlcpy
+TOOLROOT ?= Tools/gcc-arm-none-eabi-5_2-2015q4/bin/
 STLINK ?= $(TEMPLATEROOT)/Tools/stlink/
 DFUUTIL ?= $(TEMPLATEROOT)/Tools/dfu-util/dfu-util
 
 # Tools
-CC=$(TOOLROOT)/arm-none-eabi-gcc
-CXX=$(TOOLROOT)/arm-none-eabi-g++
-LD=$(TOOLROOT)/arm-none-eabi-gcc
-AR=$(TOOLROOT)/arm-none-eabi-ar
-AS=$(TOOLROOT)/arm-none-eabi-as
-GDB=$(TOOLROOT)/arm-none-eabi-gdb
-OBJCOPY=$(TOOLROOT)/arm-none-eabi-objcopy
-OBJDUMP=$(TOOLROOT)/arm-none-eabi-objdump
-STFLASH=$(STLINK)/st-flash
-STUTIL=$(STLINK)/st-util
+CC=$(TOOLROOT)arm-none-eabi-gcc
+CXX=$(TOOLROOT)arm-none-eabi-g++
+LD=$(TOOLROOT)arm-none-eabi-gcc
+AR=$(TOOLROOT)arm-none-eabi-ar
+AS=$(TOOLROOT)arm-none-eabi-as
+GDB=$(TOOLROOT)arm-none-eabi-gdb
+OBJCOPY=$(TOOLROOT)arm-none-eabi-objcopy
+OBJDUMP=$(TOOLROOT)arm-none-eabi-objdump
+STFLASH=$(STLINK)st-flash
+STUTIL=$(STLINK)st-util
 BOOTLOADER ?= $(TEMPLATEROOT)/Libraries/OwlBoot/OwlBoot.bin
 
 # Set up search path
