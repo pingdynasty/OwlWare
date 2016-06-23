@@ -1,114 +1,45 @@
 #include "DigitalBusReader.h"
 
 // read a 4-byte data frame
-void DigitalBusReader::readFrame(uint8_t* frame){
-  switch(frame[0]){
-  case USB_COMMAND_MISC:
-  case USB_COMMAND_CABLE_EVENT:
-    // ignore
+void DigitalBusReader::readBusFrame(uint8_t* frame){
+  // OWL Digital Bus Strix Protocol
+  uint8_t id = frame[0]&0x0f;
+  switch(frame[0]&0xf0){
+  case 0:
+    readMidiFrame(frame);
     break;
-  case USB_COMMAND_SINGLE_BYTE:
-    handleSystemCommon(frame[1]);
+  case OWL_COMMAND_DISCOVER:
+    handleDiscover(id, (frame[1] << 16) | (frame[2]<<8) | frame[3]);
     break;
-  case USB_COMMAND_2BYTE_SYSTEM_COMMON:
-    handleSystemCommon(frame[1], frame[2]);
+  case OWL_COMMAND_ENUM:
+    handleEnum(id, frame[1], frame[2] << 8, frame[3]);
     break;
-  case USB_COMMAND_3BYTE_SYSTEM_COMMON:
-    handleSystemCommon(frame[1], frame[2], frame[3]);
+  case OWL_COMMAND_IDENT:
+    if(id != uid){
+      handleIdent(id, frame[1], frame[2], frame[3]);
+      if(id != nuid) // propagate
+	sendFrame(frame);
+    }
     break;
-  case USB_COMMAND_SYSEX_EOX1:
-    readSysex(&frame[1], 1);
+  case OWL_COMMAND_PARAMETER:
+    if(id != uid){
+      // it's not from us: process
+      handleParameterChange(frame[1], (frame[2]<<8) | frame[3]);
+      if(id != nuid) // propagate
+	sendFrame(frame);
+    }
     break;
-  case USB_COMMAND_SYSEX_EOX2:
-    readSysex(&frame[1], 2);
+  case OWL_COMMAND_DATA:
+    // OSC, firmware or file data
+    // 0x30, type, sizeH, sizeL
+    // uint16_t size = (frame[2]<<8) | frame[3]);
     break;
-  case USB_COMMAND_SYSEX:
-  case USB_COMMAND_SYSEX_EOX3:
-    readSysex(&frame[1], 3);
-    break;
-  case USB_COMMAND_PROGRAM_CHANGE:
-    handleProgramChange(frame[1], frame[2]);
-    break;
-  case USB_COMMAND_CHANNEL_PRESSURE:
-    handleChannelPressure(frame[1], frame[2]);
-    break;
-  case USB_COMMAND_NOTE_OFF:
-    handleNoteOff(frame[1], frame[2], frame[3]);
-    break;
-  case USB_COMMAND_NOTE_ON:
-    if(frame[3] == 0)
-      handleNoteOff(frame[1], frame[2], frame[3]);
-    else
-      handleNoteOn(frame[1], frame[2], frame[3]);
-    break;
-  case USB_COMMAND_POLY_KEY_PRESSURE:
-    handlePolyKeyPressure(frame[1], frame[2], frame[3]);
-    break;
-  case USB_COMMAND_CONTROL_CHANGE:
-    handleControlChange(frame[1], frame[2], frame[3]);
-    break;
-  case USB_COMMAND_PITCH_BEND_CHANGE:
-    handlePitchBend(frame[1], frame[2] | (frame[3]<<7));
+  case OWL_COMMAND_SYNC:
+    // 0xc0 until 0xff at end of frame
+    // use ASCII SYN instead?
     break;
   default:
-    // OWL Digital Bus Strix Protocol
-    switch(frame[0] & 0xf0){
-    case OWL_COMMAND_DISCOVER:
-      handleDiscover(frame[0]&0x0f, (frame[1] << 16) | (frame[2]<<8) | frame[3]);
-      break;
-    case OWL_COMMAND_ENUM:
-      handleEnum(frame[0]&0x0f, frame[1], frame[2] << 8, frame[3]);
-      break;
-    case OWL_COMMAND_IDENT:
-      handleIdent(frame[0]&0x0f, frame[1], frame[2], frame[3]);
-      break;
-    case OWL_COMMAND_PARAMETER:
-      if((frame[0]&0x0f) != uid){
-	// it's not from us
-	handleParameterChange(frame[1], (frame[2]<<8) | frame[3]);
-	// propagate
-	sendMessage(frame[0], frame[1], frame[2], frame[3]);
-      }
-      break;
-    case OWL_COMMAND_DATA:
-      // OSC, firmware or file data
-      // 0x30, type, sizeH, sizeL
-      // uint16_t size = (frame[2]<<8) | frame[3]);
-      break;
-    case OWL_COMMAND_SYNC:
-      // 0xc0 until 0xff at end of frame
-      // use ASCII SYN instead?
-      break;
-    default:
-      break;
-    }
-    // if((frame[0] & 0x0f) != uid && (frame[0] & 0x0f) != (uid+1)){
-    // 	// we are not the originator
-    // 	// forward message
-    // }
-    // ignore
-  }
-}
-
-void DigitalBusReader::readSysex(uint8_t* data, int size){
-  for(int i=0; i<size; ++i){
-    if(data[i] == SYSEX_EOX){
-      status = READY_STATUS;
-      handleSysEx(buffer+1, pos-2);
-    }else if(data[i] >= STATUS_BYTE && pos > 1){
-      // SysEx message terminated by a status byte different from SYSEX_EOX
-      buffer[pos-1] = SYSEX_EOX;
-      status = READY_STATUS;
-      handleSysEx(buffer+1, pos-2);
-      buffer[0] = data[i]; // save status byte for next message - will be saved as running status
-    }else{
-      if(pos < size){
-	buffer[pos++] = data[i];
-	status = INCOMPLETE_STATUS;
-      }else{
-	status = ERROR_STATUS;
-      }
-    }
+    break;
   }
 }
 

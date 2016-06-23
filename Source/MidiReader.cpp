@@ -1,5 +1,79 @@
 #include "MidiReader.h"
 
+void MidiReader::readMidiFrame(uint8_t* frame){
+  switch(frame[0]){
+  case USB_COMMAND_MISC:
+  case USB_COMMAND_CABLE_EVENT:
+    // ignore
+    break;
+  case USB_COMMAND_SINGLE_BYTE:
+    handleSystemCommon(frame[1]);
+    break;
+  case USB_COMMAND_2BYTE_SYSTEM_COMMON:
+    handleSystemCommon(frame[1], frame[2]);
+    break;
+  case USB_COMMAND_3BYTE_SYSTEM_COMMON:
+    handleSystemCommon(frame[1], frame[2], frame[3]);
+    break;
+  case USB_COMMAND_SYSEX_EOX1:
+    readSysex(&frame[1], 1);
+    break;
+  case USB_COMMAND_SYSEX_EOX2:
+    readSysex(&frame[1], 2);
+    break;
+  case USB_COMMAND_SYSEX:
+  case USB_COMMAND_SYSEX_EOX3:
+    readSysex(&frame[1], 3);
+    break;
+  case USB_COMMAND_PROGRAM_CHANGE:
+    handleProgramChange(frame[1], frame[2]);
+    break;
+  case USB_COMMAND_CHANNEL_PRESSURE:
+    handleChannelPressure(frame[1], frame[2]);
+    break;
+  case USB_COMMAND_NOTE_OFF:
+    handleNoteOff(frame[1], frame[2], frame[3]);
+    break;
+  case USB_COMMAND_NOTE_ON:
+    if(frame[3] == 0)
+      handleNoteOff(frame[1], frame[2], frame[3]);
+    else
+      handleNoteOn(frame[1], frame[2], frame[3]);
+    break;
+  case USB_COMMAND_POLY_KEY_PRESSURE:
+    handlePolyKeyPressure(frame[1], frame[2], frame[3]);
+    break;
+  case USB_COMMAND_CONTROL_CHANGE:
+    handleControlChange(frame[1], frame[2], frame[3]);
+    break;
+  case USB_COMMAND_PITCH_BEND_CHANGE:
+    handlePitchBend(frame[1], frame[2] | (frame[3]<<7));
+    break;
+  }
+}
+
+void MidiReader::readSysex(uint8_t* data, int size){
+  for(int i=0; i<size; ++i){
+    if(data[i] == SYSEX_EOX){
+      status = READY_STATUS;
+      handleSysEx(buffer+1, pos-2);
+    }else if(data[i] >= STATUS_BYTE && pos > 1){
+      // SysEx message terminated by a status byte different from SYSEX_EOX
+      buffer[pos-1] = SYSEX_EOX;
+      status = READY_STATUS;
+      handleSysEx(buffer+1, pos-2);
+      buffer[0] = data[i]; // save status byte for next message - will be saved as running status
+    }else{
+      if(pos < size){
+	buffer[pos++] = data[i];
+	status = INCOMPLETE_STATUS;
+      }else{
+	status = ERROR_STATUS;
+      }
+    }
+  }
+}
+
 MidiReaderStatus MidiReader::read(unsigned char data){
   if(status == READY_STATUS){
     clear(); // discard previous message

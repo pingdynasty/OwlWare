@@ -39,6 +39,10 @@ public:
   }
 
   MidiReaderStatus read(unsigned char data);
+
+  void readMidiFrame(uint8_t* frame);
+private:
+  void readSysex(uint8_t* data, int size);
 };
 
 

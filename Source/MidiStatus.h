@@ -47,7 +47,7 @@ enum UsbMidi {
   USB_COMMAND_MISC                = 0x00,	/* reserved */
   USB_COMMAND_CABLE_EVENT         = 0x01,	/* reserved */
   USB_COMMAND_2BYTE_SYSTEM_COMMON = 0x02,	/* e.g. MTC, SongSelect */
-  USB_COMMAND_3BYTE_SYSTEM_COMMON = 0x03,	/* e.g. SPP */
+  USB_COMMAND_3BYTE_SYSTEM_COMMON = 0x03,	/* e.g. Song Position Pointer SPP */
   USB_COMMAND_SYSEX               = 0x04,
   USB_COMMAND_SYSEX_EOX1          = 0x05,
   USB_COMMAND_SYSEX_EOX2          = 0x06,
@@ -66,7 +66,6 @@ enum OwlProtocol {
   OWL_COMMAND_DISCOVER            = 0x10,
   OWL_COMMAND_ENUM                = 0x20,
   OWL_COMMAND_IDENT               = 0x30,
-
   OWL_COMMAND_PARAMETER           = 0x40,
   OWL_COMMAND_DATA                = 0x50,
   OWL_COMMAND_SYNC                = 0xc0,

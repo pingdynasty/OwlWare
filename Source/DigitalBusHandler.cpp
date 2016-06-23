@@ -1,13 +1,21 @@
 #include "DigitalBusHandler.h"
 #include "MidiStatus.h"
+#include "owlcontrol.h"
+#include "serial.h"
+
+DigitalBusHandler::DigitalBusHandler() 
+  : uid(NO_UID), downstream(NO_UID), token(NO_TOKEN), peers(0), parameterOffset(0) {
+  UUID = (uint8_t*)getDeviceId();
+}
 
 // send a 4-byte message
 void DigitalBusHandler::sendMessage(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4){
   uint8_t buf[4] = {d1, d2, d3, d4};
-  writeFrame(buf);
+  sendFrame(buf);
 }
 
-void DigitalBusHandler::writeFrame(uint8_t* frame){
+void DigitalBusHandler::sendFrame(uint8_t* frame){
+  serial_write(frame, 4);
 }
 
 uint32_t DigitalBusHandler::generateToken(){
@@ -71,7 +79,11 @@ void DigitalBusHandler::handleEnum(uint8_t id, uint8_t version, uint8_t product,
     sendEnum(uid, VERSION, PRODUCT, parameterOffset+PARAMETERS);
     // note that only one ENUM should be received as they are not propagated.
     // downstream UID will be (uid+1 > peers) ? 0 : uid+1
+    nuid = uid+1;
+    if(nuid >= peers)
+      nuid = 0;
   }else if(uid == 0){
+    nuid = 1;
     startIdent();
   }else if(uid == id){
     // we are talking to ourselves: ignore
@@ -95,14 +107,13 @@ void DigitalBusHandler::sendIdent(uint8_t id, uint8_t version, uint8_t device, u
 }
 
 /* void handleIdent(uint8_t id, uint8_t version, uint8_t device, uint8_t* uuid){ */
-/*   if(id != uid && id != uid+1) */
+/*   if(id != uid && id != nuid) */
 /*     sendIdent(id, version, device, uuid); // pass it on */
 /* } */
 
 void DigitalBusHandler::handleIdent(uint8_t id, uint8_t d1, uint8_t d2, uint8_t d3){
-  // if(id != uid && id != uid+1)
-  //   sendIdent(id, d1, d2, d3); // pass it on
-  // need to wait and buffer full set of 6 messages
+  // todo: need to wait for full set of 6 messages and buffer UUID?
+  // no because uid is contained in every message
 }
 
 void DigitalBusHandler::sendParameterChange(uint8_t pid, uint16_t value){

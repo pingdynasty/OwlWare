@@ -6,10 +6,7 @@
 class DigitalBusReader : public DigitalBusHandler {
  public:
   // read a 4-byte data frame
-  void readFrame(uint8_t* frame);
-private:
-  void readSysex(uint8_t* data, int size);
-
+  void readBusFrame(uint8_t* frame);
 };
 
 
