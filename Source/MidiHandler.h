@@ -31,6 +31,8 @@ public:
   void handleSysEx(uint8_t* data, uint16_t size);
 
   void handleSystemCommon(uint8_t cmd){}
+  void handleSystemCommon(uint8_t cmd1, uint8_t cmd2){}
+  void handleSystemCommon(uint8_t cmd1, uint8_t cmd2, uint8_t cmd3){}
   void handleChannelPressure(uint8_t status, uint8_t value){}
   void handlePolyKeyPressure(uint8_t status, uint8_t note, uint8_t value){}
   void handleParameterChange(uint8_t pid, uint16_t value){}

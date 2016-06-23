@@ -71,13 +71,15 @@ discovery process:
 - wait
 - to initiate: generate 24bit token (from UUID or random) and send disc: (0x10 | 0) token
 
-- if receive disc with different token:
-    if token < mine accept defeat and pass it on
-    otherwise resend disc
+- if receive disc (that I didn't send):
+  - if not already done, send send own disc
+  - if other token > own token, surrender UID 0 (unset)
 
-- if receive disc (that I didn't send) pass it on as is
+- if receive disc (that I sent):
+  - set number of peers = seq
+  - if uid==0, start enum
 
-- when receive disc that I sent, claim UID 0 and start enum process.
+// to force another device to start discovery, send NO_TOKEN disc
 
 enumeration process:
 - to initiate, send ENUM with UID=0

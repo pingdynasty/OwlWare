@@ -3,7 +3,7 @@
 #include "owlcontrol.h"
 #include "usbd_conf.h"
 #include "usbd_audio_core.h"
-#include "MidiReader.hpp"
+#include "MidiReader.h"
 #include <string.h>
 
 extern USB_OTG_CORE_HANDLE           USB_OTG_dev;

@@ -1,8 +1,8 @@
 #include <string.h>
 #include "device.h"
 #include "owlcontrol.h"
+#include "MidiStatus.h"
 #include "OpenWareMidiControl.h"
-#include "MidiReader.hpp"
 #include "MidiController.h"
 #include "CodecController.h"
 #include "ApplicationSettings.h"
