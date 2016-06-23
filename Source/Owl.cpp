@@ -13,8 +13,8 @@
 #include "ServiceCall.h"
 #include "MidiStatus.h"
 #include "bkp_sram.h"
-
-// #include "serial.h"
+#include "serial.h"
+#include "bus.h"
 #include "clock.h"
 #include "device.h"
 #include "codec.h"
@@ -32,7 +32,11 @@ PatchRegistry registry;
 uint16_t timestamps[NOF_BUTTONS]; 
 BitState32 stateChanged;
 
-bool getButton(PatchButtonId bid){
+uint16_t getParameterValue(uint8_t pid){
+  return getProgramVector()->parameters[pid];
+}
+
+bool getButton(uint8_t bid){
   return getProgramVector()->buttons & (1<<bid);
 }
 
@@ -90,6 +94,9 @@ static void clearButtonEvent(PatchButtonId bid){
 }
 
 static void updateBypassMode(){
+#if defined OWLMODULAR || defined OWLRACK
+  bypass = false;
+#else
   if(isStompSwitchPressed()){
     setButtonState(BYPASS_BUTTON);
     setButtonColour(NONE);
@@ -332,8 +339,10 @@ void setParameterValues(int16_t* values, int size){
 
 void updateProgramVector(ProgramVector* vector){
   vector->checksum = sizeof(ProgramVector);
-#ifdef OWLMODULAR
+#if defined OWLMODULAR
   vector->hardware_version = OWL_MODULAR_HARDWARE;
+#elif defined OWLRACK
+  vector->hardware_version = OWL_RACK_HARDWARE;
 #else
   vector->hardware_version = OWL_PEDAL_HARDWARE;
 #endif
@@ -391,23 +400,25 @@ void setup(){
   if(isPushButtonPressed())
     jump_to_bootloader();
 
+#ifndef OWLRACK
   adcSetup();
+#endif
   clockSetup();
-#ifdef OWLMODULAR
+#if defined OWLMODULAR
   setupSwitchA(pushGateCallback);
-#else
+#elif !defined OWLRACK
   setupSwitchA(footSwitchCallback);
 #endif
+#ifndef OWLRACK
   setupSwitchB(pushButtonCallback);
+#endif
 
   settings.init();
   midi.init(MIDI_CHANNEL);
   registry.init();
 
 #ifdef EXPRESSION_PEDAL
-#ifndef OWLMODULAR
   setupExpressionPedal();
-#endif
 #endif
 
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); // DEBUG
@@ -431,15 +442,23 @@ void setup(){
 
   usb_init();
 
-#if SERIAL_PORT == 1
-  setupSerialPort1(115200);
-#elif SERIAL_PORT == 2
-  setupSerialPort2(115200); // expression pedal
-#warning expression pedal jack configured as serial port
-#ifdef EXPRESSION_PEDAL
-#error invalid configuration
+// #if SERIAL_PORT == 1
+//   setupSerialPort1(115200);
+// #elif SERIAL_PORT == 2
+//   setupSerialPort2(115200); // expression pedal
+// #warning expression pedal jack configured as serial port
+// #ifdef EXPRESSION_PEDAL
+// #error invalid configuration
+// #endif
+// #elif SERIAL_PORT == 4
+//   setupSerialPort4(115200); // Digital Bus
+//   setupBus();
+// #endif
+#ifdef USART_PERIPH
+  serial_setup(USART_BAUDRATE);
+  setupBus();
 #endif
-#endif
+
 
   codec.setup();
   codec.init(settings);

@@ -57,15 +57,27 @@
    int16_t* getAnalogValues();
 
    inline bool isStompSwitchPressed(){
+#if defined OWLMODULAR || defined OWLRACK
+     return false;
+#else
      return getPin(SWITCH_A_PORT, SWITCH_A_PIN);
+#endif
    }
 
    inline bool isPushButtonPressed(){
+#ifdef OWLRACK
+     return false;
+#else
      return !getPin(SWITCH_B_PORT, SWITCH_B_PIN);
+#endif
    }
 
    inline bool isPushGatePressed(){
+#ifdef OWLMODULAR
      return !getPin(SWITCH_A_PORT, SWITCH_A_PIN);
+#else
+     return false;
+#endif
    }
 
    void setupSwitchA(void (*f)());

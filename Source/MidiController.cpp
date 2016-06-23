@@ -38,7 +38,7 @@ void MidiController::sendPatchParameterValues(){
 void MidiController::sendSettings(){
   sendPc(settings.program_index);
   sendPatchParameterValues();
-  sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
+  sendCc(PATCH_BUTTON, getButton(PUSHBUTTON) ? 127 : 0);
   sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
   sendCc(LEFT_INPUT_GAIN, codec.getInputGainLeft()<<2);
   sendCc(RIGHT_INPUT_GAIN, codec.getInputGainRight()<<2);

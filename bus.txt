@@ -1,0 +1,185 @@
+
+----
+
+Minerva was the Roman goddess of wisdom and sponsor of arts, trade, and strategy. 
+She is often depicted with her sacred creature, an owl usually named as the "owl of Minerva", which symbolised her association with wisdom and knowledge.
+
+Athena is the goddess of wisdom, courage, inspiration, civilization, law and justice, mathematics, strength, war strategy, the arts, crafts, and skill in ancient Greek religion and mythology. Minerva is the Roman goddess identified with Athena.
+The bird which sees well in the night is closely associated with the goddess of wisdom: in archaic images, Athena is frequently depicted with an owl (or "owl of Athena" and later under the Roman Empire, "owl of Minerva") perched on her hand. This pairing evolved in tandem so that even today the owl is a symbol of perspicacity and erudition. Unsurprisingly, the owl became a sort of Athenian mascot. 
+
+Strix (pl. striges or strixes), in the Ancient Roman and Greek legends was a bird of ill omen, product of metamorphosis, that fed on human flesh and blood. The name, in Greek, means "owl".
+
+Owls are divided into two families: the true owls or typical owls, Strigidae; and the barn-owls, Tytonidae.
+
+----
+
+
+send discover : seq : uid
+with seq = 0
+
+each recipient:
+ if uid != local uid (I started this) then total other devices = seq
+ else increase seq by one and pass it on
+
+lowest uid starts?
+
+----
+
+each device can enable disable send / recv (param, data, midi, osc individually?)
+
+----
+
+step one: ensure unique UIDs
+- send UID (4bit?) followed by 128bit UUID
+0xX 4bit UID 24bit : 32bit : 32bit : 32bit : 32bit
+- check incoming UID against your own. if UUID not the same, resolve.
+
+step two:
+- find out UID of downstream device
+
+step three: communicate
+- messages sent with 4bit UID
+- all messages received with UID != downstream to be forwarded
+
+- wait for UUID*x ms, then send ident message with seq 0 (unless ident already received)
+- on receipt of ident, send your own ident (do not pass along other) with seq+1
+- keep upstream ident (what for?)
+
+IDENT: 0x10, 8bit seq, 16bit UID.
+
+16bit short UID
+128bit long UUID (32bit product and version hash, 96bit MCU id)
+4bit device id
+
+----
+
+osc messages: 0x?? : size 24 bits (bytes)
+or data : osc type : size 16 bits (words or bytes)
+
+----
+
+on startup, wait, set UID 1, send ident.
+if ident received with UID == mine and different UUID, resolve:
+  - if other UUID < mine, increase UID to highest received + 1 and send new ident
+  - else resend ident
+  - if ident comes back with same UID, different UUID: increase UID and send new ident
+if ident received with UID != mine, add to list and pass it on with seq+1
+
+----
+
+discovery process:
+- wait
+- to initiate: generate 24bit token (from UUID or random) and send disc: (0x10 | 0) token
+
+- if receive disc with different token:
+    if token < mine accept defeat and pass it on
+    otherwise resend disc
+
+- if receive disc (that I didn't send) pass it on as is
+
+- when receive disc that I sent, claim UID 0 and start enum process.
+
+enumeration process:
+- to initiate, send ENUM with UID=0
+- on receipt (and UID not set), send ENUM with UID+1
+- downstream UID = local UID+1
+- on receipt with UID already set, restart discovery process
+
+identification process:
+(optional)
+- send 0x30 | UID with UUID (in 6 messages)
+- on receipt with UID != mine and UID != upstream, pass along.
+
+communication process:
+- send midi, parameter, or data with UID
+- on receipt with UID != mine and UID != upstream, pass along.
+
+DISC:  0x10, 24bit random ID
+ENUM:  0x20 | UID, 8bit version, 8bit product id
+IDENT: 0x30 | UID, UUID 24bit (x6)
+
+- what to do with USB MIDI messages? no room for UID?
+
+----
+
+
+
+----
+
+generate 24bit discovery token:
+xor UUID in 5 parts
+
+----
+
+propagation: 
+
+----
+
+message types:
+
+Ident (6 messages, 192 bits)
+(0x30|UID), protocol version 8bit, parameters 16bit
+(0x30|UID), UUID 24bit
+(0x30|UID), UUID 24bit
+(0x30|UID), UUID 24bit
+(0x30|UID), UUID 24bit
+(0x30|UID), UUID 24bit
+
+Parameter (1 message, 32 bits)
+(0x40|UID), pid, value, value
+
+Sync (2 messages, 64 bits)
+(0xc0|UID) 0xc0 0xc0 0xff
+(0xc0|UID) 0xc0 0xc0 0xff
+(not propagated: after receiving 2x sync (from someone else, and achieving sync), send 2x sync.)
+
+Data
+(0x50|UID), type 8bit, length 16bit
+... data
+
+e.g. 20 parameters, 20x4 bytes @ 115200: 6.944mS /144Hz
+
+----
+
+audio block data:
+
+0x50 (OWL_COMMAND_DATA) |UID, 0x10 (AUDIO_BLOCK), size 16bit (blocksize*channels*width + parameters*2)
+parameters (uint16_t x 2)
+...
+audio sample left (uint32_t or float)
+audio sample right
+...
+
+e.g. 16 parameters, 128 stereo float samples: 4+8+1024 bytes
+at 115200 8n1, 11520bytes/sec: 90mS per block (block rate is 2.66mS at 128/48kHz)
+requires data rate at least 34 times faster, apprx 4Mbaud
+
+to send 'screen width' of audio data,
+e.g. 96samples x 16bit @ 115200: 16mS, @2Mbaud 1mS
+
+----
+
+screen block data:
+0x50|UID, 0x20 (PIXEL_BLOCK), size 16bit
+(format width 13bit, height 13bit, bits per pixel 6bit)
+pixel data width*height*bits
+
+e.g. 96x96x16bit: 18432 + 4
+at 115200 baud transfer takes 1600mS
+
+----
+
+Synchronous Idle (SYN) is the ASCII control character 22 (0x16), represented as ^V in caret notation
+0b00010110
+
+The SYN character has the bit pattern 00010110, which has the property that it is distinct from any bit-wise rotation of itself. This helps bit-alignment of sequences of synchronous idles.
+
+----
+
+auto baudrate: tx/rx 0x7f or 0x55
+
+receiver timeout signal available, interrupt generated
+
+error interrupts:
+overrun, parity error, framing error, noise error, auto-baudrate error
+
