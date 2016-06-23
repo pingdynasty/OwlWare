@@ -3,7 +3,7 @@
 #include "owlcontrol.h"
 #include "usbd_conf.h"
 #include "usbd_audio_core.h"
-#include "MidiHandler.hpp"
+#include "MidiReader.hpp"
 #include <string.h>
 
 extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
@@ -23,7 +23,7 @@ extern volatile uint32_t APP_Rx_ptr_out;   /* This pointer is used by the MIDI d
 
 /* status flag that is set when the USB device is connected */
 extern uint8_t usbd_usr_device_status;
-MidiHandler handler;
+MidiReader handler;
 
 bool midi_device_connected(){
   return usbd_usr_device_status > 0x02;

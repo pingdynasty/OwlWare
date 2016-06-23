@@ -22,6 +22,7 @@
 #endif /* abs */
 
    void audioCallback(int16_t *src, int16_t *dst);
+   bool getButton(uint8_t bid);
    void setButton(uint8_t bid, uint16_t state);
    void setParameter(uint8_t pid, int16_t value);
    int16_t getParameterValue(uint8_t index);

@@ -32,10 +32,6 @@ PatchRegistry registry;
 uint16_t timestamps[NOF_BUTTONS]; 
 BitState32 stateChanged;
 
-uint16_t getParameterValue(uint8_t pid){
-  return getProgramVector()->parameters[pid];
-}
-
 bool getButton(uint8_t bid){
   return getProgramVector()->buttons & (1<<bid);
 }
@@ -94,9 +90,7 @@ static void clearButtonEvent(PatchButtonId bid){
 }
 
 static void updateBypassMode(){
-#if defined OWLMODULAR || defined OWLRACK
-  bypass = false;
-#else
+#if !defined OWLMODULAR && !defined OWLRACK
   if(isStompSwitchPressed()){
     setButtonState(BYPASS_BUTTON);
     setButtonColour(NONE);
@@ -107,6 +101,7 @@ static void updateBypassMode(){
     else
       setButtonColour(GREEN);
   }
+#endif
 }
 
 // called from midi irq
@@ -353,7 +348,6 @@ void updateProgramVector(ProgramVector* vector){
   vector->audio_samplingrate = settings.audio_samplingrate;
   vector->parameters = getAnalogValues();
   vector->parameters_size = NOF_PARAMETERS;
-  // todo: pass real-time updates from MidiHandler
   vector->buttons = (1<<GREEN_BUTTON);
   vector->registerPatch = onRegisterPatch;
   vector->registerPatchParameter = onRegisterPatchParameter;

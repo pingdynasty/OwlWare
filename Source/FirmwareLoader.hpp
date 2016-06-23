@@ -5,6 +5,8 @@
 #include "crc32.h"
 #include "sysex.h"
 // #include "device.h"
+#include <stdint.h>
+#include "owlcontrol.h"
 
 class FirmwareLoader {
 private:

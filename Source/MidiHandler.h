@@ -1,16 +1,10 @@
 #ifndef _MidiHandler_HPP_
 #define _MidiHandler_HPP_
 
+#include <stdint.h>
 #include <string.h>
 #include "device.h"
-#include "owlcontrol.h"
-#include "OpenWareMidiControl.h"
-#include "MidiController.h"
-#include "CodecController.h"
-#include "ApplicationSettings.h"
 #include "FirmwareLoader.hpp"
-#include "ProgramManager.h"
-#include "Owl.h"
 
 class MidiHandler {
 private:
@@ -23,22 +17,32 @@ private:
   // float amplitude;
   // static constexpr float PBRANGE = 2/128.0f; // 2 semitones
 public:
-  MidiHandler() : MidiReader(buffer, sizeof(buffer)) {
+  MidiHandler(){
     // note = 0;
     // pitchbend = 8192;
     memset(midi_values, 0, NOF_PARAMETERS*sizeof(uint16_t));
   }
 
-  void handleSystemCommon(uint8_t);
-  void handleProgramChange(uint8_t, uint8_t);
-  void handleChannelPressure(uint8_t, uint8_t);
-  void handleControlChange(uint8_t, uint8_t, uint8_t);
-  void handleNoteOff(uint8_t, uint8_t, uint8_t);
-  void handleNoteOn(uint8_t, uint8_t, uint8_t);
-  void handlePitchBend(uint8_t, uint16_t);
-  void handlePolyKeyPressure(uint8_t, uint8_t, uint8_t);
+  void handleProgramChange(uint8_t status, uint8_t pc);
+  void handleControlChange(uint8_t status, uint8_t cc, uint8_t value);
+  void handleNoteOff(uint8_t status, uint8_t note, uint8_t velocity);
+  void handleNoteOn(uint8_t status, uint8_t note, uint8_t velocity);
+  void handlePitchBend(uint8_t status, uint16_t value);
   void handleSysEx(uint8_t* data, uint16_t size);
-  void handleParameterChange(uint8_t pid, uint16_t value);
+
+  void handleSystemCommon(uint8_t cmd){}
+  void handleChannelPressure(uint8_t status, uint8_t value){}
+  void handlePolyKeyPressure(uint8_t status, uint8_t note, uint8_t value){}
+  void handleParameterChange(uint8_t pid, uint16_t value){}
+
+private:
+  void updateCodecSettings();
+  void handleConfigurationCommand(uint8_t* data, uint16_t size);
+  void handleFirmwareUploadCommand(uint8_t* data, uint16_t size);
+  void handleFirmwareRunCommand(uint8_t* data, uint16_t size);
+  void handleFirmwareFlashCommand(uint8_t* data, uint16_t size);
+  void handleFirmwareStoreCommand(uint8_t* data, uint16_t size);
+
 };
 
 #endif /* _MidiHandler_HPP_ */

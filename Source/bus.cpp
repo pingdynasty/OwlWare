@@ -1,13 +1,13 @@
 #include "bus.h"
 #include "serial.h"
-#include "MidiHandler.hpp"
+#include "MidiReader.hpp"
 
 /*
  * difference between USB midi and straight midi
  * blocks of 4, 3 bytes
  */
 
-static MidiHandler bushandler;
+static MidiReader bushandler;
 
 void setupBus(){
 }
