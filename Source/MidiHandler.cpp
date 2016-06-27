@@ -11,25 +11,19 @@
 #include "Owl.h"
 #include "MidiHandler.h"
 
+MidiHandler::MidiHandler(){
+  memset(midi_values, 0, NOF_PARAMETERS*sizeof(uint16_t));
+}
+
 void MidiHandler::handlePitchBend(uint8_t status, uint16_t value){
-  // pitchbend = value;
-  // setParameter(PARAMETER_G, value>>2);
   setParameter(PARAMETER_G, ((int16_t)value - 8192)>>1);
 }
 
 void MidiHandler::handleNoteOn(uint8_t status, uint8_t note, uint8_t velocity){
-  // note = n;
-  // pitch = note*4095/127 + (pitchbend-8192)*(4095/63)/16383;
-  // amplitude = velocity/127.0f;
-  // setButton(MIDI_GATE_BUTTON, true);
-  // setParameter(PARAMETER_MIDI_AMPLITUDE, amplitude);
-  // setParameter(PARAMETER_MIDI_PITCH, pitch);
   setButton(MIDI_NOTE_BUTTON+note, velocity<<5);
 }
 
 void MidiHandler::handleNoteOff(uint8_t status, uint8_t note, uint8_t velocity){
-  // amplitude = 0;
-  // setButton(MIDI_GATE_BUTTON, false);
   setButton(MIDI_NOTE_BUTTON+note, 0);
 }
 

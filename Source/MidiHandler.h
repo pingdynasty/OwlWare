@@ -2,27 +2,14 @@
 #define _MidiHandler_HPP_
 
 #include <stdint.h>
-#include <string.h>
-#include "device.h"
 #include "FirmwareLoader.hpp"
 
 class MidiHandler {
 private:
   int16_t midi_values[NOF_PARAMETERS];
   FirmwareLoader loader;
-  // state variables to track monophonic note
-  // uint8_t note;
-  // uint16_t pitchbend;
-  // uint16_t pitch;
-  // float amplitude;
-  // static constexpr float PBRANGE = 2/128.0f; // 2 semitones
 public:
-  MidiHandler(){
-    // note = 0;
-    // pitchbend = 8192;
-    memset(midi_values, 0, NOF_PARAMETERS*sizeof(uint16_t));
-  }
-
+  MidiHandler();
   void handleProgramChange(uint8_t status, uint8_t pc);
   void handleControlChange(uint8_t status, uint8_t cc, uint8_t value);
   void handleNoteOff(uint8_t status, uint8_t note, uint8_t velocity);
