@@ -4,8 +4,10 @@
 #include "MidiReader.h"
 
 class DigitalBusHandler : public MidiReader {
+protected:
+  uint8_t uid; // this device id
+  uint8_t nuid; // downstream device id
 private:
-  uint8_t downstream;
   uint32_t token;
   uint8_t peers;
   uint16_t parameterOffset;
@@ -15,9 +17,6 @@ private:
   static const uint8_t PARAMETERS = 5; // number of parameters defined by this product
   static const uint8_t NO_UID = 0xff;
   static const uint32_t NO_TOKEN = 0xffffffff;
-protected:
-  uint8_t uid; // this device id
-  uint8_t nuid; // downstream device id
 public:
   DigitalBusHandler();
   uint32_t generateToken();

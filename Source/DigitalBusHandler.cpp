@@ -4,7 +4,7 @@
 #include "serial.h"
 
 DigitalBusHandler::DigitalBusHandler() 
-  : uid(NO_UID), downstream(NO_UID), token(NO_TOKEN), peers(0), parameterOffset(0) {
+  : uid(NO_UID), nuid(NO_UID), token(NO_TOKEN), peers(0), parameterOffset(0) {
   UUID = (uint8_t*)getDeviceId();
 }
 
@@ -19,8 +19,7 @@ void DigitalBusHandler::sendFrame(uint8_t* frame){
 }
 
 uint32_t DigitalBusHandler::generateToken(){
-  uint32_t tok = (VERSION << 16) | (UUID[15] << 8) | UUID[14];
-  tok ^= (UUID[13] << 16) | (UUID[12] << 8) | UUID[11];
+  uint32_t tok = (VERSION << 16) | UUID[11];
   tok ^= (UUID[10] << 16) | (UUID[9] << 8) | UUID[8];
   tok ^= (UUID[7] << 16) | (UUID[6] << 8) | UUID[5];
   tok ^= (UUID[4] << 16) | (UUID[3] << 8) | UUID[2];

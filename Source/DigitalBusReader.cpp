@@ -39,6 +39,7 @@ void DigitalBusReader::readBusFrame(uint8_t* frame){
     // use ASCII SYN instead?
     break;
   default:
+    debug << "bus reader rx unknown [" << frame[0] << "]\r\n";
     break;
   }
 }
