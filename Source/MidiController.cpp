@@ -108,21 +108,23 @@ void MidiController::sendDeviceInfo(){
   sendDeviceStats();
 }
 
-#ifndef abs
-#define abs(x) ((x)>0?(x):-(x))
-#endif /* abs */
-char* itoa(int val, int base, int pad=0){
-  static char buf[13] = {0};
-  int i = 11;
-  unsigned int part = abs(val);
-  do{
-    buf[i--] = "0123456789abcdef"[part % base];
-    part /= base;
-  }while(i && (--pad > 0 || part));
-  if(val < 0)
-    buf[i--] = '-';
-  return &buf[i+1];
-}
+
+#include "message.h"
+// #ifndef abs
+// #define abs(x) ((x)>0?(x):-(x))
+// #endif /* abs */
+// char* itoa(int val, int base, int pad=0){
+//   static char buf[13] = {0};
+//   int i = 11;
+//   unsigned int part = abs(val);
+//   do{
+//     buf[i--] = "0123456789abcdef"[part % base];
+//     part /= base;
+//   }while(i && (--pad > 0 || part));
+//   if(val < 0)
+//     buf[i--] = '-';
+//   return &buf[i+1];
+// }
 
 #include <string.h>
 

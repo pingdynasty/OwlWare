@@ -7,7 +7,6 @@ class DigitalBusHandler : public MidiReader {
 protected:
   uint8_t uid; // this device id
   uint8_t nuid; // downstream device id
-private:
   uint32_t token;
   uint8_t peers;
   uint16_t parameterOffset;
@@ -19,7 +18,11 @@ private:
   static const uint32_t NO_TOKEN = 0xffffffff;
 public:
   DigitalBusHandler();
+  bool connected();
   uint32_t generateToken();
+  uint8_t getPeers(){ return peers; }
+  uint8_t getUid(){ return uid; }
+  uint8_t getNuid(){ return nuid; }
   void startDiscover();
   void sendDiscover(uint8_t seq, uint32_t token);
   void handleDiscover(uint8_t seq, uint32_t other);
@@ -29,7 +32,10 @@ public:
   void startIdent();
   void sendIdent(uint8_t id, uint8_t version, uint8_t device, uint8_t* uuid);
   void handleIdent(uint8_t id, uint8_t d1, uint8_t d2, uint8_t d3);
-  void sendParameterChange(uint8_t pid, uint16_t value);
+  void sendParameterChange(uint8_t pid, int16_t value);
+  void handleParameterChange(uint8_t pid, int16_t value);
+  void sendButtonChange(uint8_t pid, int16_t value);
+  void handleButtonChange(uint8_t pid, int16_t value);
 protected:
   // send a 4-byte message
   void sendMessage(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4);

@@ -269,10 +269,11 @@ extern volatile ProgramVectorAudioStatus audioStatus;
        else
 	 midi.sendNoteOff(bid-MIDI_NOTE_BUTTON, 0);
      }
+     bus_tx_parameter(bid, state);
    }
 
    // called from program
-   void onSetPatchParameter(uint8_t pid, int16_t value){     
+   void onSetPatchParameter(uint8_t pid, int16_t value){
      if(pid < NOF_PARAMETERS)
        getProgramVector()->parameters[pid] = value;
      switch(pid){
@@ -297,9 +298,10 @@ extern volatile ProgramVectorAudioStatus audioStatus;
        if(pid >= PARAMETER_AA && pid <= PARAMETER_BH)
 	 midi.sendCc(PATCH_PARAMETER_AA+(pid-PARAMETER_AA), (value>>5) & 0x7f);	 
      }
+     bus_tx_parameter(pid, value);
    }
 
-   // called from midi irq
+   // called from midi irq or digital bus
    void setButton(uint8_t bid, uint16_t state){
      if(bid < NOF_BUTTONS){
        if(state)
@@ -312,7 +314,7 @@ extern volatile ProgramVectorAudioStatus audioStatus;
      }
    }
 
-   // called from midi irq
+   // called from midi irq or digital bus
    void setParameter(uint8_t pid, int16_t value){
      ASSERT(pid < getProgramVector()->parameters_size, "Parameter ID out of range");
      getProgramVector()->parameters[pid] = value;
@@ -450,7 +452,7 @@ void setup(){
 // #endif
 #ifdef USART_PERIPH
   serial_setup(USART_BAUDRATE);
-  setupBus();
+  bus_setup();
 #endif
 
 

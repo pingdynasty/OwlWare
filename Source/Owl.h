@@ -17,9 +17,9 @@
 #ifndef max
 #define max(a,b) ((a)>(b)?(a):(b))
 #endif /* max */
-#ifndef abs
-#define abs(x) ((x)>0?(x):-(x))
-#endif /* abs */
+/* #ifndef abs */
+/* #define abs(x) ((x)>0?(x):-(x)) */
+/* #endif /\* abs *\/ */
 
    void audioCallback(int16_t *src, int16_t *dst);
    bool getButton(uint8_t bid);

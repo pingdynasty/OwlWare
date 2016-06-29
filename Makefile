@@ -68,7 +68,7 @@ CPP_SRC += PatchRegistry.cpp ProgramManager.cpp
 CPP_SRC += FactoryPatches.cpp ServiceCall.cpp 
 CPP_SRC += MidiHandler.cpp MidiReader.cpp DigitalBusHandler.cpp DigitalBusReader.cpp
 CPP_SRC += PatchProcessor.cpp StompBox.cpp FloatArray.cpp
-CPP_SRC += bus.cpp
+CPP_SRC += bus.cpp message.cpp
 
 OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o) $(FREERTOS_SRC:%.c=Build/%.o)
 vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/

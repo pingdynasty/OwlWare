@@ -49,19 +49,19 @@ void PatchProcessor::setParameterValues(int16_t *params){
    * y(n) = (1-alpha)*y(n-1) + alpha*y(n)
    * with alpha=0.5, fs=48k, bs=128, then w0 ~= 18hz
    */
-  for(int i=0; i<NOF_ADC_VALUES; ++i)
+  for(int i=0; i<NOF_ADC_VALUES; ++i){
 #ifdef SMOOTH_HYSTERESIS
     if(abs(params[i]-parameterValues[i]) > 7)
 #endif
       // 16 = half a midi step (4096/128=32)
 #ifdef OWLMODULAR
-      if(i<4)
+      if(i<4){
 	parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + 4095 - params[i])/(SMOOTH_FACTOR+1);
-      else
+      }else{
 	parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR - params[i])/(SMOOTH_FACTOR+1);
+      }
 #else /* OWLMODULAR */
-      parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + params[i])/(SMOOTH_FACTOR+1);
+    parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + params[i])/(SMOOTH_FACTOR+1);
 #endif /* OWLMODULAR */
-  // for(int i=NOF_ADC_VALUES; i<NOF_PARAMETERS; ++i)
-  //   // todo!
+  }
 }

@@ -1,6 +1,6 @@
 #include "MidiStreamReader.h"
 
-MidiReaderStatus MidiReader::read(unsigned char data){
+MidiReaderStatus MidiStreamReader::read(unsigned char data){
   if(status == READY_STATUS){
     clear(); // discard previous message
   }else if(pos > size){

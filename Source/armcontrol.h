@@ -9,7 +9,7 @@
  extern "C" {
 #endif
 
-   void adcSetupDMA(uint16_t* dma);
+   void adcSetupDMA(int16_t* dma);
    uint16_t getSampleCounter();
 
 #ifdef __cplusplus
