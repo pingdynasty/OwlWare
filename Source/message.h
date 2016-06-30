@@ -13,6 +13,10 @@
 #define CONFIGURATION_ERROR_STATUS -30
 #endif
 
+#ifndef FLASH_ERROR_STATUS
+#define FLASH_ERROR_STATUS 0x70
+#endif
+
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -20,7 +24,7 @@
    char* ftoa(float val, int base);
    char* itoa(int val, int base);
    void debugMessage(const char* msg);
-   // void error(int8_t code, const char* reason);
+   void error(int8_t code, const char* reason);
    // void assert_failed(const char* msg, const char* location, int line);
 
 #ifdef __cplusplus

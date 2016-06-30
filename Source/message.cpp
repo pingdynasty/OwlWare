@@ -1,5 +1,6 @@
 #include "message.h"
 #include "basicmaths.h"
+#include "owlcontrol.h"
 #include "ProgramVector.h"
 #include <string.h>
 
@@ -108,15 +109,9 @@ void debugMessage(const char* msg, float a, float b, float c){
   getProgramVector()->message = buffer;
 }
 
-// void error(int8_t code, const char* reason){
-//   ProgramVector* vec = getProgramVector();
-//   if(vec != NULL){
-//     vec->error = code;
-//     vec->message = (char*)reason;
-//     if(vec->programStatus != NULL)
-//       vec->programStatus(AUDIO_ERROR_STATUS);
-//   }
-// }
+void error(int8_t code, const char* reason){
+  void setErrorMessage(int8_t code, const char* reason);
+}
 
 // void assert_failed(const char* msg, const char* location, int line){
 //   char* p = buffer;
