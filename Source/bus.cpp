@@ -18,10 +18,11 @@ extern "C" {
   static uint8_t bus_rx_index = 0;
   void USART_IRQHandler(void){
     static uint8_t frame[4];
-    /* If overrun condition occurs, clear the ORE flag and recover communication */
-    if(USART_GetFlagStatus(USART_PERIPH, USART_FLAG_ORE) != RESET)
+    if(USART_GetFlagStatus(USART_PERIPH, USART_FLAG_ORE) != RESET){
+      /* If overrun condition occurs, clear the ORE flag and recover communication */
       USART_ReceiveData(USART_PERIPH);
-    else if(USART_GetITStatus(USART_PERIPH, USART_IT_RXNE) != RESET){    
+      bus_rx_index = 0;
+    }else if(USART_GetITStatus(USART_PERIPH, USART_IT_RXNE) != RESET){    
       // Reading the receive data register clears the RXNE flag implicitly
       char c = USART_ReceiveData(USART_PERIPH);
       frame[bus_rx_index++] = c;

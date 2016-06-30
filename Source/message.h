@@ -3,18 +3,6 @@
 
 #include <stdint.h>
 
-/* #ifdef DDEBUG */
-/* #define DEBUG_ASSERT(cond, msg) if(!(cond)){debugAssertFailed(msg, __FILE__, __LINE__);} */
-/* #else */
-/* #define DEBUG_ASSERT(x, y) */
-/* #endif */
-/* #define ASSERT_TRUE(cond) if(!(cond)){debugAssertFailed("Assertion failed", __PRETTY_FUNCTION__, __LINE__);} */
-/* #define ASSERT_FALSE(cond) if(cond){debugAssertFailed("Assertion failed", __PRETTY_FUNCTION__, __LINE__);} */
-/* #define ASSERT(cond, msg) if(!(cond)){debugAssertFailed(msg, __PRETTY_FUNCTION__, __LINE__);} */
-
-// #define ASSERT(cond, msg) if(!(cond)){assert_failed(msg, __PRETTY_FUNCTION__, __LINE__);}
-// #define ASSERT(cond, msg) do{if(!(cond))setErrorMessage(PROGRAM_ERROR, msg);}while(0)
-
 #ifndef CHECKSUM_ERROR_STATUS
 #define CHECKSUM_ERROR_STATUS      -10
 #endif
@@ -41,12 +29,9 @@
 char* itoa(int val, int base, int pad);
 
 class Debug {
-// private:
-//   uint8_t buffer[64];
-  uint8_t pos;
+private:
+  uint8_t pos = 0;
 public:
-  // size_t write(uint8_t data);
-  // size_t write(const uint8_t* data, size_t size);
   void print(char arg);
   void print(float arg);
   void print(int arg);

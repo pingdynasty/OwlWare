@@ -137,27 +137,35 @@ void debugMessage(const char* msg, float a, float b, float c){
 Debug debug;
 
 void Debug::print(char arg){
+  if(getProgramVector()->message != buffer)
+    pos = 0;
   if(pos < sizeof(buffer)-1)
     buffer[pos++] = arg;
   getProgramVector()->message = buffer;    
 }
 
 void Debug::print(const char* arg){
-  char* p = buffer;
+  if(getProgramVector()->message != buffer)
+    pos = 0;
+  char* p = buffer+pos;
   p = stpncpy(p, arg, sizeof(buffer)-pos);
   pos = p-buffer;
   getProgramVector()->message = buffer;    
 }
 
 void Debug::print(float arg){
-  char* p = buffer;
+  if(getProgramVector()->message != buffer)
+    pos = 0;
+  char* p = buffer+pos;
   p = stpncpy(p, ftoa(arg, 10), sizeof(buffer)-pos);
   pos = p-buffer;
   getProgramVector()->message = buffer;    
 }
 
 void Debug::print(int arg){ 
-  char* p = buffer;
+  if(getProgramVector()->message != buffer)
+    pos = 0;
+  char* p = buffer+pos;
   p = stpncpy(p, itoa(arg, 10), sizeof(buffer)-pos);
   pos = p-buffer;
   getProgramVector()->message = buffer;    

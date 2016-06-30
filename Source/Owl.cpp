@@ -269,7 +269,7 @@ extern volatile ProgramVectorAudioStatus audioStatus;
        else
 	 midi.sendNoteOff(bid-MIDI_NOTE_BUTTON, 0);
      }
-     bus_tx_parameter(bid, state);
+     bus_tx_button(bid, state);
    }
 
    // called from program
