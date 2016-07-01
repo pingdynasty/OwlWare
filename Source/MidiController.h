@@ -19,7 +19,6 @@ public:
   void sendPitchBend(uint16_t value);
   void sendNoteOn(uint8_t note, uint8_t velocity);
   void sendNoteOff(uint8_t note, uint8_t velocity);
-
   void sendSysEx(uint8_t* data, uint16_t size);
   void sendSettings();
   void sendConfigurationSetting(const char* name, uint32_t value);

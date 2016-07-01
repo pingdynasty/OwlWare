@@ -4,9 +4,12 @@
 #include "message.h"
 #include "stm32f4xx.h"
 
+FlashStorage storage;
+
 bool StorageBlock::write(void* data, uint32_t size){
   if((uint32_t)header+4+size >= EEPROM_PAGE_END)
     return false;
+  FLASH_Unlock();
   FLASH_Status status = FLASH_ProgramWord((uint32_t)header, 0xCFFFFFFF); // mark as used (no size)
   if(status != FLASH_COMPLETE)
     return false;
@@ -23,6 +26,7 @@ bool StorageBlock::write(void* data, uint32_t size){
     FLASH_ProgramByte(address++, *p8++);
 
   status = FLASH_ProgramWord((uint32_t)header, 0xCF000000 | size); // set magick and size
+  FLASH_Lock();
 
   // verify
   if(status != FLASH_COMPLETE){
@@ -71,10 +75,10 @@ void FlashStorage::recover(){
   }
 }
 
-void FlashStorage::append(void* data, uint32_t size){
+bool FlashStorage::append(void* data, uint32_t size){
   StorageBlock block = getLastBlock();
   if(block.isFree()){
-    block.write(data, size);
+    return block.write(data, size);
   }else{
     if(block.isValidSize()){
       if(count < STORAGE_MAX_BLOCKS){
@@ -92,17 +96,21 @@ void FlashStorage::append(void* data, uint32_t size){
       /* recover(); */
     }
   }
+  return false;
 }
 
 // erase entire allocated FLASH memory
 void FlashStorage::erase(){
   uint32_t page = EEPROM_PAGE_BEGIN;
   int sector = FLASH_Sector_0;
+  FLASH_Unlock();
   while(page < EEPROM_PAGE_END){
     FLASH_EraseSector(sector++, VoltageRange_3);
     // FLASH_ErasePage(page);
     page += EEPROM_PAGE_SIZE;
   }
+  FLASH_Lock();
+  init();
 }
 
 StorageBlock FlashStorage::createBlock(uint32_t page, uint32_t offset){

@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "v12bus"
+#define FIRMWARE_VERSION             "v12flash"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -58,7 +58,7 @@
 #define EEPROM_PAGE_BEGIN            ((uint32_t)0x08060000)
 #define EEPROM_PAGE_SIZE             (2*1024)
 #define EEPROM_PAGE_END              ((uint32_t)0x08100000)
-#define STORAGE_MAX_BLOCKS           16
+#define STORAGE_MAX_BLOCKS           64
 
 /* #define DEBUG_AUDIO */
 #define DEBUG_DWT

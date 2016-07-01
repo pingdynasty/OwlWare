@@ -90,7 +90,7 @@ public:
     return getTotalAllocatedSize() - getTotalUsedSize();
   }
   void recover();
-  void append(void* data, uint32_t size);
+  bool append(void* data, uint32_t size);
   // erase entire allocated FLASH memory
   void erase();
   StorageBlock getLastBlock(){
@@ -105,5 +105,7 @@ public:
 private:
   StorageBlock createBlock(uint32_t page, uint32_t offset);
 };
+
+extern FlashStorage storage;
 
 #endif // __FlashStorage_h__

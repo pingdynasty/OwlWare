@@ -15,6 +15,7 @@ enum FLASH_Status {
 #define FLASH_Sector_0 0
 
 uint8_t flashdata[1024*1024];
+bool flashlock = true;
 #define EEPROM_PAGE_BEGIN            ((uint32_t)flashdata)
 #define EEPROM_PAGE_SIZE             (2*1024)
 #define EEPROM_PAGE_END              ((uint32_t)(flashdata+sizeof(flashdata)))
@@ -22,7 +23,16 @@ uint8_t flashdata[1024*1024];
 
 #include <iostream>
 
+void FLASH_Lock(){
+  flashlock = true;
+}
+
+void FLASH_Unlock(){
+  flashlock = false;
+}
+
 FLASH_Status FLASH_ProgramByte(uint32_t address, uint8_t data){
+  BOOST_CHECK_MESSAGE(!flashlock, "Flash locked");
   if(address >= EEPROM_PAGE_BEGIN && address+1 < EEPROM_PAGE_END){
     *(uint8_t*)address &= data & 0xff;
     // std::cout << "programmed [" << std::hex << address << "][" << (int)data << "][" << (int)*(uint8_t*)address << "][" << *(uint32_t*)flashdata << "]" << std::endl;
@@ -33,6 +43,7 @@ FLASH_Status FLASH_ProgramByte(uint32_t address, uint8_t data){
 }
 
 FLASH_Status FLASH_ProgramWord(uint32_t address, uint32_t data){
+  BOOST_CHECK_MESSAGE(!flashlock, "Flash locked");
   if(address >= EEPROM_PAGE_BEGIN && address+4 < EEPROM_PAGE_END){
     *(uint8_t*)address++ &= data & 0xff;
     *(uint8_t*)address++ &= (data>>8) & 0xff;
@@ -45,7 +56,9 @@ FLASH_Status FLASH_ProgramWord(uint32_t address, uint32_t data){
     return FLASH_ERROR;
   }
 }
+
 FLASH_Status FLASH_EraseSector(uint32_t sector, uint8_t VoltageRange){
+  BOOST_CHECK_MESSAGE(!flashlock, "Flash locked");
   if(EEPROM_PAGE_BEGIN+(sector+1)*EEPROM_PAGE_SIZE > EEPROM_PAGE_END)
     return FLASH_ERROR;
   memset((void*)(EEPROM_PAGE_BEGIN+sector*EEPROM_PAGE_SIZE), 0xff, EEPROM_PAGE_SIZE);
@@ -99,4 +112,27 @@ BOOST_AUTO_TEST_CASE(testWrite){
   BOOST_CHECK_EQUAL(storage.getDeletedSize(), 0);
   BOOST_CHECK_EQUAL(storage.getTotalAllocatedSize(), 1024*1024);
   BOOST_CHECK_EQUAL(storage.getFreeSize(), 1024*1024-sizeof(data)-4);
+}
+
+BOOST_AUTO_TEST_CASE(testErase){
+  FlashStorage storage;
+  storage.erase();
+  for(int i=0; i<sizeof(flashdata); ++i)
+    BOOST_CHECK_EQUAL(flashdata[i], 0xff);
+  BOOST_CHECK_EQUAL(storage.getBlocksTotal(), 1);
+  BOOST_CHECK_EQUAL(storage.getTotalUsedSize(), 4);
+  BOOST_CHECK_EQUAL(storage.getDeletedSize(), 0);
+  BOOST_CHECK_EQUAL(storage.getTotalAllocatedSize(), 1024*1024);
+  BOOST_CHECK_EQUAL(storage.getFreeSize(), 1024*1024-4);
+}
+
+BOOST_AUTO_TEST_CASE(testDelete){
+  memset(flashdata, 0xff, sizeof(flashdata));
+  FlashStorage storage;
+  storage.init();
+  uint8_t data[555];
+  for(int i=0; i<sizeof(data); ++i)
+    data[i] = i;
+  storage.append(data, sizeof(data));
+  uint8_t* store = (uint8_t*)storage.getLastBlock().getData();
 }

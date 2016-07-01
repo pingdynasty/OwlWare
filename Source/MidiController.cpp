@@ -9,8 +9,11 @@
 #include "OpenWareMidiControl.h"
 #include "ProgramVector.h"
 #include "ProgramManager.h"
+#include "FlashStorage.h"
 #include "Owl.h"
 #include <math.h> /* for ceilf */
+#include "message.h"
+#include <string.h>
 
 uint32_t log2(uint32_t x){ 
   return x == 0 ? 0 : 31 - __builtin_clz (x); /* clz returns the number of leading 0's */
@@ -108,31 +111,11 @@ void MidiController::sendDeviceInfo(){
   sendDeviceStats();
 }
 
-
-#include "message.h"
-// #ifndef abs
-// #define abs(x) ((x)>0?(x):-(x))
-// #endif /* abs */
-// char* itoa(int val, int base, int pad=0){
-//   static char buf[13] = {0};
-//   int i = 11;
-//   unsigned int part = abs(val);
-//   do{
-//     buf[i--] = "0123456789abcdef"[part % base];
-//     part /= base;
-//   }while(i && (--pad > 0 || part));
-//   if(val < 0)
-//     buf[i--] = '-';
-//   return &buf[i+1];
-// }
-
-#include <string.h>
-
 void MidiController::sendDeviceStats(){
-#ifdef DEBUG_STACK
   char buffer[64];
   buffer[0] = SYSEX_DEVICE_STATS;
   char* p = &buffer[1];
+#ifdef DEBUG_STACK
   p = stpcpy(p, (const char*)"Program Stack ");
   p = stpcpy(p, itoa(program.getProgramStackUsed(), 10));
   p = stpcpy(p, (const char*)"/");
@@ -145,6 +128,15 @@ void MidiController::sendDeviceStats(){
   p = stpcpy(p, itoa(program.getFreeHeapSize(), 10));
   sendSysEx((uint8_t*)buffer, p-buffer);
 #endif /* DEBUG_STACK */
+  p = stpcpy(p, (const char*)"Storage used ");
+  p = stpcpy(p, itoa(storage.getTotalUsedSize(), 10));
+  p = stpcpy(p, (const char*)" deleted ");
+  p = stpcpy(p, itoa(storage.getDeletedSize(), 10));
+  p = stpcpy(p, (const char*)" free ");
+  p = stpcpy(p, itoa(storage.getFreeSize(), 10));
+  p = stpcpy(p, (const char*)" total ");
+  p = stpcpy(p, itoa(storage.getTotalAllocatedSize(), 10));
+  sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
 void MidiController::sendProgramStats(){

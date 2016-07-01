@@ -11,7 +11,8 @@
 #include "ApplicationSettings.h"
 #include "CodecController.h"
 #include "Owl.h"
-// #include "MidiController.h"
+#include "MidiController.h"
+#include "FlashStorage.h"
 
 // #define AUDIO_TASK_SUSPEND
 // #define AUDIO_TASK_SEMAPHORE
@@ -74,14 +75,14 @@ volatile int flashSectorToWrite;
 volatile void* flashAddressToWrite;
 volatile uint32_t flashSizeToWrite;
 
-static void eraseFlashProgram(int sector){
-  uint32_t addr = getFlashAddress(sector);
-  eeprom_unlock();
-  int ret = eeprom_erase(addr);
-  eeprom_lock();
-  if(ret != 0)
-    error(PROGRAM_ERROR, "Failed to erase flash sector");
-}
+// static void eraseFlashProgram(int sector){
+//   uint32_t addr = getFlashAddress(sector);
+//   eeprom_unlock();
+//   int ret = eeprom_erase(addr);
+//   eeprom_lock();
+//   if(ret != 0)
+//     error(PROGRAM_ERROR, "Failed to erase flash sector");
+// }
 
 extern "C" {
   void runManagerTask(void* p){
@@ -142,46 +143,68 @@ extern "C" {
   }
 
   void programFlashTask(void* p){
+    // todo    
     int sector = flashSectorToWrite;
     uint32_t size = flashSizeToWrite;
     uint8_t* source = (uint8_t*)flashAddressToWrite;
-    if(sector >= 0 && sector < MAX_USER_PATCHES && size <= 128*1024){
-      uint32_t addr = getFlashAddress(sector);
-      eeprom_unlock();
-      int ret = eeprom_erase(addr);
-      if(ret == 0)
-	ret = eeprom_write_block(addr, source, size);
-      eeprom_lock();
-      registry.init();
-      if(ret == 0){
-	// load and run program
-	int pc = registry.getNumberOfPatches()-MAX_USER_PATCHES+sector;
-	program.loadProgram(pc);
-	// program.loadDynamicProgram(source, size);
-	program.resetProgram(false);
-      }else{
-	error(PROGRAM_ERROR, "Failed to write program to flash");
-      }
-    }else if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
+    if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
       flashFirmware(source, size);
     }else{
-      error(PROGRAM_ERROR, "Invalid flash program command");
+      bool ret = storage.append(source, size);
+      if(ret)
+	debugMessage("Stored program to flash");
     }
+    midi.sendProgramMessage();
+    midi.sendDeviceStats();
+
+    // int sector = flashSectorToWrite;
+    // uint32_t size = flashSizeToWrite;
+    // uint8_t* source = (uint8_t*)flashAddressToWrite;
+    // if(sector >= 0 && sector < MAX_USER_PATCHES && size <= 128*1024){
+    //   uint32_t addr = getFlashAddress(sector);
+    //   eeprom_unlock();
+    //   int ret = eeprom_erase(addr);
+    //   if(ret == 0)
+    // 	ret = eeprom_write_block(addr, source, size);
+    //   eeprom_lock();
+    //   registry.init();
+    //   if(ret == 0){
+    // 	// load and run program
+    // 	int pc = registry.getNumberOfPatches()-MAX_USER_PATCHES+sector;
+    // 	program.loadProgram(pc);
+    // 	// program.loadDynamicProgram(source, size);
+    // 	program.resetProgram(false);
+    //   }else{
+    // 	error(PROGRAM_ERROR, "Failed to write program to flash");
+    //   }
+    // }else if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
+    //   flashFirmware(source, size);
+    // }else{
+    //   error(PROGRAM_ERROR, "Invalid flash program command");
+    // }
     vTaskDelete(NULL);
   }
 
   void eraseFlashTask(void* p){
+    // todo
     int sector = flashSectorToWrite;
     if(sector == 0xff){
-      for(int i=0; i<MAX_USER_PATCHES; ++i)
-	eraseFlashProgram(i);
-      settings.clearFlash();
-    }else if(sector >= 0 && sector < MAX_USER_PATCHES){
-      eraseFlashProgram(sector);
-    }else{
-      error(PROGRAM_ERROR, "Invalid flash erase command");
+      storage.erase();
+      debugMessage("Erased flash storage");
     }
-    registry.init();
+    midi.sendProgramMessage();
+    midi.sendDeviceStats();
+    // int sector = flashSectorToWrite;
+    // if(sector == 0xff){
+    //   for(int i=0; i<MAX_USER_PATCHES; ++i)
+    // 	eraseFlashProgram(i);
+    //   settings.clearFlash();
+    // }else if(sector >= 0 && sector < MAX_USER_PATCHES){
+    //   eraseFlashProgram(sector);
+    // }else{
+    //   error(PROGRAM_ERROR, "Invalid flash erase command");
+    // }
+    // registry.init();
     vTaskDelete(NULL);
   }
 
@@ -518,20 +541,6 @@ void ProgramManager::runManager(){
     //   }
     }
   }
-}
-
-PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
-  if(sector >= MAX_USER_PATCHES)
-    return NULL;
-  uint32_t addr = getFlashAddress(sector);
-  ProgramHeader* header = (ProgramHeader*)addr;
-  DynamicPatchDefinition* def = &flashPatches[sector];
-  uint32_t size = (uint32_t)header->endAddress - (uint32_t)header->linkAddress;
-  if(header->magic == 0xDADAC0DE && size <= 80*1024){
-    if(def->load((void*)addr, size) && def->verify())
-      return def;
-  }
-  return NULL;
 }
 
 void ProgramManager::eraseProgramFromFlash(uint8_t sector){
