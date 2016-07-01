@@ -1,8 +1,8 @@
-#define EEPROM_PAGE_BEGIN ((uint32_t)0x08036000) // last 40kB of 256kB flash
-#define EEPROM_PAGE_END   ((uint32_t)0x08040000)
-#define STORAGE_MAX_BLOCKS 16
+#ifndef __FlashStorage_h__
+#define __FlashStorage_h__
 
 #include <inttypes.h>
+#include <device.h>
 
 class StorageBlock {
 private:
@@ -83,11 +83,11 @@ public:
 	size += blocks[i].getBlockSize();
     return size;
   }
-  uint32_t getAvailableSize(){
+  uint32_t getTotalAllocatedSize(){
     return EEPROM_PAGE_END - EEPROM_PAGE_BEGIN;
   }
   uint32_t getFreeSize(){
-    return getAvailableSize() - getTotalUsedSize() - 4;
+    return getTotalAllocatedSize() - getTotalUsedSize();
   }
   void recover();
   void append(void* data, uint32_t size);
@@ -105,3 +105,5 @@ public:
 private:
   StorageBlock createBlock(uint32_t page, uint32_t offset);
 };
+
+#endif // __FlashStorage_h__

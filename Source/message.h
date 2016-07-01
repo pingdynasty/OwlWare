@@ -3,19 +3,19 @@
 
 #include <stdint.h>
 
-#ifndef CHECKSUM_ERROR_STATUS
-#define CHECKSUM_ERROR_STATUS      -10
-#endif
-#ifndef OUT_OF_MEMORY_ERROR_STATUS
-#define OUT_OF_MEMORY_ERROR_STATUS -20
-#endif
-#ifndef CONFIGURATION_ERROR_STATUS
-#define CONFIGURATION_ERROR_STATUS -30
-#endif
+#define ASSERT(cond, msg) do{if(!(cond))error(PROGRAM_ERROR, msg);}while(0)
+#define NO_ERROR         0x00
+#define HARDFAULT_ERROR  0x10
+#define BUS_ERROR        0x20
+#define MEM_ERROR        0x30
+#define NMI_ERROR        0x40
+#define USAGE_ERROR      0x50
+#define PROGRAM_ERROR    0x60
+#define FLASH_ERROR      0x70
 
-#ifndef FLASH_ERROR_STATUS
-#define FLASH_ERROR_STATUS 0x70
-#endif
+#define CONFIGURATION_ERROR_STATUS -30
+#define OUT_OF_MEMORY_ERROR_STATUS -20
+#define CHECKSUM_ERROR_STATUS      -10
 
 #ifdef __cplusplus
  extern "C" {
@@ -24,8 +24,12 @@
    char* ftoa(float val, int base);
    char* itoa(int val, int base);
    void debugMessage(const char* msg);
-   void error(int8_t code, const char* reason);
+   void setErrorStatus(int8_t err);
+   void error(int8_t err, const char* msg);
    // void assert_failed(const char* msg, const char* location, int line);
+   const char* getErrorMessage();
+   const char* getDebugMessage();
+   int8_t getErrorStatus();
 
 #ifdef __cplusplus
 }

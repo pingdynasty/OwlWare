@@ -80,7 +80,7 @@ static void eraseFlashProgram(int sector){
   int ret = eeprom_erase(addr);
   eeprom_lock();
   if(ret != 0)
-    setErrorMessage(PROGRAM_ERROR, "Failed to erase flash sector");
+    error(PROGRAM_ERROR, "Failed to erase flash sector");
 }
 
 extern "C" {
@@ -100,9 +100,9 @@ extern "C" {
       setLed(GREEN);
       codec.softMute(false);
       def->run();
-      setErrorMessage(PROGRAM_ERROR, "Program exited");
+      error(PROGRAM_ERROR, "Program exited");
     }else{
-      setErrorMessage(PROGRAM_ERROR, "Invalid program");
+      error(PROGRAM_ERROR, "Invalid program");
     }
     setLed(RED);
     for(;;);
@@ -160,12 +160,12 @@ extern "C" {
 	// program.loadDynamicProgram(source, size);
 	program.resetProgram(false);
       }else{
-	setErrorMessage(PROGRAM_ERROR, "Failed to write program to flash");
+	error(PROGRAM_ERROR, "Failed to write program to flash");
       }
     }else if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
       flashFirmware(source, size);
     }else{
-      setErrorMessage(PROGRAM_ERROR, "Invalid flash program command");
+      error(PROGRAM_ERROR, "Invalid flash program command");
     }
     vTaskDelete(NULL);
   }
@@ -179,7 +179,7 @@ extern "C" {
     }else if(sector >= 0 && sector < MAX_USER_PATCHES){
       eraseFlashProgram(sector);
     }else{
-      setErrorMessage(PROGRAM_ERROR, "Invalid flash erase command");
+      error(PROGRAM_ERROR, "Invalid flash erase command");
     }
     registry.init();
     vTaskDelete(NULL);
@@ -491,30 +491,30 @@ void ProgramManager::runManager(){
 	  ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
 	}
 	if(ret != pdPASS)
-	  setErrorMessage(PROGRAM_ERROR, "Failed to start program task");
+	  error(PROGRAM_ERROR, "Failed to start program task");
       }
 #ifdef BUTTON_PROGRAM_CHANGE
     }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
       if(xProgramHandle == NULL){
 	BaseType_t ret = xTaskCreate(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &xProgramHandle);
 	if(ret != pdPASS)
-	  setErrorMessage(PROGRAM_ERROR, "Failed to start Program Change task");
+	  error(PROGRAM_ERROR, "Failed to start Program Change task");
       }
 #endif /* BUTTON_PROGRAM_CHANGE */
     }else if(ulNotifiedValue & PROGRAM_FLASH_NOTIFICATION){ // program flash
       BaseType_t ret = xTaskCreate(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
       if(ret != pdPASS){
-	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Write task");
+	error(PROGRAM_ERROR, "Failed to start Flash Write task");
       }
     }else if(ulNotifiedValue & ERASE_FLASH_NOTIFICATION){ // erase flash
       BaseType_t ret = xTaskCreate(eraseFlashTask, "Flash Erase", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
       if(ret != pdPASS)
-	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Erase task");
+	error(PROGRAM_ERROR, "Failed to start Flash Erase task");
     // }else if(ulNotifiedValue & MIDI_SEND_NOTIFICATION){ // erase flash
     //   TaskHandle_t handle = NULL;
     //   BaseType_t ret = xTaskCreate(sendMidiDataTask, "MIDI", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &handle);
     //   if(ret != pdPASS){
-    // 	setErrorMessage(PROGRAM_ERROR, "Failed to start MIDI Send task");
+    // 	error(PROGRAM_ERROR, "Failed to start MIDI Send task");
     //   }
     }
   }

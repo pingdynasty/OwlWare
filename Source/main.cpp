@@ -11,7 +11,7 @@ extern "C" {
     // taskDISABLE_INTERRUPTS();
     // for(;;);
     exitProgram(false);
-    setErrorMessage(PROGRAM_ERROR, "malloc failed");
+    error(PROGRAM_ERROR, "malloc failed");
   }
   void vApplicationIdleHook(void) {
   }
@@ -22,7 +22,7 @@ extern "C" {
        configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
        function is called if a stack overflow is detected. */
     exitProgram(false);
-    setErrorMessage(PROGRAM_ERROR, "stack overflow");
+    error(PROGRAM_ERROR, "stack overflow");
     // taskDISABLE_INTERRUPTS();
     // for(;;);
   }

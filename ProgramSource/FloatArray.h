@@ -5,7 +5,7 @@
 
 #ifndef ASSERT
 #include "owlcontrol.h"
-//#define ASSERT(cond, msg) do{if(!(cond))setErrorMessage(PROGRAM_ERROR, msg);}while(0)
+//#define ASSERT(cond, msg) do{if(!(cond))error(PROGRAM_ERROR, msg);}while(0)
 //#define ASSERT(cond, msg)
 #endif
 

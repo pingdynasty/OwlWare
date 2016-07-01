@@ -286,7 +286,7 @@ void MidiHandler::handleFirmwareRunCommand(uint8_t* data, uint16_t size){
     loader.clear();
     program.startProgram(true);
   }else{
-    setErrorMessage(PROGRAM_ERROR, "No program to run");
+    error(PROGRAM_ERROR, "No program to run");
   }      
 }
 
@@ -297,10 +297,10 @@ void MidiHandler::handleFirmwareFlashCommand(uint8_t* data, uint16_t size){
       program.saveProgramToFlash(-1, loader.getData(), loader.getSize());
       loader.clear();
     }else{
-      setErrorMessage(PROGRAM_ERROR, "Invalid FLASH checksum");
+      error(PROGRAM_ERROR, "Invalid FLASH checksum");
     }
   }else{
-    setErrorMessage(PROGRAM_ERROR, "Invalid FLASH command");
+    error(PROGRAM_ERROR, "Invalid FLASH command");
   }
 }
 
@@ -311,10 +311,10 @@ void MidiHandler::handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
       program.saveProgramToFlash(slot, loader.getData(), loader.getSize());
       loader.clear();
     }else{
-      setErrorMessage(PROGRAM_ERROR, "Invalid program slot");
+      error(PROGRAM_ERROR, "Invalid program slot");
     }
   }else{
-    setErrorMessage(PROGRAM_ERROR, "No program to store");
+    error(PROGRAM_ERROR, "No program to store");
   }
 }
 

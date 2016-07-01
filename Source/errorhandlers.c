@@ -2,15 +2,6 @@
 #include "owlcontrol.h"
 #include <inttypes.h>
 
-volatile int8_t errorcode = 0;
-int8_t getErrorStatus(){
-  return errorcode;
-}
-
-void setErrorStatus(int8_t err){
-  errorcode = err;
-}
-
 /**
   * @brief  Reports the name of the source file and the source line number
   *   where the assert_param error has occurred.
@@ -37,12 +28,12 @@ void assert_failed(uint8_t* file, uint32_t line){
 
 /* exception handlers - so we know what's failing */
 void NMI_Handler(void){
-  errorcode = NMI_ERROR;
+  setErrorStatus(NMI_ERROR);
   assert_failed(0, 0);
 }
 
 void MemManage_Handler(void){ 
-  errorcode = MEM_ERROR;
+  setErrorStatus(MEM_ERROR);
 #ifdef DEBUG
   volatile unsigned int hfsr = SCB->MMFAR;
   volatile unsigned int cfsr = SCB->CFSR;
@@ -57,7 +48,7 @@ void MemManage_Handler(void){
 }
 
 void BusFault_Handler(void){ 
-  errorcode = BUS_ERROR;
+  setErrorStatus(BUS_ERROR);
 #ifdef DEBUG
   volatile unsigned int hfsr = SCB->BFAR;
   volatile unsigned int cfsr = SCB->CFSR;
@@ -72,7 +63,7 @@ void BusFault_Handler(void){
 }
 
 void UsageFault_Handler(void){ 
-  errorcode = USAGE_ERROR;
+  setErrorStatus(USAGE_ERROR);
 #ifdef DEBUG
   volatile unsigned int cfsr = SCB->CFSR;
   volatile unsigned int msp = __get_MSP();
@@ -178,7 +169,7 @@ see
 https://blog.feabhas.com/2013/02/developing-a-generic-hard-fault-handler-for-arm-cortex-m3cortex-m4/
 */
 void HardFault_Handler(void){
-  errorcode = HARDFAULT_ERROR;
+  setErrorStatus(HARDFAULT_ERROR);
 #ifdef DEBUG
   volatile unsigned int hfsr = SCB->HFSR;
   volatile unsigned int cfsr = SCB->CFSR;

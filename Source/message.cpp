@@ -1,11 +1,14 @@
 #include "message.h"
-#include "basicmaths.h"
 #include "owlcontrol.h"
 #include "ProgramVector.h"
 #include <string.h>
 
 static char buffer[64];
 static const char hexnumerals[] = "0123456789abcdef";
+
+#ifndef abs
+#define abs(x) ((x)>0?(x):-(x))
+#endif /* abs */
 
 char* itoa(int val, int base){
   return itoa(val, base, 0);
@@ -45,8 +48,12 @@ char* ftoa(float val, int base){
 }
 
 void debugMessage(const char* msg){
-  strlcpy(buffer, msg, 64);
-  getProgramVector()->message = buffer;
+  if(msg == NULL){
+    getProgramVector()->message = NULL;
+  }else{
+    strlcpy(buffer, msg, 64);
+    getProgramVector()->message = buffer;
+  }
 }
 
 void debugMessage(const char* msg, int a){
@@ -109,8 +116,34 @@ void debugMessage(const char* msg, float a, float b, float c){
   getProgramVector()->message = buffer;
 }
 
-void error(int8_t code, const char* reason){
-  void setErrorMessage(int8_t code, const char* reason);
+volatile int8_t errorcode = 0;
+static char* errormessage = NULL;
+int8_t getErrorStatus(){
+  return errorcode;
+}
+
+void setErrorStatus(int8_t err){
+  errorcode = err;
+  if(err == NO_ERROR)
+    errormessage = NULL;
+  else
+    setLed(RED);
+}
+
+void error(int8_t err, const char* msg){
+  setErrorStatus(err);
+  errormessage = (char*)msg;
+}
+
+const char* getErrorMessage(){
+  return errormessage;
+}
+
+const char* getDebugMessage(){
+  ProgramVector* pv = getProgramVector();
+  if(pv != NULL)
+    return pv->message;    
+  return NULL;
 }
 
 // void assert_failed(const char* msg, const char* location, int line){

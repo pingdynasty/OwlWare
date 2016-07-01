@@ -179,14 +179,6 @@ void updateProgramIndex(uint8_t index){
  extern "C" {
 #endif
 
-   void setErrorMessage(int8_t err, const char* msg){
-     setErrorStatus(err);
-     setLed(RED);
-     ProgramVector* vec = getProgramVector();
-     if(vec != NULL)
-       vec->message = (char*)msg;
-   }
-
    // called from program
    void onRegisterPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
      static PatchDefinition dynamicPatchDefinition;

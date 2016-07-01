@@ -40,9 +40,9 @@ public:
     return ready;
   }
 
-  int error(const char* msg){
+  int setError(const char* msg){
     clear();
-    setErrorMessage(PROGRAM_ERROR, msg);
+    error(PROGRAM_ERROR, msg);
     return -1;
   }
 
@@ -70,7 +70,7 @@ public:
       clear();
       // first package
       if(length < 3+5+5)
-	return error("Invalid sysex package");
+	return setError("Invalid sysex package");
       // stop running program and free its memory
       exitProgram(true);
       // get firmware data size (decoded)
@@ -78,12 +78,12 @@ public:
       offset += 5; // it takes five 7-bit values to encode four bytes
       // allocate memory
       if(size > MAX_SYSEX_FIRMWARE_SIZE)
-	return error("Sysex too big");
+	return setError("Sysex too big");
       buffer = (uint8_t*)EXTRAM;
       return 0;
     }
     if(++packageIndex != idx)
-      return error("Sysex package out of sequence"); // out of sequence package
+      return setError("Sysex package out of sequence"); // out of sequence package
     int len = floor((length-offset)*7/8.0f);
     // wait for program to exit before writing to buffer
     if(index+len <= size){
@@ -98,11 +98,11 @@ public:
       // get checksum: last 4 bytes of buffer
       uint32_t checksum = decodeInt(data+length-5);
       if(crc != checksum)
-	return error("Invalid sysex checksum");
+	return setError("Invalid sysex checksum");
       ready = true;
       return index;
     }
-    return error("Invalid sysex size"); // wrong size
+    return setError("Invalid sysex size"); // wrong size
   }
 };
 

@@ -205,14 +205,18 @@ void MidiController::sendProgramStats(){
 }
 
 void MidiController::sendProgramMessage(){
-  ProgramVector* pv = getProgramVector();
-  if(pv != NULL && pv->message != NULL){
+  const char* msg;
+  if(getErrorStatus())
+    msg = getErrorMessage();
+  else
+    msg = getDebugMessage();
+  if(msg != NULL){
     char buffer[64];
     buffer[0] = SYSEX_PROGRAM_MESSAGE;
     char* p = &buffer[1];
-    p = stpncpy(p, pv->message, 62);
+    p = stpncpy(p, msg, 62);
     sendSysEx((uint8_t*)buffer, p-buffer);
-    pv->message = NULL;
+    debugMessage(NULL);
   }
 }
 

@@ -1,3 +1,6 @@
+#ifndef __device_h__
+#define __device_h__
+
 #include <inttypes.h>
 
 #define FIRMWARE_VERSION             "v12bus"
@@ -51,6 +54,11 @@
 #define USART_RX_PINSOURCE           GPIO_PinSource1
 #define USART_IRQHandler             UART4_IRQHandler
 #define USART_IRQn                   UART4_IRQn
+
+#define EEPROM_PAGE_BEGIN            ((uint32_t)0x08060000)
+#define EEPROM_PAGE_SIZE             (2*1024)
+#define EEPROM_PAGE_END              ((uint32_t)0x08100000)
+#define STORAGE_MAX_BLOCKS           16
 
 /* #define DEBUG_AUDIO */
 #define DEBUG_DWT
@@ -221,3 +229,5 @@
 /* #ifdef EXTERNAL_SRAM */
 /* #define EXT __attribute__ ((section (".extdata"))) */
 /* #endif */
+
+#endif // __device_h__
