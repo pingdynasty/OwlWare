@@ -51,7 +51,6 @@ C_SRC += armcontrol.c usbcontrol.c owlcontrol.c midicontrol.c eepromcontrol.c
 C_SRC += clock.c operators.c gpio.c sysex.c serial.c 
 C_SRC += bkp_sram.c
 C_SRC += sramalloc.c
-C_SRC += basicmaths.c
 
 # FreeRTOS Source Files
 FREERTOS_SRC = port.c
@@ -68,7 +67,7 @@ CPP_SRC += PatchRegistry.cpp ProgramManager.cpp
 # CPP_SRC += FactoryPatches.cpp 
 CPP_SRC += ServiceCall.cpp 
 CPP_SRC += MidiHandler.cpp MidiReader.cpp DigitalBusHandler.cpp DigitalBusReader.cpp
-CPP_SRC += PatchProcessor.cpp StompBox.cpp FloatArray.cpp
+# CPP_SRC += PatchProcessor.cpp StompBox.cpp FloatArray.cpp
 CPP_SRC += bus.cpp message.cpp
 CPP_SRC += FlashStorage.cpp
 
