@@ -41,15 +41,8 @@ extern "C" ProgramVector* getProgramVector() { return programVector; }
 volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
 #endif /* AUDIO_TASK_DIRECT */
 
-// #define JUMPTO(address) ((void (*)(void))address)();
 static DynamicPatchDefinition dynamo;
 static DynamicPatchDefinition flashPatches[MAX_USER_PATCHES];
-
-static uint32_t getFlashAddress(int sector){
-  uint32_t addr = ADDR_FLASH_SECTOR_11;
-  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR_7 is at 0x08060000
-  return addr;
-}
 
 TaskHandle_t xProgramHandle = NULL;
 TaskHandle_t xManagerHandle = NULL;
@@ -58,14 +51,11 @@ TaskHandle_t xFlashTaskHandle = NULL;
 SemaphoreHandle_t xSemaphore = NULL;
 #endif // AUDIO_TASK_SEMAPHORE
 
-uint8_t ucHeap[configTOTAL_HEAP_SIZE] CCM;
-
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
 #define PROGRAM_FLASH_NOTIFICATION  0x04
 #define ERASE_FLASH_NOTIFICATION    0x08
 #define PROGRAM_CHANGE_NOTIFICATION 0x10
-// #define MIDI_SEND_NOTIFICATION      0x20
 
 PatchDefinition* getPatchDefinition(){
   return program.getPatchDefinition();
@@ -150,6 +140,9 @@ extern "C" {
     if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
       flashFirmware(source, size);
     }else{
+      if(size > storage.getFreeSize()){
+	debugMessage("Insufficient flash available");
+      }
       bool ret = storage.append(source, size);
       if(ret)
 	debugMessage("Stored program to flash");
@@ -353,9 +346,31 @@ void ProgramManager::programStatus(int){
   for(;;);
 }
 
+#define IDLE_TASK_STACK_SIZE            (512/sizeof(portSTACK_TYPE))
+static StaticTask_t xIdleTaskTCBBuffer CCM;
+static StackType_t xIdleStack[IDLE_TASK_STACK_SIZE] CCM;
+
+extern "C" { 
+  void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize) {
+    *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+    *ppxIdleTaskStackBuffer = &xIdleStack[0];
+    *pulIdleTaskStackSize = IDLE_TASK_STACK_SIZE;
+  }
+}
+
+static StaticTask_t xTaskBuffer CCM;
+static StackType_t xStack[ MANAGER_TASK_STACK_SIZE ] CCM; // long unsigned int
+
 void ProgramManager::startManager(){
   if(xManagerHandle == NULL)
-    xTaskCreate(runManagerTask, "Manager", MANAGER_TASK_STACK_SIZE, NULL, MANAGER_TASK_PRIORITY, &xManagerHandle);
+    // if(xTaskCreateStatic(runManagerTask, "Manager", MANAGER_TASK_STACK_SIZE, NULL, MANAGER_TASK_PRIORITY, &xManagerHandle, NULL, NULL) == NULL)
+    xManagerHandle = xTaskCreateStatic(runManagerTask, "Manager", MANAGER_TASK_STACK_SIZE, NULL, MANAGER_TASK_PRIORITY,(StackType_t*)xStack, &xTaskBuffer);
+  else
+    error(PROGRAM_ERROR, "Manager task already started");
+  if(xManagerHandle == NULL)
+    error(PROGRAM_ERROR, "Failed to start manager task");
+
+    // xTaskCreate(runManagerTask, "Manager", MANAGER_TASK_STACK_SIZE, NULL, MANAGER_TASK_PRIORITY, &xManagerHandle);
 #if defined AUDIO_TASK_SEMAPHORE
   if(xSemaphore == NULL)
     xSemaphore = xSemaphoreCreateBinary();
@@ -406,14 +421,6 @@ void ProgramManager::startProgramChange(bool isr){
   else
     notifyManager(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
 }
-
-// void ProgramManager::sendMidiData(int type, bool isr){
-//   midiMessagesToSend = type;
-//   if(isr)
-//     notifyManagerFromISR(MIDI_SEND_NOTIFICATION);
-//   else
-//     notifyManager(MIDI_SEND_NOTIFICATION);
-// }
 
 void ProgramManager::loadProgram(uint8_t pid){
   PatchDefinition* def = registry.getPatchDefinition(pid);
@@ -503,42 +510,40 @@ void ProgramManager::runManager(){
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       PatchDefinition* def = getPatchDefinition();
       if(xProgramHandle == NULL && def != NULL){
-	BaseType_t ret;
+	static StaticTask_t xProgramTaskBuffer;
 	if(def->getStackBase() != 0 && 
 	   def->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
-	  ret = xTaskGenericCreate(runProgramTask, "Program", 
-				   def->getStackSize()/sizeof(portSTACK_TYPE), 
-				   NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle, 
-				   def->getStackBase(), NULL);
+	  xProgramHandle = xTaskCreateStatic(runProgramTask, "Program", 
+					     def->getStackSize()/sizeof(portSTACK_TYPE),
+					     NULL, PROGRAM_TASK_PRIORITY, 
+					     (StackType_t*)def->getStackBase(), 
+					     &xProgramTaskBuffer);
 	}else{
-	  ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
+	  error(PROGRAM_ERROR, "Invalid program stack");
+	  // ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
 	}
-	if(ret != pdPASS)
+	if(xProgramHandle == NULL)
 	  error(PROGRAM_ERROR, "Failed to start program task");
       }
+      // todo: make sure no two tasks are using the same stack
 #ifdef BUTTON_PROGRAM_CHANGE
     }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
       if(xProgramHandle == NULL){
-	BaseType_t ret = xTaskCreate(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &xProgramHandle);
-	if(ret != pdPASS)
+	xProgramHandle = xTaskCreateStatic(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, xStack, &xTaskBuffer);
+	if(xProgramHandle == NULL)
 	  error(PROGRAM_ERROR, "Failed to start Program Change task");
       }
 #endif /* BUTTON_PROGRAM_CHANGE */
     }else if(ulNotifiedValue & PROGRAM_FLASH_NOTIFICATION){ // program flash
-      BaseType_t ret = xTaskCreate(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
-      if(ret != pdPASS){
+      xFlashTaskHandle = xTaskCreateStatic(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, xStack, &xTaskBuffer);
+      if(xFlashTaskHandle == NULL){
 	error(PROGRAM_ERROR, "Failed to start Flash Write task");
       }
     }else if(ulNotifiedValue & ERASE_FLASH_NOTIFICATION){ // erase flash
-      BaseType_t ret = xTaskCreate(eraseFlashTask, "Flash Erase", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
-      if(ret != pdPASS)
+      xFlashTaskHandle = xTaskCreateStatic(eraseFlashTask, "Flash Erase", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, xStack, &xTaskBuffer);
+      if(xFlashTaskHandle == NULL){
 	error(PROGRAM_ERROR, "Failed to start Flash Erase task");
-    // }else if(ulNotifiedValue & MIDI_SEND_NOTIFICATION){ // erase flash
-    //   TaskHandle_t handle = NULL;
-    //   BaseType_t ret = xTaskCreate(sendMidiDataTask, "MIDI", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &handle);
-    //   if(ret != pdPASS){
-    // 	error(PROGRAM_ERROR, "Failed to start MIDI Send task");
-    //   }
+      }
     }
   }
 }

@@ -59,7 +59,7 @@ FREERTOS_SRC += queue.c
 FREERTOS_SRC += tasks.c
 FREERTOS_SRC += event_groups.c
 FREERTOS_SRC += timers.c
-FREERTOS_SRC += heap_4.c
+# FREERTOS_SRC += heap_4.c
 
 CPP_SRC = main.cpp
 CPP_SRC += Owl.cpp CodecController.cpp MidiController.cpp ApplicationSettings.cpp
