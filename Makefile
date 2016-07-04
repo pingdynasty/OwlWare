@@ -69,7 +69,7 @@ CPP_SRC += ServiceCall.cpp
 CPP_SRC += MidiHandler.cpp MidiReader.cpp DigitalBusHandler.cpp DigitalBusReader.cpp
 # CPP_SRC += PatchProcessor.cpp StompBox.cpp FloatArray.cpp
 CPP_SRC += bus.cpp message.cpp
-CPP_SRC += FlashStorage.cpp
+CPP_SRC += StorageBlock.cpp FlashStorage.cpp
 
 OBJS = $(C_SRC:%.c=Build/%.o) $(CPP_SRC:%.cpp=Build/%.o) $(FREERTOS_SRC:%.c=Build/%.o)
 vpath %.c $(TEMPLATEROOT)/Libraries/FreeRTOS/

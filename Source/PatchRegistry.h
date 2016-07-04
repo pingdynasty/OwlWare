@@ -4,6 +4,7 @@
 #include <string>
 #include "device.h"
 #include "PatchDefinition.hpp"
+#include "StorageBlock.h"
 
 class PatchRegistry;
 extern PatchRegistry registry;
@@ -15,12 +16,14 @@ public:
   const char* getName(unsigned int index);
   PatchDefinition* getPatchDefinition(unsigned int index);
   unsigned int getNumberOfPatches();
-  void registerPatch(PatchDefinition* def);
+  void registerPatch(uint8_t pid, StorageBlock block);
   void setDynamicPatchDefinition(PatchDefinition* def){
     dynamicPatchDefinition = def;
   }
 private:
-  PatchDefinition* defs[MAX_NUMBER_OF_PATCHES];
+  bool isPresetBlock(StorageBlock block);
+  StorageBlock blocks[MAX_NUMBER_OF_PATCHES];
+  /* PatchDefinition* defs[MAX_NUMBER_OF_PATCHES]; */
   unsigned int nofPatches;
   PatchDefinition* dynamicPatchDefinition;
 };

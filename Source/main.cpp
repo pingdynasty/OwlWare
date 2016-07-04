@@ -7,6 +7,14 @@
 #include "ProgramManager.h"
 
 extern "C" {
+
+  static StaticTask_t xIdleTaskTCBBuffer CCM;
+  static StackType_t xIdleStack[IDLE_TASK_STACK_SIZE] CCM;
+  void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize) {
+    *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+    *ppxIdleTaskStackBuffer = &xIdleStack[0];
+    *pulIdleTaskStackSize = IDLE_TASK_STACK_SIZE;
+  }
   void vApplicationMallocFailedHook(void) {
     // taskDISABLE_INTERRUPTS();
     // for(;;);

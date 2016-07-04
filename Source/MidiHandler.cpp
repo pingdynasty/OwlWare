@@ -307,7 +307,7 @@ void MidiHandler::handleFirmwareFlashCommand(uint8_t* data, uint16_t size){
 void MidiHandler::handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
   if(loader.isReady() && size == 5){
     uint32_t slot = loader.decodeInt(data);
-    if(slot >= 0 && slot < MAX_USER_PATCHES){
+    if(slot > 0 && slot < MAX_NUMBER_OF_PATCHES){
       program.saveProgramToFlash(slot, loader.getData(), loader.getSize());
       loader.clear();
     }else{

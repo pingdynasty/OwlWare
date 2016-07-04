@@ -14,12 +14,6 @@
 #include "MidiController.h"
 #include "FlashStorage.h"
 
-// #define AUDIO_TASK_SUSPEND
-// #define AUDIO_TASK_SEMAPHORE
-#define AUDIO_TASK_DIRECT
-// #define AUDIO_TASK_YIELD
-/* if AUDIO_TASK_YIELD is defined, define DEFINE_OWL_SYSTICK in device.h */
-
 // FreeRTOS low priority numbers denote low priority tasks. 
 // The idle task has priority zero (tskIDLE_PRIORITY).
 #define PROGRAM_TASK_PRIORITY            (2)
@@ -28,28 +22,17 @@
 #define PC_TASK_PRIORITY                 (2)
 
 #include "task.h"
-#if defined AUDIO_TASK_SEMAPHORE
-#include "semphr.h"
-#endif
 
 ProgramManager program;
 ProgramVector staticVector;
 ProgramVector* programVector = &staticVector;
 extern "C" ProgramVector* getProgramVector() { return programVector; }
 
-#if defined AUDIO_TASK_DIRECT
 volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
-#endif /* AUDIO_TASK_DIRECT */
 
 static DynamicPatchDefinition dynamo;
-static DynamicPatchDefinition flashPatches[MAX_USER_PATCHES];
 
 TaskHandle_t xProgramHandle = NULL;
-TaskHandle_t xManagerHandle = NULL;
-TaskHandle_t xFlashTaskHandle = NULL;
-#if defined AUDIO_TASK_SEMAPHORE
-SemaphoreHandle_t xSemaphore = NULL;
-#endif // AUDIO_TASK_SEMAPHORE
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
@@ -133,19 +116,32 @@ extern "C" {
   }
 
   void programFlashTask(void* p){
-    // todo    
-    int sector = flashSectorToWrite;
+    uint8_t index = flashSectorToWrite;
     uint32_t size = flashSizeToWrite;
     uint8_t* source = (uint8_t*)flashAddressToWrite;
-    if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
+    if(index == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
       flashFirmware(source, size);
-    }else{
-      if(size > storage.getFreeSize()){
-	debugMessage("Insufficient flash available");
+    }else if(index > 0 && index < MAX_NUMBER_OF_PATCHES){
+      if(size > storage.getFreeSize())
+	error(FLASH_ERROR, "Insufficient flash available");
+      if(size > sizeof(ProgramHeader)){
+	ProgramHeader* header = (ProgramHeader*)source;
+	if(header->magic == 0xDADAC0DE){ // if it is a patch, set the program id
+	  header->magic = (header->magic&0xffffff00) | (index&0xff);
+	  StorageBlock block = storage.append(source, size);
+	  if(block.verify()){
+	    debugMessage("Patch stored to flash");
+	    if(index < registry.getNumberOfPatches()){
+	      registry.registerPatch(index, block);
+	      program.loadProgram(index);
+	    }
+	  }
+	}
       }
-      bool ret = storage.append(source, size);
-      if(ret)
-	debugMessage("Stored program to flash");
+    }else{
+      if(size > storage.getFreeSize())
+	error(FLASH_ERROR, "Insufficient flash available");
+      // todo: store data
     }
     midi.sendProgramMessage();
     midi.sendDeviceStats();
@@ -290,22 +286,7 @@ ProgramManager::ProgramManager() {
 /* called by the audio interrupt when a block should be processed */
 __attribute__ ((section (".coderam")))
 void ProgramManager::audioReady(){
-#if defined AUDIO_TASK_SUSPEND || defined AUDIO_TASK_YIELD
-  if(xProgramHandle != NULL){
-    BaseType_t xHigherPriorityTaskWoken = 0; 
-    xHigherPriorityTaskWoken = xTaskResumeFromISR(xProgramHandle);
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-  }
-#elif defined AUDIO_TASK_SEMAPHORE
-  signed long int xHigherPriorityTaskWoken = pdFALSE; 
-  // signed BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  xSemaphoreGiveFromISR(xSemaphore, &xHigherPriorityTaskWoken);
-  // xSemaphoreGiveFromISR(xSemaphore, NULL);
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-#else /* AUDIO_TASK_DIRECT */
   audioStatus = AUDIO_READY_STATUS;
-  // getProgramVector()->status = AUDIO_READY_STATUS;
-#endif
 }
 
 /* called by the program when a block has been processed */
@@ -319,19 +300,8 @@ void ProgramManager::programReady(){
 #ifdef DEBUG_AUDIO
   clearPin(GPIOC, GPIO_Pin_5); // PC5 DEBUG
 #endif
-
-#ifdef AUDIO_TASK_SUSPEND
-  vTaskSuspend(xProgramHandle);
-#elif defined AUDIO_TASK_SEMAPHORE
-  xSemaphoreTake(xSemaphore, 0);
-#elif defined AUDIO_TASK_YIELD
-  taskYIELD(); // this will only suspend the task if another is ready to run
-#elif defined AUDIO_TASK_DIRECT
   while(audioStatus != AUDIO_READY_STATUS);
   audioStatus = AUDIO_PROCESSING_STATUS;
-#else
-  #error "Invalid AUDIO_TASK setting"
-#endif
 #ifdef DEBUG_DWT
   *DWT_CYCCNT = 0; // reset the performance counter
 #endif /* DEBUG_DWT */
@@ -346,51 +316,48 @@ void ProgramManager::programStatus(int){
   for(;;);
 }
 
-#define IDLE_TASK_STACK_SIZE            (512/sizeof(portSTACK_TYPE))
-static StaticTask_t xIdleTaskTCBBuffer CCM;
-static StackType_t xIdleStack[IDLE_TASK_STACK_SIZE] CCM;
-
-extern "C" { 
-  void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize) {
-    *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
-    *ppxIdleTaskStackBuffer = &xIdleStack[0];
-    *pulIdleTaskStackSize = IDLE_TASK_STACK_SIZE;
+template<uint32_t STACK_SIZE>
+class StaticTask {
+private:
+  StaticTask_t xTaskBuffer;
+  StackType_t xStack[STACK_SIZE]; // long unsigned int
+public:
+  TaskHandle_t handle;
+  bool create(TaskFunction_t pxTaskCode, const char * const pcName,
+	      UBaseType_t uxPriority){
+    if(handle == NULL){
+      handle = xTaskCreateStatic(pxTaskCode, pcName, STACK_SIZE, NULL, uxPriority, xStack, &xTaskBuffer);
+      return handle != NULL;
+    }
+    return false;
   }
-}
+  void notify(uint32_t ulValue){
+    if(handle != NULL)
+      xTaskNotify(handle, ulValue, eSetBits );
+  }
+  void notifyFromISR(uint32_t ulValue){
+    BaseType_t xHigherPriorityTaskWoken = 0; 
+    if(handle != NULL)
+      xTaskNotifyFromISR(handle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  }
+};
 
-static StaticTask_t xTaskBuffer CCM;
-static StackType_t xStack[ MANAGER_TASK_STACK_SIZE ] CCM; // long unsigned int
+StaticTask<MANAGER_TASK_STACK_SIZE> managerTask;
+StaticTask<UTILITY_TASK_STACK_SIZE> utilityTask;
 
 void ProgramManager::startManager(){
-  if(xManagerHandle == NULL)
-    // if(xTaskCreateStatic(runManagerTask, "Manager", MANAGER_TASK_STACK_SIZE, NULL, MANAGER_TASK_PRIORITY, &xManagerHandle, NULL, NULL) == NULL)
-    xManagerHandle = xTaskCreateStatic(runManagerTask, "Manager", MANAGER_TASK_STACK_SIZE, NULL, MANAGER_TASK_PRIORITY,(StackType_t*)xStack, &xTaskBuffer);
-  else
-    error(PROGRAM_ERROR, "Manager task already started");
-  if(xManagerHandle == NULL)
+  bool ret = managerTask.create(runManagerTask, "Manager", MANAGER_TASK_PRIORITY);
+  if(!ret)
     error(PROGRAM_ERROR, "Failed to start manager task");
-
-    // xTaskCreate(runManagerTask, "Manager", MANAGER_TASK_STACK_SIZE, NULL, MANAGER_TASK_PRIORITY, &xManagerHandle);
-#if defined AUDIO_TASK_SEMAPHORE
-  if(xSemaphore == NULL)
-    xSemaphore = xSemaphoreCreateBinary();
-#endif // AUDIO_TASK_SEMAPHORE
 }
 
 void ProgramManager::notifyManagerFromISR(uint32_t ulValue){
-  BaseType_t xHigherPriorityTaskWoken = 0; 
-  if(xManagerHandle != NULL)
-    xTaskNotifyFromISR(xManagerHandle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-#ifdef DEFINE_OWL_SYSTICK
-  // vPortYield(); // can we call this from an interrupt?
-  // taskYIELD();
-#endif /* DEFINE_OWL_SYSTICK */
+  managerTask.notifyFromISR(ulValue);
 }
 
 void ProgramManager::notifyManager(uint32_t ulValue){
-  if(xManagerHandle != NULL)
-    xTaskNotify(xManagerHandle, ulValue, eSetBits);
+  managerTask.notify(ulValue);
 }
 
 void ProgramManager::startProgram(bool isr){
@@ -459,9 +426,9 @@ uint32_t ProgramManager::getProgramStackAllocation(){
 }
 
 uint32_t ProgramManager::getManagerStackUsed(){
-  if(xManagerHandle == NULL)
+  if(managerTask.handle == NULL)
     return 0;
-  uint32_t mh = uxTaskGetStackHighWaterMark(xManagerHandle);
+  uint32_t mh = uxTaskGetStackHighWaterMark(managerTask.handle);
   return getManagerStackAllocation() - mh*sizeof(portSTACK_TYPE);
 }
 
@@ -528,22 +495,24 @@ void ProgramManager::runManager(){
       // todo: make sure no two tasks are using the same stack
 #ifdef BUTTON_PROGRAM_CHANGE
     }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
-      if(xProgramHandle == NULL){
-	xProgramHandle = xTaskCreateStatic(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, xStack, &xTaskBuffer);
-	if(xProgramHandle == NULL)
-	  error(PROGRAM_ERROR, "Failed to start Program Change task");
-      }
+      bool ret = utilityTask.create(programChangeTask, "Program Change", PC_TASK_PRIORITY);
+      if(!ret)
+	error(PROGRAM_ERROR, "Failed to start Program Change task");
+      // if(xProgramHandle == NULL){
+      // 	xProgramHandle = xTaskCreateStatic(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, xStack, &xTaskBuffer);
+      // 	if(xProgramHandle == NULL)
+      // 	  error(PROGRAM_ERROR, "Failed to start Program Change task");
+      // }
 #endif /* BUTTON_PROGRAM_CHANGE */
     }else if(ulNotifiedValue & PROGRAM_FLASH_NOTIFICATION){ // program flash
-      xFlashTaskHandle = xTaskCreateStatic(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, xStack, &xTaskBuffer);
-      if(xFlashTaskHandle == NULL){
+      // xFlashTaskHandle = xTaskCreateStatic(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, xStack, &xTaskBuffer);
+      bool ret = utilityTask.create(programFlashTask, "Flash Write", FLASH_TASK_PRIORITY);
+      if(!ret)
 	error(PROGRAM_ERROR, "Failed to start Flash Write task");
-      }
     }else if(ulNotifiedValue & ERASE_FLASH_NOTIFICATION){ // erase flash
-      xFlashTaskHandle = xTaskCreateStatic(eraseFlashTask, "Flash Erase", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, xStack, &xTaskBuffer);
-      if(xFlashTaskHandle == NULL){
-	error(PROGRAM_ERROR, "Failed to start Flash Erase task");
-      }
+      bool ret = utilityTask.create(eraseFlashTask, "Flash Write", FLASH_TASK_PRIORITY);
+      if(!ret)
+      	error(PROGRAM_ERROR, "Failed to start Flash Erase task");
     }
   }
 }
