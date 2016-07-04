@@ -66,10 +66,10 @@ StorageBlock FlashStorage::append(void* data, uint32_t size){
   return StorageBlock();
 }
 
-uint8_t FlashStorage::getBlocksWritten(){
+uint8_t FlashStorage::getBlocksVerified(){
   uint8_t nof = 0;
   for(uint8_t i=0; i<count; ++i)
-    if(blocks[i].isWritten())
+    if(blocks[i].verify())
       nof++;
   return nof;
 }
@@ -115,7 +115,10 @@ void FlashStorage::defrag(void* buffer, uint32_t size){
       }
     }
     erase();
+    eeprom_unlock();
     eeprom_write_block(EEPROM_PAGE_BEGIN, buffer, offset);
+    eeprom_lock();
+    init();
   }
 }
 

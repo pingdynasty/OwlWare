@@ -71,7 +71,7 @@ int eeprom_erase(uint32_t address){
   BOOST_CHECK_MESSAGE(!flashlock, "Flash locked");
   uint32_t size = EEPROM_PAGE_SIZE;
   BOOST_REQUIRE_MESSAGE(address >= EEPROM_PAGE_BEGIN, "Underflow");
-  BOOST_CHECK_MESSAGE(address+size < EEPROM_PAGE_END, "Overflow");
+  BOOST_CHECK_MESSAGE(address+size <= EEPROM_PAGE_END, "Overflow");
   memset((void*)address, 0xff, size);
   return 0;
 }
@@ -169,4 +169,36 @@ BOOST_AUTO_TEST_CASE(testDelete){
   BOOST_CHECK_EQUAL(b1.getDataSize(), sizeof(data));
   BOOST_CHECK(b1.isDeleted());
   BOOST_CHECK(!b1.verify());
+}
+
+BOOST_AUTO_TEST_CASE(testDefrag){
+  memset(flashdata, 0xff, sizeof(flashdata));
+  FlashStorage storage;
+  storage.init();
+  uint8_t data[29];
+  int expectedBlockSize = sizeof(data)+4+(4-sizeof(data)%4);
+  for(int i=0; i<sizeof(data); ++i)
+    data[i] = i;
+  StorageBlock b1 = storage.append(data, sizeof(data));
+  StorageBlock b2 = storage.append(data, sizeof(data));
+  StorageBlock b3 = storage.append(data, sizeof(data));
+  StorageBlock b4 = storage.append(data, sizeof(data));
+  StorageBlock b5 = storage.append(data, sizeof(data));
+  StorageBlock b6 = storage.append(data, sizeof(data));
+  StorageBlock b7 = storage.append(data, sizeof(data));
+  b2.setDeleted();
+  b5.setDeleted();
+  b4.setDeleted();
+  BOOST_CHECK_EQUAL(storage.getTotalUsedSize(), expectedBlockSize*7);
+  BOOST_CHECK_EQUAL(storage.getFreeSize(), 1024*1024-expectedBlockSize*7);
+  BOOST_CHECK_EQUAL(storage.getDeletedSize(), expectedBlockSize*3);
+  BOOST_CHECK_EQUAL(storage.getBlocksVerified(), 4);
+  BOOST_CHECK_EQUAL(storage.getBlocksTotal(), 7);
+  uint8_t* defragbuffer = new uint8_t[storage.getTotalUsedSize()];
+  storage.defrag(defragbuffer, storage.getTotalUsedSize());
+  BOOST_CHECK_EQUAL(storage.getTotalUsedSize(), expectedBlockSize*4);
+  BOOST_CHECK_EQUAL(storage.getFreeSize(), 1024*1024-expectedBlockSize*4);
+  BOOST_CHECK_EQUAL(storage.getDeletedSize(), 0);
+  BOOST_CHECK_EQUAL(storage.getBlocksVerified(), 4);
+  BOOST_CHECK_EQUAL(storage.getBlocksTotal(), 4);  
 }

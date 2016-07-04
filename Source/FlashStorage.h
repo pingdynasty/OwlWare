@@ -15,7 +15,7 @@ public:
   uint8_t getBlocksTotal(){
     return count > 0 ? count-1 : 0;
   }
-  uint8_t getBlocksWritten();
+  uint8_t getBlocksVerified();
   uint32_t getTotalUsedSize();
   uint32_t getDeletedSize();
   uint32_t getWrittenSize(){
