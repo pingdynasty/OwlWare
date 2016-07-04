@@ -27,12 +27,38 @@ ProgramManager program;
 ProgramVector staticVector;
 ProgramVector* programVector = &staticVector;
 extern "C" ProgramVector* getProgramVector() { return programVector; }
-
 volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
-
 static DynamicPatchDefinition dynamo;
-
 TaskHandle_t xProgramHandle = NULL;
+
+template<uint32_t STACK_SIZE>
+class StaticTask {
+private:
+  StaticTask_t xTaskBuffer;
+  StackType_t xStack[STACK_SIZE]; // long unsigned int
+public:
+  TaskHandle_t handle = NULL;
+  bool create(TaskFunction_t pxTaskCode, const char * const pcName,
+	      UBaseType_t uxPriority){
+    if(handle != NULL)
+      vTaskDelete(handle);
+    handle = xTaskCreateStatic(pxTaskCode, pcName, STACK_SIZE, NULL, uxPriority, xStack, &xTaskBuffer);
+    return handle != NULL;
+  }
+  void notify(uint32_t ulValue){
+    if(handle != NULL)
+      xTaskNotify(handle, ulValue, eSetBits );
+  }
+  void notifyFromISR(uint32_t ulValue){
+    BaseType_t xHigherPriorityTaskWoken = 0; 
+    if(handle != NULL)
+      xTaskNotifyFromISR(handle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  }
+};
+
+StaticTask<MANAGER_TASK_STACK_SIZE> managerTask;
+StaticTask<UTILITY_TASK_STACK_SIZE> utilityTask;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
@@ -122,22 +148,7 @@ extern "C" {
     if(index == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
       flashFirmware(source, size);
     }else if(index > 0 && index < MAX_NUMBER_OF_PATCHES){
-      if(size > storage.getFreeSize())
-	error(FLASH_ERROR, "Insufficient flash available");
-      if(size > sizeof(ProgramHeader)){
-	ProgramHeader* header = (ProgramHeader*)source;
-	if(header->magic == 0xDADAC0DE){ // if it is a patch, set the program id
-	  header->magic = (header->magic&0xffffff00) | (index&0xff);
-	  StorageBlock block = storage.append(source, size);
-	  if(block.verify()){
-	    debugMessage("Patch stored to flash");
-	    if(index < registry.getNumberOfPatches()){
-	      registry.registerPatch(index, block);
-	      program.loadProgram(index);
-	    }
-	  }
-	}
-      }
+      registry.storePatch(index, source, size);
     }else{
       if(size > storage.getFreeSize())
 	error(FLASH_ERROR, "Insufficient flash available");
@@ -145,33 +156,8 @@ extern "C" {
     }
     midi.sendProgramMessage();
     midi.sendDeviceStats();
-
-    // int sector = flashSectorToWrite;
-    // uint32_t size = flashSizeToWrite;
-    // uint8_t* source = (uint8_t*)flashAddressToWrite;
-    // if(sector >= 0 && sector < MAX_USER_PATCHES && size <= 128*1024){
-    //   uint32_t addr = getFlashAddress(sector);
-    //   eeprom_unlock();
-    //   int ret = eeprom_erase(addr);
-    //   if(ret == 0)
-    // 	ret = eeprom_write_block(addr, source, size);
-    //   eeprom_lock();
-    //   registry.init();
-    //   if(ret == 0){
-    // 	// load and run program
-    // 	int pc = registry.getNumberOfPatches()-MAX_USER_PATCHES+sector;
-    // 	program.loadProgram(pc);
-    // 	// program.loadDynamicProgram(source, size);
-    // 	program.resetProgram(false);
-    //   }else{
-    // 	error(PROGRAM_ERROR, "Failed to write program to flash");
-    //   }
-    // }else if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
-    //   flashFirmware(source, size);
-    // }else{
-    //   error(PROGRAM_ERROR, "Invalid flash program command");
-    // }
     vTaskDelete(NULL);
+    utilityTask.handle = NULL;
   }
 
   void eraseFlashTask(void* p){
@@ -195,6 +181,7 @@ extern "C" {
     // }
     // registry.init();
     vTaskDelete(NULL);
+    utilityTask.handle = NULL;
   }
 
   // static int midiMessagesToSend = 0;
@@ -265,7 +252,8 @@ extern "C" {
     setLed(RED);
     program.loadProgram(pc);
     program.resetProgram(false);
-    for(;;); // wait for program manager to delete this task
+    vTaskDelete(NULL);
+    utilityTask.handle = NULL;
   }
 #endif /* BUTTON_PROGRAM_CHANGE */
 }
@@ -316,36 +304,6 @@ void ProgramManager::programStatus(int){
   for(;;);
 }
 
-template<uint32_t STACK_SIZE>
-class StaticTask {
-private:
-  StaticTask_t xTaskBuffer;
-  StackType_t xStack[STACK_SIZE]; // long unsigned int
-public:
-  TaskHandle_t handle;
-  bool create(TaskFunction_t pxTaskCode, const char * const pcName,
-	      UBaseType_t uxPriority){
-    if(handle == NULL){
-      handle = xTaskCreateStatic(pxTaskCode, pcName, STACK_SIZE, NULL, uxPriority, xStack, &xTaskBuffer);
-      return handle != NULL;
-    }
-    return false;
-  }
-  void notify(uint32_t ulValue){
-    if(handle != NULL)
-      xTaskNotify(handle, ulValue, eSetBits );
-  }
-  void notifyFromISR(uint32_t ulValue){
-    BaseType_t xHigherPriorityTaskWoken = 0; 
-    if(handle != NULL)
-      xTaskNotifyFromISR(handle, ulValue, eSetBits, &xHigherPriorityTaskWoken );
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-  }
-};
-
-StaticTask<MANAGER_TASK_STACK_SIZE> managerTask;
-StaticTask<UTILITY_TASK_STACK_SIZE> utilityTask;
-
 void ProgramManager::startManager(){
   bool ret = managerTask.create(runManagerTask, "Manager", MANAGER_TASK_PRIORITY);
   if(!ret)
@@ -391,8 +349,8 @@ void ProgramManager::startProgramChange(bool isr){
 
 void ProgramManager::loadProgram(uint8_t pid){
   PatchDefinition* def = registry.getPatchDefinition(pid);
-  if(def != NULL && def != patchdef && def->getProgramVector() != NULL){
-    patchdef = def;
+  if(def != NULL && def->getProgramVector() != NULL){
+    currentpatch = def;
     updateProgramIndex(pid);
   }
 }
@@ -400,8 +358,8 @@ void ProgramManager::loadProgram(uint8_t pid){
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   dynamo.load(address, length);
   if(dynamo.getProgramVector() != NULL){
-    patchdef = &dynamo;
-    registry.setDynamicPatchDefinition(patchdef);
+    currentpatch = &dynamo;
+    registry.setDynamicPatchDefinition(currentpatch);
     updateProgramIndex(0);
   }else{
     registry.setDynamicPatchDefinition(NULL);
@@ -418,8 +376,8 @@ uint32_t ProgramManager::getProgramStackUsed(){
 
 uint32_t ProgramManager::getProgramStackAllocation(){
   uint32_t ss = 0;
-  if(patchdef != NULL)
-    ss = patchdef->getStackSize();
+  if(currentpatch != NULL)
+    ss = currentpatch->getStackSize();
   if(ss == 0)
     ss = PROGRAM_TASK_STACK_SIZE*sizeof(portSTACK_TYPE);
   return ss;
@@ -434,10 +392,6 @@ uint32_t ProgramManager::getManagerStackUsed(){
 
 uint32_t ProgramManager::getManagerStackAllocation(){
   return MANAGER_TASK_STACK_SIZE*sizeof(portSTACK_TYPE);
-}
-
-uint32_t ProgramManager::getFreeHeapSize(){
-  return xPortGetFreeHeapSize();
 }
 #endif /* DEBUG_STACK */
 

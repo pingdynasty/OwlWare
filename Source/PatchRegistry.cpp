@@ -3,12 +3,13 @@
 #include "ProgramManager.h"
 #include "ProgramHeader.h"
 #include "DynamicPatchDefinition.hpp"
+#include "message.h"
 
 // #define REGISTER_PATCH(T, STR, UNUSED, UNUSED2) registerPatch(STR, Register<T>::construct)
 
 static PatchDefinition emptyPatch("---", 0, 0);
 
-PatchRegistry::PatchRegistry() : nofPatches(0) {}
+PatchRegistry::PatchRegistry(){}
 
 bool PatchRegistry::isPresetBlock(StorageBlock block){
   if(block.verify() && block.getDataSize() > sizeof(ProgramHeader)){
@@ -21,17 +22,12 @@ bool PatchRegistry::isPresetBlock(StorageBlock block){
 
 void PatchRegistry::init() {
   storage.init();
-  for(int i=0; i<MAX_NUMBER_OF_PATCHES; ++i)
-    blocks[i] = storage.getLastBlock();
-  nofPatches = MAX_NUMBER_OF_PATCHES;
-  for(int i=0; i<STORAGE_MAX_BLOCKS; ++i){
+  for(int i=0; i<storage.getBlocksTotal(); ++i){
     StorageBlock block = storage.getBlock(i);
-    // if(block.getDataSize() > sizeof(ProgramHeader)){
     if(isPresetBlock(block)){
       ProgramHeader* header = (ProgramHeader*)block.getData();
       int pc = header->magic&0x00ff;
-      if(pc > 0 && pc < MAX_NUMBER_OF_PATCHES)
-	blocks[pc] = block;
+      registerPatch(pc, block);
     }
   }
 }
@@ -39,6 +35,28 @@ void PatchRegistry::init() {
 void PatchRegistry::registerPatch(uint8_t index, StorageBlock block){
   if(--index < MAX_NUMBER_OF_PATCHES && isPresetBlock(block))
     blocks[index] = block;
+}
+
+void PatchRegistry::storePatch(uint8_t index, uint8_t* data, size_t size){
+  if(size > storage.getFreeSize())
+    return error(FLASH_ERROR, "Insufficient flash available");
+  if(index > 0 && index <= MAX_NUMBER_OF_PATCHES && size > sizeof(ProgramHeader)){     
+    ProgramHeader* header = (ProgramHeader*)data;
+    if(header->magic == 0xDADAC0DE){ // if it is a patch, set the program id
+      header->magic = (header->magic&0xffffff00) | (index&0xff);
+      StorageBlock block = storage.append(data, size);
+      if(block.verify()){
+	debugMessage("Patch stored to flash");
+	if(blocks[index-1].verify())
+	  blocks[index-1].setDeleted(); // delete old patch
+	registerPatch(index, block);
+	program.loadProgram(index);
+	program.resetProgram(false);
+	return;
+      }
+    }
+  }
+  return error(PROGRAM_ERROR, "Invalid patch");
 }
 
 const char* PatchRegistry::getName(unsigned int index){
@@ -50,7 +68,8 @@ const char* PatchRegistry::getName(unsigned int index){
 
 unsigned int PatchRegistry::getNumberOfPatches(){
   // +1 for the current / dynamic patch in slot 0
-  return nofPatches+1;
+  // return nofPatches+1;
+  return MAX_NUMBER_OF_PATCHES+1;
 }
 
 PatchDefinition* PatchRegistry::getPatchDefinition(unsigned int index){
@@ -58,8 +77,7 @@ PatchDefinition* PatchRegistry::getPatchDefinition(unsigned int index){
   static DynamicPatchDefinition flashPatch;
   if(index == 0)
     def = dynamicPatchDefinition;
-  else if(--index <= nofPatches){
-    // if(blocks[index].getDataSize() > 0){
+  else if(--index < MAX_NUMBER_OF_PATCHES){
     if(isPresetBlock(blocks[index])){
       flashPatch.load(blocks[index].getData(), blocks[index].getDataSize());
       if(flashPatch.verify())
@@ -70,15 +88,3 @@ PatchDefinition* PatchRegistry::getPatchDefinition(unsigned int index){
     def = NULL;
   return def;
 }
-
-// void PatchRegistry::registerPatch(PatchDefinition* def){
-//   if(nofPatches < MAX_NUMBER_OF_PATCHES)
-//     defs[nofPatches++] = def;
-// }
-
-// void PatchRegistry::registerPatch(const char* name, uint8_t inputChannels, uint8_t outputChannels){
-//   if(nofPatches < MAX_NUMBER_OF_PATCHES){
-//     names[nofPatches] = name;
-//     nofPatches++;
-//   }
-// }

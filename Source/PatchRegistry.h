@@ -20,11 +20,10 @@ public:
   void setDynamicPatchDefinition(PatchDefinition* def){
     dynamicPatchDefinition = def;
   }
+  void storePatch(uint8_t index, uint8_t* data, size_t size);
 private:
   bool isPresetBlock(StorageBlock block);
   StorageBlock blocks[MAX_NUMBER_OF_PATCHES];
-  /* PatchDefinition* defs[MAX_NUMBER_OF_PATCHES]; */
-  unsigned int nofPatches;
   PatchDefinition* dynamicPatchDefinition;
 };
 

@@ -124,8 +124,6 @@ void MidiController::sendDeviceStats(){
   p = stpcpy(p, itoa(program.getManagerStackUsed(), 10));
   p = stpcpy(p, (const char*)"/");
   p = stpcpy(p, itoa(program.getManagerStackAllocation(), 10));
-  p = stpcpy(p, (const char*)" Free ");
-  p = stpcpy(p, itoa(program.getFreeHeapSize(), 10));
   sendSysEx((uint8_t*)buffer, p-buffer);
 #endif /* DEBUG_STACK */
   p = stpcpy(p, (const char*)"Storage used ");

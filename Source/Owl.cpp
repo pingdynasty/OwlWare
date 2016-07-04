@@ -168,11 +168,11 @@ void exitProgram(bool isr){
 }
 
 void updateProgramIndex(uint8_t index){
-  if(settings.program_index != index){
+  // if(settings.program_index != index){
     settings.program_index = index;
     midi.sendPc(index);
     midi.sendPatchName(index);
-  }
+  // }
 }
 
 #ifdef __cplusplus

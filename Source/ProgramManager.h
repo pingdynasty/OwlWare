@@ -7,13 +7,12 @@
 
 class ProgramManager {
 private:
-  PatchDefinition* patchdef = NULL;
+  PatchDefinition* currentpatch = NULL;
   void notifyManager(uint32_t ulValue);
   void notifyManagerFromISR(uint32_t ulValue);
 public:
   ProgramManager();
   void loadProgram(uint8_t index);
-  void loadStaticProgram(PatchDefinition* def);
   void loadDynamicProgram(void* address, uint32_t length);
   void startManager();
   void runManager();
@@ -31,7 +30,6 @@ public:
   uint32_t getProgramStackAllocation();
   uint32_t getManagerStackUsed();
   uint32_t getManagerStackAllocation();
-  uint32_t getFreeHeapSize();
 
   void eraseProgramFromFlash(uint8_t sector);
   void saveProgramToFlash(uint8_t sector, void* address, uint32_t length);
@@ -40,7 +38,7 @@ public:
   uint32_t getHeapMemoryUsed();
   uint8_t getProgramIndex();
   PatchDefinition* getPatchDefinition(){
-    return patchdef;
+    return currentpatch;
   }
 };
 
