@@ -28,6 +28,8 @@
    uint32_t eeprom_read_word(uint32_t address);
    int eeprom_read_block(uint32_t address, void* data, uint32_t size);
    int eeprom_write_block(uint32_t address, void* data, uint32_t size);
+   int eeprom_write_word(uint32_t address, uint32_t data);
+   int eeprom_write_byte(uint32_t address, uint8_t data);
    int eeprom_erase(uint32_t address);
 
    int eeprom_wait();

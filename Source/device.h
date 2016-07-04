@@ -56,7 +56,7 @@
 #define USART_IRQn                   UART4_IRQn
 
 #define EEPROM_PAGE_BEGIN            ((uint32_t)0x08060000)
-#define EEPROM_PAGE_SIZE             (2*1024)
+#define EEPROM_PAGE_SIZE             (128*1024)
 #define EEPROM_PAGE_END              ((uint32_t)0x08100000)
 #define STORAGE_MAX_BLOCKS           64
 

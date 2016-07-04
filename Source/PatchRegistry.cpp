@@ -47,7 +47,7 @@ void PatchRegistry::storePatch(uint8_t index, uint8_t* data, size_t size){
       StorageBlock block = storage.append(data, size);
       if(block.verify()){
 	debugMessage("Patch stored to flash");
-	if(blocks[index-1].verify())
+	if(blocks[index-1].verify())	  
 	  blocks[index-1].setDeleted(); // delete old patch
 	registerPatch(index, block);
 	program.loadProgram(index);

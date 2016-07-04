@@ -22,32 +22,25 @@ public:
       return 0;
     return size;
   }
-  uint32_t getBlockSize(){
-    return getDataSize() + 4;
-  }
   void* getData(){
     return (void*)(header+1); // data starts 4 bytes (1 word) after header
   }
+  void* getBlock(){
+    return (void*)header;
+  }
   bool isWritten(){
-    /* return getMagick() == 0xcf; // (getMagick() & 0xf0) == 0xc0; */
     return (getMagick() & 0xf0) == 0xc0;
   }
-  bool isValidSize();
-  bool verify(); // true if block is not null, is written, has valid size, and is not deleted
   bool isFree(){
     return (*header) == 0xffffffff;
-/* getMagick() == 0xff && getDataSize() == 0; */
   }
   bool isDeleted(){
     return getMagick() == 0xc0;
   }
-  void setDeleted(){
-    // write zeros to bottom 4 bits in magick byte
-    *header = (*header) & 0xf0ffffff; // set deleted bits to 0
-  }
-  void setSize(uint32_t size){
-    *header = ((*header) & 0xff000000) | (size & 0x00ffffff);
-  }
+  bool isValidSize();
+  uint32_t getBlockSize();
+  bool verify(); // true if block is not null, is written, has valid size, and is not deleted
+  bool setDeleted();
   bool write(void* data, uint32_t size);
 };
 

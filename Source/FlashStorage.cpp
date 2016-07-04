@@ -2,7 +2,7 @@
 #include "device.h"
 #include <string.h>
 #include "message.h"
-#include "stm32f4xx.h"
+#include "eepromcontrol.h"
 
 void FlashStorage::init(){
   uint32_t offset = 0;
@@ -16,6 +16,7 @@ void FlashStorage::init(){
   // fills at least one (possibly empty) block into list
 }
 
+#if 0
 void FlashStorage::recover(){
   StorageBlock block = getLastBlock();
   if(!block.isFree() && !block.isValidSize()){
@@ -34,6 +35,7 @@ void FlashStorage::recover(){
       blocks[count++] = StorageBlock(ptr+4); // createBlock(ptr+4);
   }
 }
+#endif
 
 StorageBlock FlashStorage::append(void* data, uint32_t size){
   StorageBlock last = getLastBlock();
@@ -64,18 +66,57 @@ StorageBlock FlashStorage::append(void* data, uint32_t size){
   return StorageBlock();
 }
 
+uint8_t FlashStorage::getBlocksWritten(){
+  uint8_t nof = 0;
+  for(uint8_t i=0; i<count; ++i)
+    if(blocks[i].isWritten())
+      nof++;
+  return nof;
+}
+
+uint32_t FlashStorage::getTotalUsedSize(){
+  // returns bytes used by written and deleted blocks
+  uint32_t size = 0;
+  for(uint8_t i=0; i<count; ++i)
+    if(blocks[i].isValidSize())
+      size += blocks[i].getBlockSize();
+  return size;
+}
+
+uint32_t FlashStorage::getDeletedSize(){
+  uint32_t size = 0;
+  for(uint8_t i=0; i<count; ++i)
+    if(blocks[i].isDeleted())
+      size += blocks[i].getBlockSize();
+  return size;
+}
+
 // erase entire allocated FLASH memory
 void FlashStorage::erase(){
   uint32_t page = EEPROM_PAGE_BEGIN;
-  int sector = FLASH_Sector_0;
-  FLASH_Unlock();
+  eeprom_unlock();
   while(page < EEPROM_PAGE_END){
-    FLASH_EraseSector(sector++, VoltageRange_3);
-    // FLASH_ErasePage(page);
+    eeprom_erase(page);
     page += EEPROM_PAGE_SIZE;
   }
-  FLASH_Lock();
+  eeprom_lock();
   init();
+}
+
+void FlashStorage::defrag(void* buffer, uint32_t size){
+  ASSERT(size >= getWrittenSize(), "Insufficient space for full defrag");
+  uint8_t* ptr = (uint8_t*)buffer;
+  if(getDeletedSize() > 0 && getWrittenSize() > 0){
+    uint32_t offset = 0;
+    for(uint8_t i=0; i<count && offset<size; ++i){
+      if(blocks[i].verify()){
+	memcpy(ptr+offset, blocks[i].getBlock(), blocks[i].getBlockSize());
+	offset += blocks[i].getBlockSize();
+      }
+    }
+    erase();
+    eeprom_write_block(EEPROM_PAGE_BEGIN, buffer, offset);
+  }
 }
 
 StorageBlock FlashStorage::createBlock(uint32_t page, uint32_t offset){
@@ -84,24 +125,6 @@ StorageBlock FlashStorage::createBlock(uint32_t page, uint32_t offset){
   /*   return StorageBlock();       */
   StorageBlock block((uint32_t*)(page+offset));
   return block;
-  /* if(block.isValidSize() */
-  /* switch(block.getMagick()){ */
-  /* case 0xcf: */
-  /*   // written, valid block */
-  /*   return block; */
-  /* case 0xc0: */
-  /*   // deleted block */
-  /*   if(block.isValidSize()) */
-  /* 	return createBlock(page, offset+block.getSize()+4); */
-  /*   break; */
-  /* case 0xff: */
-  /*   // empty space */
-  /*   break; */
-  /* default: */
-  /*   // invalid */
-  /*   break; */
-  /* } */
-  /* return block; */
 }
 
 FlashStorage storage;

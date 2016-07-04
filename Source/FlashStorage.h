@@ -13,28 +13,13 @@ public:
   FlashStorage() : count(0){}
   void init();
   uint8_t getBlocksTotal(){
-    return count;
+    return count > 0 ? count-1 : 0;
   }
-  uint8_t getBlocksWritten(){
-    uint8_t nof = 0;
-    for(uint8_t i=0; i<count; ++i)
-      if(blocks[i].isWritten())
-	nof++;
-    return nof;
-  }
-  uint32_t getTotalUsedSize(){
-    // returns bytes used by written and deleted blocks
-    uint32_t size = 0;
-    for(uint8_t i=0; i<count; ++i)
-      size += blocks[i].getBlockSize();
-    return size;
-  }
-  uint32_t getDeletedSize(){
-    uint32_t size = 0;
-    for(uint8_t i=0; i<count; ++i)
-      if(blocks[i].isDeleted())
-	size += blocks[i].getBlockSize();
-    return size;
+  uint8_t getBlocksWritten();
+  uint32_t getTotalUsedSize();
+  uint32_t getDeletedSize();
+  uint32_t getWrittenSize(){
+    return getTotalUsedSize() - getDeletedSize();
   }
   uint32_t getTotalAllocatedSize(){
     return EEPROM_PAGE_END - EEPROM_PAGE_BEGIN;
@@ -43,6 +28,7 @@ public:
     return getTotalAllocatedSize() - getTotalUsedSize();
   }
   void recover();
+  void defrag(void* buffer, uint32_t size);
   StorageBlock append(void* data, uint32_t size);
   // erase entire allocated FLASH memory
   void erase();

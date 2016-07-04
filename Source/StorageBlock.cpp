@@ -2,9 +2,17 @@
 #include "device.h"
 #include <string.h>
 #include "message.h"
-#include "stm32f4xx.h"
+#include "eepromcontrol.h"
+// #include "stm32f4xx.h"
 
 StorageBlock::StorageBlock() : header(NULL){} // (uint32_t*)EEPROM_PAGE_BEGIN
+
+uint32_t StorageBlock::getBlockSize(){
+  uint32_t size = getDataSize() + 4;
+  while(size & 0x03)
+    size++; // pad to 4 bytes
+  return size;
+}
 
 bool StorageBlock::isValidSize(){
   return header != NULL && getDataSize() > 0 && ((uint8_t*)header) + getBlockSize() < (uint8_t*)EEPROM_PAGE_END;
@@ -18,27 +26,12 @@ bool StorageBlock::verify(){
 bool StorageBlock::write(void* data, uint32_t size){
   if((uint32_t)header+4+size >= EEPROM_PAGE_END)
     return false;
-  FLASH_Unlock();
-  FLASH_Status status = FLASH_ProgramWord((uint32_t)header, 0xCFFFFFFF); // mark as used (no size)
-  if(status != FLASH_COMPLETE)
-    return false;
-  uint32_t address = (uint32_t)header+4;
-  uint32_t* p32 = (uint32_t*)data;
-  for(uint32_t i=0; i<size/4; i++){
-    // write one word (4 bytes) at a time
-    FLASH_ProgramWord(address, *p32++);
-    address += 4;
-  }
-  // write any remaining bytes
-  uint8_t* p8 = (uint8_t*)p32;
-  for(uint32_t i=0; i<size%4; i++)
-    FLASH_ProgramByte(address++, *p8++);
-
-  status = FLASH_ProgramWord((uint32_t)header, 0xCF000000 | size); // set magick and size
-  FLASH_Lock();
-
-  // verify
-  if(status != FLASH_COMPLETE){
+  eeprom_unlock();
+  eeprom_write_word((uint32_t)header, 0xcfffffff); // mark as used (no size)
+  eeprom_write_block((uint32_t)header+4, data, size);
+  bool status = eeprom_write_word((uint32_t)header, 0xcf000000 | size); // set magick and size
+  eeprom_lock();
+  if(status != 0){
     error(FLASH_ERROR, "Flash write failed");
     return false;
   }
@@ -48,6 +41,18 @@ bool StorageBlock::write(void* data, uint32_t size){
   }
   if(memcmp(data, getData(), size) != 0){
     error(FLASH_ERROR, "Data verification failed");
+    return false;
+  }
+  return true;
+}
+
+bool StorageBlock::setDeleted(){
+  eeprom_unlock();
+  bool status = eeprom_write_byte((uint32_t)header+3, 0xc0);
+  // FLASH_Status status = FLASH_ProgramByte((uint32_t)header, 0xc0);
+  eeprom_lock();
+  if(status != 0){
+    error(FLASH_ERROR, "Flash delete failed");
     return false;
   }
   return true;

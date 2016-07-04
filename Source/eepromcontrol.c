@@ -60,24 +60,50 @@ int eeprom_erase_sector(uint32_t sector) {
 }
 
 __attribute__ ((section (".coderam")))
-int eeprom_write_block(uint32_t address, void* data, uint32_t size){
-  volatile uint32_t* dest = (volatile uint32_t*)address;
-  uint32_t* src = (uint32_t*)data;
+int eeprom_write_word(uint32_t address, uint32_t data){
   FLASH_Status status = eeprom_wait();
-  for(uint32_t i=0; i<size && status == FLASH_COMPLETE; i+=4){
+  if(status == FLASH_COMPLETE){
+    volatile uint32_t* dest = (volatile uint32_t*)address;
     /* when the previous operation is completed, proceed to program the new data */
     FLASH->CR &= CR_PSIZE_MASK;
     FLASH->CR |= FLASH_PSIZE_WORD;
     FLASH->CR |= FLASH_CR_PG;
-    *dest++ = *src++;
+    *dest++ = data;
     /* Wait for last operation to be completed */
     status = eeprom_wait();
     /* if the program operation is completed, disable the PG Bit */
     FLASH->CR &= (~FLASH_CR_PG);
-    /* Wait for last operation to be completed */
-    status = eeprom_wait();
   }
   return status == FLASH_COMPLETE ? 0 : -1;
+}
+
+__attribute__ ((section (".coderam")))
+int eeprom_write_byte(uint32_t address, uint8_t data){
+  FLASH_Status status = eeprom_wait();
+  if(status == FLASH_COMPLETE){
+    volatile uint8_t* dest = (volatile uint8_t*)address;
+    FLASH->CR &= CR_PSIZE_MASK;
+    FLASH->CR |= FLASH_PSIZE_BYTE;
+    FLASH->CR |= FLASH_CR_PG;
+    *dest = data;
+    /* Wait for last operation to be completed */
+    status = eeprom_wait();
+    /* if the program operation is completed, disable the PG Bit */
+    FLASH->CR &= (~FLASH_CR_PG);
+  }
+  return status == FLASH_COMPLETE ? 0 : -1;
+}
+
+__attribute__ ((section (".coderam")))
+int eeprom_write_block(uint32_t address, void* data, uint32_t size){
+  uint32_t* p32 = (uint32_t*)data;
+  uint32_t i=0; 
+  for(;i<size; i+=4)
+    eeprom_write_word(address+i, *p32++);
+  uint8_t* p8 = (uint8_t*)p32;
+  for(;i<size; i++)
+    eeprom_write_byte(address+i, *p8++);
+  return eeprom_wait() == FLASH_COMPLETE ? 0 : -1;
 }
 
 void eeprom_unlock(){
