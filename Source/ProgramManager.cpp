@@ -147,12 +147,8 @@ extern "C" {
     uint8_t* source = (uint8_t*)flashAddressToWrite;
     if(index == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
       flashFirmware(source, size);
-    }else if(index > 0 && index < MAX_NUMBER_OF_PATCHES){
+    }else{
       registry.store(index, source, size);
-    // }else{
-    //   if(size > storage.getFreeSize())
-    // 	error(FLASH_ERROR, "Insufficient flash available");
-    //   // todo: store data
     }
     midi.sendProgramMessage();
     midi.sendDeviceStats();
@@ -464,19 +460,19 @@ void ProgramManager::runManager(){
       if(!ret)
 	error(PROGRAM_ERROR, "Failed to start Flash Write task");
     }else if(ulNotifiedValue & ERASE_FLASH_NOTIFICATION){ // erase flash
-      bool ret = utilityTask.create(eraseFlashTask, "Flash Write", FLASH_TASK_PRIORITY);
+      bool ret = utilityTask.create(eraseFlashTask, "Flash Erase", FLASH_TASK_PRIORITY);
       if(!ret)
       	error(PROGRAM_ERROR, "Failed to start Flash Erase task");
     }
   }
 }
 
-void ProgramManager::eraseProgramFromFlash(uint8_t sector){
+void ProgramManager::eraseFromFlash(uint8_t sector){
   flashSectorToWrite = sector;
   notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|ERASE_FLASH_NOTIFICATION);
 }
 
-void ProgramManager::saveProgramToFlash(uint8_t sector, void* address, uint32_t length){
+void ProgramManager::saveToFlash(uint8_t sector, void* address, uint32_t length){
   flashSectorToWrite = sector;
   flashAddressToWrite = address;
   flashSizeToWrite = length;

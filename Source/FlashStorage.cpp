@@ -12,7 +12,7 @@ void FlashStorage::init(){
     block = createBlock(EEPROM_PAGE_BEGIN, offset);
     blocks[count++] = block;
     offset += block.getBlockSize();
-  }while(!block.isFree() && count+1 < STORAGE_MAX_BLOCKS && offset < EEPROM_PAGE_END);
+  }while(!block.isFree() && count+1 < STORAGE_MAX_BLOCKS && EEPROM_PAGE_BEGIN+offset < EEPROM_PAGE_END);
   // fills at least one (possibly empty) block into list
 }
 
@@ -32,7 +32,7 @@ void FlashStorage::recover(){
     block.setDeleted();
     // add empty block to end
     if(count+1 < STORAGE_MAX_BLOCKS)
-      blocks[count++] = StorageBlock(ptr+4); // createBlock(ptr+4);
+      blocks[count++] = createBlock(ptr, 4); // createBlock(ptr+4);
   }
 }
 #endif
@@ -42,13 +42,13 @@ StorageBlock FlashStorage::append(void* data, uint32_t size){
   if(last.isFree()){
     last.write(data, size);
     if(count < STORAGE_MAX_BLOCKS)
-      blocks[count++] = StorageBlock((uint32_t*)last.getData()+last.getDataSize());
+      blocks[count++] = createBlock((uint32_t)last.getData(), last.getBlockSize());
     return last;
   }else{
     if(last.isValidSize()){
       if(count < STORAGE_MAX_BLOCKS){
 	// create a new block
-	blocks[count++] = StorageBlock((uint32_t*)last.getData()+last.getDataSize());
+	blocks[count++] = createBlock((uint32_t)last.getData(), last.getBlockSize());
 	return append(data, size);
       }else{
 	error(FLASH_ERROR, "No more blocks available");
@@ -123,9 +123,10 @@ void FlashStorage::defrag(void* buffer, uint32_t size){
 }
 
 StorageBlock FlashStorage::createBlock(uint32_t page, uint32_t offset){
-  /* if(page+offset+4 >= EEPROM_PAGE_END */
-  /*    || page < EEPROM_PAGE_BEGIN) */
-  /*   return StorageBlock();       */
+  if(page+offset+4 >= EEPROM_PAGE_END || page < EEPROM_PAGE_BEGIN){
+    error(FLASH_ERROR, "Block out of bounds");
+    return StorageBlock();
+  }
   StorageBlock block((uint32_t*)(page+offset));
   return block;
 }

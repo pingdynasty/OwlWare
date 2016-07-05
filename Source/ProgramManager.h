@@ -31,8 +31,8 @@ public:
   uint32_t getManagerStackUsed();
   uint32_t getManagerStackAllocation();
 
-  void eraseProgramFromFlash(uint8_t sector);
-  void saveProgramToFlash(uint8_t sector, void* address, uint32_t length);
+  void eraseFromFlash(uint8_t sector);
+  void saveToFlash(uint8_t sector, void* address, uint32_t length);
 
   uint32_t getCyclesPerBlock();
   uint32_t getHeapMemoryUsed();

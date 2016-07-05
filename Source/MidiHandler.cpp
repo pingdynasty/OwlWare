@@ -189,7 +189,7 @@ void MidiHandler::handleControlChange(uint8_t status, uint8_t cc, uint8_t value)
   case FACTORY_RESET:
     if(value == 127){
       settings.reset();
-      program.eraseProgramFromFlash(-1);
+      program.eraseFromFlash(-1);
       updateCodecSettings();
     }
     break;
@@ -294,7 +294,7 @@ void MidiHandler::handleFirmwareFlashCommand(uint8_t* data, uint16_t size){
   if(loader.isReady() && size == 5){
     uint32_t checksum = loader.decodeInt(data);
     if(checksum == loader.getChecksum()){
-      program.saveProgramToFlash(-1, loader.getData(), loader.getSize());
+      program.saveToFlash(-1, loader.getData(), loader.getSize());
       loader.clear();
     }else{
       error(PROGRAM_ERROR, "Invalid FLASH checksum");
@@ -307,8 +307,8 @@ void MidiHandler::handleFirmwareFlashCommand(uint8_t* data, uint16_t size){
 void MidiHandler::handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
   if(loader.isReady() && size == 5){
     uint32_t slot = loader.decodeInt(data);
-    if(slot > 0 && slot < MAX_NUMBER_OF_PATCHES){
-      program.saveProgramToFlash(slot, loader.getData(), loader.getSize());
+    if(slot > 0 && slot <= MAX_NUMBER_OF_PATCHES+MAX_NUMBER_OF_RESOURCES){
+      program.saveToFlash(slot, loader.getData(), loader.getSize());
       loader.clear();
     }else{
       error(PROGRAM_ERROR, "Invalid program slot");

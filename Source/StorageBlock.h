@@ -13,17 +13,17 @@ public:
   StorageBlock(uint32_t* h) : header(h){}
   uint8_t getMagick(){
     // upper 8 bits
-    return (*header) >> 24;
+    return header == nullptr ? 0 : (*header) >> 24;
   }
   uint32_t getDataSize(){
     // lower 24 bits
-    uint32_t size = (*header) & 0x00ffffff;
+    uint32_t size = header == nullptr ? 0 : (*header) & 0x00ffffff;
     if(size == 0x00ffffff)
       return 0;
     return size;
   }
   void* getData(){
-    return (void*)(header+1); // data starts 4 bytes (1 word) after header
+    return header == nullptr ? nullptr : (void*)(header+1); // data starts 4 bytes (1 word) after header
   }
   void* getBlock(){
     return (void*)header;
@@ -32,7 +32,7 @@ public:
     return (getMagick() & 0xf0) == 0xc0;
   }
   bool isFree(){
-    return (*header) == 0xffffffff;
+    return header != nullptr && (*header) == 0xffffffff;
   }
   bool isDeleted(){
     return getMagick() == 0xc0;

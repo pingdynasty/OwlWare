@@ -5,7 +5,7 @@
 #include "eepromcontrol.h"
 // #include "stm32f4xx.h"
 
-StorageBlock::StorageBlock() : header(NULL){} // (uint32_t*)EEPROM_PAGE_BEGIN
+StorageBlock::StorageBlock() : header(nullptr){} // (uint32_t*)EEPROM_PAGE_BEGIN
 
 uint32_t StorageBlock::getBlockSize(){
   uint32_t size = getDataSize() + 4;
@@ -15,7 +15,7 @@ uint32_t StorageBlock::getBlockSize(){
 }
 
 bool StorageBlock::isValidSize(){
-  return header != NULL && getDataSize() > 0 && ((uint8_t*)header) + getBlockSize() < (uint8_t*)EEPROM_PAGE_END;
+  return header != nullptr && getDataSize() > 0 && ((uint8_t*)header) + getBlockSize() < (uint8_t*)EEPROM_PAGE_END;
     /* getSize() != 0xffffff; // && getSize() != 0x00; */
 }
 

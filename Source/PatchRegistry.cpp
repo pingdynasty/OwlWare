@@ -47,38 +47,38 @@ ResourceHeader* PatchRegistry::getResource(const char* name){
 void PatchRegistry::store(uint8_t index, uint8_t* data, size_t size){
   if(size > storage.getFreeSize() + storage.getDeletedSize())
     return error(FLASH_ERROR, "Insufficient flash available");
-  if(index > 0 && index <= MAX_NUMBER_OF_PATCHES+MAX_NUMBER_OF_RESOURCES && size > 4){
-    uint32_t* magic = (uint32_t*)data;
-    if(*magic == 0xDADAC0DE && index > 0 && index <= MAX_NUMBER_OF_PATCHES){
-      // if it is a patch, set the program id
-      *magic = (*magic&0xffffff00) | (index&0xff);
-      StorageBlock block = storage.append(data, size);
-      if(block.verify()){
-	debugMessage("Patch stored to flash");
-	index = index - 1;
-	if(patchblocks[index].verify())
-	  patchblocks[index].setDeleted(); // delete old patch
-	patchblocks[index] = block;
-	program.loadProgram(index);
-	program.resetProgram(false);
-      }
-    }else if(*magic == 0xDADADEED && index > MAX_NUMBER_OF_PATCHES &&
-	     index <= MAX_NUMBER_OF_PATCHES+MAX_NUMBER_OF_RESOURCES){
-      // if it is data, set the resource id
-      *magic = (*magic&0xffffff00) | (index&0xff);
-      StorageBlock block = storage.append(data, size);
-      if(block.verify()){
-	debugMessage("Resource stored to flash");
-	index = index - 1 - MAX_NUMBER_OF_PATCHES;
-	if(resourceblocks[index].verify())
-	  resourceblocks[index].setDeleted();
-	resourceblocks[index] = block;
-      }
-    }else{
-      error(PROGRAM_ERROR, "Invalid magic");
+  if(size < 4)
+    return error(FLASH_ERROR, "Invalid resource size");
+  if(size > storage.getFreeSize())
+    storage.defrag((uint8_t*)EXTRAM, 1024*1024);
+  uint32_t* magic = (uint32_t*)data;
+  if(*magic == 0xDADAC0DE && index > 0 && index <= MAX_NUMBER_OF_PATCHES){
+    // if it is a patch, set the program id
+    *magic = (*magic&0xffffff00) | (index&0xff);
+    StorageBlock block = storage.append(data, size);
+    if(block.verify()){
+      debugMessage("Patch stored to flash");
+      index = index - 1;
+      if(patchblocks[index].verify())
+	patchblocks[index].setDeleted(); // delete old patch
+      patchblocks[index] = block;
+      program.loadProgram(index);
+      program.resetProgram(false);
+    }
+  }else if(*magic == 0xDADADEED && index > MAX_NUMBER_OF_PATCHES &&
+	   index <= MAX_NUMBER_OF_PATCHES+MAX_NUMBER_OF_RESOURCES){
+    // if it is data, set the resource id
+    *magic = (*magic&0xffffff00) | (index&0xff);
+    StorageBlock block = storage.append(data, size);
+    if(block.verify()){
+      debugMessage("Resource stored to flash");
+      index = index - 1 - MAX_NUMBER_OF_PATCHES;
+      if(resourceblocks[index].verify())
+	resourceblocks[index].setDeleted();
+      resourceblocks[index] = block;
     }
   }else{
-    error(PROGRAM_ERROR, "Invalid index");
+    error(PROGRAM_ERROR, "Invalid magic");
   }
 }
 
