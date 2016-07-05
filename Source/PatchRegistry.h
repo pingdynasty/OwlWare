@@ -5,6 +5,7 @@
 #include "device.h"
 #include "PatchDefinition.hpp"
 #include "StorageBlock.h"
+#include "ResourceHeader.h"
 
 class PatchRegistry;
 extern PatchRegistry registry;
@@ -13,17 +14,20 @@ class PatchRegistry {
 public:
   PatchRegistry();
   void init();
-  const char* getName(unsigned int index);
+  const char* getPatchName(unsigned int index);
+  const char* getResourceName(unsigned int index);
   PatchDefinition* getPatchDefinition(unsigned int index);
   unsigned int getNumberOfPatches();
-  void registerPatch(uint8_t pid, StorageBlock block);
   void setDynamicPatchDefinition(PatchDefinition* def){
     dynamicPatchDefinition = def;
   }
-  void storePatch(uint8_t index, uint8_t* data, size_t size);
+  ResourceHeader* getResource(uint8_t index);
+  ResourceHeader* getResource(const char* name);
+  void store(uint8_t index, uint8_t* data, size_t size);
 private:
   bool isPresetBlock(StorageBlock block);
-  StorageBlock blocks[MAX_NUMBER_OF_PATCHES];
+  StorageBlock patchblocks[MAX_NUMBER_OF_PATCHES];
+  StorageBlock resourceblocks[MAX_NUMBER_OF_RESOURCES];
   PatchDefinition* dynamicPatchDefinition;
 };
 

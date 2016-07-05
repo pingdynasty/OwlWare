@@ -1,5 +1,5 @@
 /*
-  g++ -ISource -ILibraries/CMSIS/ST/STM32F4xx/Include/ -I/opt/local/include -L/opt/local/lib Source/FlashStorageTest.cpp -lboost_unit_test_framework -o FlashStorageTest && ./FlashStorageTest
+  g++ -ISource -ILibraries/CMSIS/ST/STM32F4xx/Include/ -I/opt/local/include -L/opt/local/lib -std=c++11 Source/FlashStorageTest.cpp -lboost_unit_test_framework -o FlashStorageTest && ./FlashStorageTest
 */
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Test
@@ -32,7 +32,7 @@ void eeprom_unlock(){
 int eeprom_write_block(uint32_t address, void* data, uint32_t size){
   uint32_t* p32 = (uint32_t*)data;
   uint32_t i=0; 
-  for(;i<size; i+=4)
+  for(;i<size-3; i+=4)
     eeprom_write_word(address+i, *p32++);
   uint8_t* p8 = (uint8_t*)p32;
   for(;i<size; i++)

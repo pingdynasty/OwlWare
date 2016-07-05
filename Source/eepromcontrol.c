@@ -98,7 +98,7 @@ __attribute__ ((section (".coderam")))
 int eeprom_write_block(uint32_t address, void* data, uint32_t size){
   uint32_t* p32 = (uint32_t*)data;
   uint32_t i=0; 
-  for(;i<size; i+=4)
+  for(;i<size-3; i+=4)
     eeprom_write_word(address+i, *p32++);
   uint8_t* p8 = (uint8_t*)p32;
   for(;i<size; i++)

@@ -3,6 +3,7 @@
 #include "ServiceCall.h"
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
+#include "PatchRegistry.h"
 
 int SERVICE_ARM_CFFT_INIT_F32(arm_cfft_instance_f32* instance, int len){
   switch(len) { 
@@ -44,7 +45,7 @@ int serviceCall(int service, void** params, int len){
   case OWL_SERVICE_VERSION:
     if(len > 0){
       int* value = (int*)params[0];
-      *value = OWL_SERVICE_VERSION_V1;
+      *value = OWL_SERVICE_VERSION_V2;
       return OWL_SERVICE_OK;
     }
     break;
@@ -82,6 +83,17 @@ int serviceCall(int service, void** params, int len){
       }
     }
     return ret;
+    break;
+  }
+  case OWL_SERVICE_GET_RESOURCE: {
+    if(len == 2){
+      char* str = (char*)params[0];
+      ResourceHeader** ptr = (ResourceHeader**)params[1];
+      *ptr = registry.getResource(str);
+      return OWL_SERVICE_OK;
+    }else{
+      return OWL_SERVICE_INVALID_ARGS;
+    }
     break;
   }
   }

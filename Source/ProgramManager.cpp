@@ -148,11 +148,11 @@ extern "C" {
     if(index == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
       flashFirmware(source, size);
     }else if(index > 0 && index < MAX_NUMBER_OF_PATCHES){
-      registry.storePatch(index, source, size);
-    }else{
-      if(size > storage.getFreeSize())
-	error(FLASH_ERROR, "Insufficient flash available");
-      // todo: store data
+      registry.store(index, source, size);
+    // }else{
+    //   if(size > storage.getFreeSize())
+    // 	error(FLASH_ERROR, "Insufficient flash available");
+    //   // todo: store data
     }
     midi.sendProgramMessage();
     midi.sendDeviceStats();

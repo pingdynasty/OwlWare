@@ -93,7 +93,7 @@ void MidiController::sendPatchNames(){
 }
 
 void MidiController::sendPatchName(uint8_t index){
-  const char* name = registry.getName(index);
+  const char* name = registry.getPatchName(index);
   if(name != NULL){
     uint8_t size = strnlen(name, 24);
     uint8_t buffer[size+2];

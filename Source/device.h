@@ -114,6 +114,7 @@
 #define MAX_SYSEX_PROGRAM_SIZE       (128*1024) // 128k, one flash sector
 
 #define MAX_NUMBER_OF_PATCHES        40
+#define MAX_NUMBER_OF_RESOURCES      12
 
 /* I2C clock speed configuration (in Hz)  */
 #define I2C_SPEED                    100000
