@@ -68,8 +68,9 @@ enum OwlProtocol {
   OWL_COMMAND_IDENT               = 0x30,
   OWL_COMMAND_PARAMETER           = 0x40,
   OWL_COMMAND_BUTTON              = 0x50,
-  OWL_COMMAND_CFG                 = 0x60,
-  OWL_COMMAND_DATA                = 0x70,
+  OWL_COMMAND_COMMAND             = 0x60,
+  OWL_COMMAND_MESSAGE             = 0x70,
+  OWL_COMMAND_DATA                = 0x80,
   OWL_COMMAND_SYNC                = 0xc0,
   // use ASCII SYN instead?
 };

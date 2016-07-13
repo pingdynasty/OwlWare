@@ -11,6 +11,9 @@
 #include "Owl.h"
 #include "MidiHandler.h"
 
+static int16_t midi_values[NOF_PARAMETERS];
+static FirmwareLoader loader;
+
 MidiHandler::MidiHandler(){
   memset(midi_values, 0, NOF_PARAMETERS*sizeof(uint16_t));
 }

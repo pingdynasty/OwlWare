@@ -2,14 +2,25 @@
 #define _DigitalBusHandler_h_
 
 #include "MidiReader.h"
+#include "bus.h"
 
 class DigitalBusHandler : public MidiReader {
+public:
+  enum DigitalBusStatus {
+    IDLE = BUS_STATUS_IDLE,
+    DISCOVER = BUS_STATUS_DISCO,
+    ENUMERATE = BUS_STATUS_ENUM,
+    IDENTIFY = BUS_STATUS_IDENT,
+    CONNECTED = BUS_STATUS_CONNECTED,
+    ERROR = BUS_STATUS_ERROR
+  };
 protected:
   uint8_t uid; // this device id
   uint8_t nuid; // downstream device id
   uint32_t token;
   uint8_t peers;
   uint16_t parameterOffset;
+  DigitalBusStatus status;  
   uint8_t* UUID;
   static const uint8_t VERSION = 0x01; // protocol version
   static const uint8_t PRODUCT = 0x01;  // product id
@@ -19,6 +30,9 @@ protected:
 public:
   DigitalBusHandler();
   bool connected();
+  DigitalBusStatus getStatus(){
+    return status;
+  }
   uint32_t generateToken();
   uint8_t getPeers(){ return peers; }
   uint8_t getUid(){ return uid; }
@@ -36,9 +50,17 @@ public:
   void handleParameterChange(uint8_t pid, int16_t value);
   void sendButtonChange(uint8_t pid, int16_t value);
   void handleButtonChange(uint8_t pid, int16_t value);
+  void sendCommand(uint8_t cmd, int16_t data);
+  void handleCommand(uint8_t cmd, int16_t data);
+  void sendMessage(const char* msg);
+  void handleMessage(const char* msg);
+  void sendData(const uint8_t* data, uint32_t len);
+  void handleData(const uint8_t* data, uint32_t len);
+  void rxError(const char* reason);
+  void txError(const char* reason);
 protected:
   // send a 4-byte message
-  void sendMessage(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4);
+  void sendFrame(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4);
   void sendFrame(uint8_t* frame);
 };
 
