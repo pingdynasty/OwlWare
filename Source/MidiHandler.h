@@ -1,13 +1,10 @@
-#ifndef _MidiHandler_HPP_
-#define _MidiHandler_HPP_
+#ifndef _MidiHandler_h_
+#define _MidiHandler_h_
 
 #include <stdint.h>
-#include "FirmwareLoader.hpp"
 
 class MidiHandler {
 private:
-  int16_t midi_values[NOF_PARAMETERS];
-  FirmwareLoader loader;
 public:
   MidiHandler();
   void handleProgramChange(uint8_t status, uint8_t pc);
@@ -34,4 +31,4 @@ private:
 
 };
 
-#endif /* _MidiHandler_HPP_ */
+#endif /* _MidiHandler_h_ */

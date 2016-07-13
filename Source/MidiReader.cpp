@@ -79,3 +79,7 @@ void MidiReader::readMidiFrame(uint8_t* frame){
     break;
   }
 }
+
+void MidiReader::reset(){
+  pos = 0;
+}

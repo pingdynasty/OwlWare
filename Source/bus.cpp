@@ -8,10 +8,15 @@
  * blocks of 4, 3 bytes
  */
 
-static DigitalBusReader bushandler;
+static DigitalBusReader bus;
 
 void bus_setup(){
-  debug << "setupBus";
+  debug << "bus_setup";
+}
+
+uint8_t* bus_deviceid(){
+  return ((uint8_t *)0x1FFF7A10); /* STM32F4, STM32F0 */ 
+  // return ((uint8_t*)0x1ffff7e8); /* STM32F1 */
 }
 
 extern "C" {
@@ -29,10 +34,10 @@ extern "C" {
       if(bus_rx_index == 4){
 	bus_rx_index = 0;
 	// MidiReaderStatus status = 
-	// 	bushandler.readFrame(frame);
+	// 	bus.readFrame(frame);
 	// if(status == ERROR_STATUS)
-	// 	bushandler.clear();
-	bushandler.readBusFrame(frame);
+	// 	bus.clear();
+	bus.readBusFrame(frame);
       }
     }
   }
@@ -41,13 +46,23 @@ extern "C" {
 /* outgoing: send message over digital bus */
 void bus_tx_parameter(uint8_t pid, int16_t value){
   debug << "tx parameter [" << pid << "][" << value << "]" ;
-  bushandler.sendParameterChange(pid, value);
+  bus.sendParameterChange(pid, value);
 }
 
 /* incoming: callback when message received on digital bus */
 void bus_rx_parameter(uint8_t pid, int16_t value){
   debug << "rx parameter [" << pid << "][" << value << "]" ;
   setParameter(pid, value);
+}
+
+void bus_rx_command(uint8_t cmd, int16_t data){
+}
+
+void bus_rx_message(const char* msg){
+  debugMessage(msg);
+}
+
+void bus_rx_data(const uint8_t* ptr, uint16_t size){
 }
 
 void bus_tx_error(const char* reason){
@@ -61,7 +76,7 @@ void bus_rx_error(const char* reason){
 
 void bus_tx_button(uint8_t bid, int16_t value){
   debug << "tx button [" << bid << "][" << value << "]" ;
-  bushandler.sendButtonChange(bid, value);
+  bus.sendButtonChange(bid, value);
 }
 
 void bus_rx_button(uint8_t bid, int16_t value){
