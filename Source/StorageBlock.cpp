@@ -15,8 +15,8 @@ uint32_t StorageBlock::getBlockSize(){
 }
 
 bool StorageBlock::isValidSize(){
-  return header != nullptr && getDataSize() > 0 && ((uint8_t*)header) + getBlockSize() < (uint8_t*)EEPROM_PAGE_END;
-    /* getSize() != 0xffffff; // && getSize() != 0x00; */
+  return header != nullptr && getDataSize() > 0 && 
+    (uint32_t)header + getBlockSize() < EEPROM_PAGE_END;
 }
 
 bool StorageBlock::verify(){
