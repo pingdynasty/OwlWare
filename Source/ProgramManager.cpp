@@ -150,8 +150,8 @@ extern "C" {
     }else{
       registry.store(index, source, size);
     }
-    midi.sendProgramMessage();
-    midi.sendDeviceStats();
+    // midi.sendProgramMessage();
+    // midi.sendDeviceStats();
     vTaskDelete(NULL);
     utilityTask.handle = NULL;
   }
@@ -163,8 +163,8 @@ extern "C" {
       storage.erase();
       debugMessage("Erased flash storage");
     }
-    midi.sendProgramMessage();
-    midi.sendDeviceStats();
+    // midi.sendProgramMessage();
+    // midi.sendDeviceStats();
     // int sector = flashSectorToWrite;
     // if(sector == 0xff){
     //   for(int i=0; i<MAX_USER_PATCHES; ++i)
