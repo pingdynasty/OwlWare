@@ -1,5 +1,4 @@
 #include "MidiReader.h"
-#include "message.h"
 #include "bus.h"
 
 void MidiReader::readMidiFrame(uint8_t* frame){
@@ -22,6 +21,8 @@ void MidiReader::readMidiFrame(uint8_t* frame){
     if(pos < size){
       buffer[pos++] = frame[1];
       handleSysEx(buffer+1, pos-2);
+    }else{
+      bus_rx_error("Sysex buffer overflow");
     }
     pos = 0;
     break;
@@ -30,6 +31,8 @@ void MidiReader::readMidiFrame(uint8_t* frame){
       buffer[pos++] = frame[1];
       buffer[pos++] = frame[2];
       handleSysEx(buffer+1, pos-2);
+    }else{
+      bus_rx_error("Sysex buffer overflow");
     }
     pos = 0;
     break;
@@ -39,6 +42,8 @@ void MidiReader::readMidiFrame(uint8_t* frame){
       buffer[pos++] = frame[2];
       buffer[pos++] = frame[3];
       handleSysEx(buffer+1, pos-2);
+    }else{
+      bus_rx_error("Sysex buffer overflow");
     }
     pos = 0;
     break;
@@ -47,6 +52,8 @@ void MidiReader::readMidiFrame(uint8_t* frame){
       buffer[pos++] = frame[1];
       buffer[pos++] = frame[2];
       buffer[pos++] = frame[3];
+    }else{
+      bus_rx_error("Sysex buffer overflow");
     }
     break;
   case USB_COMMAND_PROGRAM_CHANGE:
@@ -74,7 +81,6 @@ void MidiReader::readMidiFrame(uint8_t* frame){
     handlePitchBend(frame[1], frame[2] | (frame[3]<<7));
     break;
   default:
-    debug << "rx error [" << frame[0] << "]\r\n";
     bus_rx_error("Invalid USB MIDI message");
     break;
   }

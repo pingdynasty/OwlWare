@@ -12,6 +12,7 @@
 #define USAGE_ERROR      0x50
 #define PROGRAM_ERROR    0x60
 #define FLASH_ERROR      0x70
+#define USB_ERROR        0x80
 
 #define CONFIGURATION_ERROR_STATUS -30
 #define OUT_OF_MEMORY_ERROR_STATUS -20

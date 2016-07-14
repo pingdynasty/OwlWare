@@ -150,32 +150,21 @@ extern "C" {
     }else{
       registry.store(index, source, size);
     }
-    // midi.sendProgramMessage();
-    // midi.sendDeviceStats();
+    midi.sendProgramMessage();
+    midi.sendDeviceStats();
     vTaskDelete(NULL);
     utilityTask.handle = NULL;
   }
 
   void eraseFlashTask(void* p){
-    // todo
     int sector = flashSectorToWrite;
     if(sector == 0xff){
       storage.erase();
       debugMessage("Erased flash storage");
+      registry.init();
     }
-    // midi.sendProgramMessage();
-    // midi.sendDeviceStats();
-    // int sector = flashSectorToWrite;
-    // if(sector == 0xff){
-    //   for(int i=0; i<MAX_USER_PATCHES; ++i)
-    // 	eraseFlashProgram(i);
-    //   settings.clearFlash();
-    // }else if(sector >= 0 && sector < MAX_USER_PATCHES){
-    //   eraseFlashProgram(sector);
-    // }else{
-    //   error(PROGRAM_ERROR, "Invalid flash erase command");
-    // }
-    // registry.init();
+    midi.sendProgramMessage();
+    midi.sendDeviceStats();
     vTaskDelete(NULL);
     utilityTask.handle = NULL;
   }
@@ -411,8 +400,8 @@ void ProgramManager::runManager(){
     xTaskNotifyWait(pdFALSE,          /* Don't clear any notification bits on entry. */
 		    UINT32_MAX,       /* Reset the notification value to 0 on exit. */
 		    &ulNotifiedValue, /* Notified value pass out in ulNotifiedValue. */
-		    xMaxBlockTime ); 
-    if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){ // stop      
+		    xMaxBlockTime); 
+    if(ulNotifiedValue & STOP_PROGRAM_NOTIFICATION){ // stop program
       audioStatus = AUDIO_EXIT_STATUS;
       codec.softMute(true);
       if(xProgramHandle != NULL){
@@ -424,6 +413,22 @@ void ProgramManager::runManager(){
     // allow idle task to garbage collect if necessary
     vTaskDelay(20);
     // vTaskDelay(pdMS_TO_TICKS(200));
+    if(ulNotifiedValue & PROGRAM_FLASH_NOTIFICATION){ // program flash
+      bool ret = utilityTask.create(programFlashTask, "Flash Write", FLASH_TASK_PRIORITY);
+      if(!ret)
+	error(PROGRAM_ERROR, "Failed to start Flash Write task");
+    }else if(ulNotifiedValue & ERASE_FLASH_NOTIFICATION){ // erase flash
+      bool ret = utilityTask.create(eraseFlashTask, "Flash Erase", FLASH_TASK_PRIORITY);
+      if(!ret)
+      	error(PROGRAM_ERROR, "Failed to start Flash Erase task");
+#ifdef BUTTON_PROGRAM_CHANGE
+    }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
+      bool ret = utilityTask.create(programChangeTask, "Program Change", PC_TASK_PRIORITY);
+      if(!ret)
+	error(PROGRAM_ERROR, "Failed to start Program Change task");
+#endif /* BUTTON_PROGRAM_CHANGE */
+    }
+    vTaskDelay(20);
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       PatchDefinition* def = getPatchDefinition();
       if(xProgramHandle == NULL && def != NULL){
@@ -437,32 +442,11 @@ void ProgramManager::runManager(){
 					     &xProgramTaskBuffer);
 	}else{
 	  error(PROGRAM_ERROR, "Invalid program stack");
-	  // ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
 	}
 	if(xProgramHandle == NULL)
 	  error(PROGRAM_ERROR, "Failed to start program task");
       }
       // todo: make sure no two tasks are using the same stack
-#ifdef BUTTON_PROGRAM_CHANGE
-    }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
-      bool ret = utilityTask.create(programChangeTask, "Program Change", PC_TASK_PRIORITY);
-      if(!ret)
-	error(PROGRAM_ERROR, "Failed to start Program Change task");
-      // if(xProgramHandle == NULL){
-      // 	xProgramHandle = xTaskCreateStatic(programChangeTask, "Program Change", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, xStack, &xTaskBuffer);
-      // 	if(xProgramHandle == NULL)
-      // 	  error(PROGRAM_ERROR, "Failed to start Program Change task");
-      // }
-#endif /* BUTTON_PROGRAM_CHANGE */
-    }else if(ulNotifiedValue & PROGRAM_FLASH_NOTIFICATION){ // program flash
-      // xFlashTaskHandle = xTaskCreateStatic(programFlashTask, "Flash Write", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, xStack, &xTaskBuffer);
-      bool ret = utilityTask.create(programFlashTask, "Flash Write", FLASH_TASK_PRIORITY);
-      if(!ret)
-	error(PROGRAM_ERROR, "Failed to start Flash Write task");
-    }else if(ulNotifiedValue & ERASE_FLASH_NOTIFICATION){ // erase flash
-      bool ret = utilityTask.create(eraseFlashTask, "Flash Erase", FLASH_TASK_PRIORITY);
-      if(!ret)
-      	error(PROGRAM_ERROR, "Failed to start Flash Erase task");
     }
   }
 }

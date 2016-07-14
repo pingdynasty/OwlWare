@@ -66,11 +66,11 @@ void bus_rx_data(const uint8_t* ptr, uint16_t size){
 }
 
 void bus_tx_error(const char* reason){
-  debug << "Digital bus send error: " << reason << ".";
+  error(USB_ERROR, reason);
 }
 
 void bus_rx_error(const char* reason){
-  debug << "Digital bus receive error: " << reason << ".";
+  error(USB_ERROR, reason);
   bus_rx_index = 0;
 }
 
