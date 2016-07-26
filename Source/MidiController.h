@@ -34,6 +34,9 @@ public:
   void sendDeviceId();
   void sendSelfTest();
   void sendProgramMessage();
+  void setOutputChannel(int8_t ch){
+    channel = ch;
+  }
 };
 
 #endif /* __MIDI_CONTROLLER_H */

@@ -63,6 +63,8 @@ void MidiController::sendSettings(){
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_HALFSPEED, settings.audio_codec_halfspeed);
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_CODEC_SWAP, settings.audio_codec_swaplr);
   sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_PC_BUTTON, settings.program_change_button);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_MIDI_INPUT_CHANNEL, settings.midi_input_channel);
+  sendConfigurationSetting((const char*)SYSEX_CONFIGURATION_MIDI_OUTPUT_CHANNEL, settings.midi_output_channel);
 }
 
 void MidiController::sendPatchParameterNames(){

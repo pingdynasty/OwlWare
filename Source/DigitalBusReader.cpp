@@ -12,8 +12,8 @@ void DigitalBusReader::readBusFrame(uint8_t* frame){
   uint8_t id = frame[0]&0x0f;
   switch(frame[0]&0xf0){
   case 0:
-    if(nuid == NO_UID)
-      return rxError("Out of sequence message");
+    // if(nuid == NO_UID)
+    //   return rxError("Out of sequence message");
     readMidiFrame(frame);
     break;
   case OWL_COMMAND_DISCOVER:

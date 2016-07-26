@@ -32,6 +32,8 @@ public:
   uint32_t input_scalar;
   uint32_t output_offset;
   uint32_t output_scalar;
+  uint8_t midi_input_channel;
+  uint8_t midi_output_channel;
 public:
   void init();
   void reset();

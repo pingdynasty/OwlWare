@@ -56,3 +56,7 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
   if(APP_Rx_ptr_in >= APP_RX_DATA_SIZE)
     APP_Rx_ptr_in = 0;
 }
+
+bool midi_set_input_channel(uint8_t ch){
+  handler.setInputChannel(ch);
+}

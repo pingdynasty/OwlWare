@@ -10,27 +10,36 @@
 #include "ProgramManager.h"
 #include "Owl.h"
 #include "MidiHandler.h"
+#include "midicontrol.h"
 
 static int16_t midi_values[NOF_PARAMETERS];
 static FirmwareLoader loader;
 
-MidiHandler::MidiHandler(){
+MidiHandler::MidiHandler() : channel(MIDI_OMNI_CHANNEL){
   memset(midi_values, 0, NOF_PARAMETERS*sizeof(uint16_t));
 }
 
 void MidiHandler::handlePitchBend(uint8_t status, uint16_t value){
+  if(channel != MIDI_OMNI_CHANNEL && channel != getChannel(status))
+    return;
   setParameter(PARAMETER_G, ((int16_t)value - 8192)>>1);
 }
 
 void MidiHandler::handleNoteOn(uint8_t status, uint8_t note, uint8_t velocity){
+  if(channel != MIDI_OMNI_CHANNEL && channel != getChannel(status))
+    return;
   setButton(MIDI_NOTE_BUTTON+note, velocity<<5);
 }
 
 void MidiHandler::handleNoteOff(uint8_t status, uint8_t note, uint8_t velocity){
+  if(channel != MIDI_OMNI_CHANNEL && channel != getChannel(status))
+    return;
   setButton(MIDI_NOTE_BUTTON+note, 0);
 }
 
 void MidiHandler::handleProgramChange(uint8_t status, uint8_t pid){
+  if(channel != MIDI_OMNI_CHANNEL && channel != getChannel(status))
+    return;
   if(pid == 0 && loader.isReady()){
     program.loadDynamicProgram(loader.getData(), loader.getSize());
     loader.clear();
@@ -42,6 +51,8 @@ void MidiHandler::handleProgramChange(uint8_t status, uint8_t pid){
 }
 
 void MidiHandler::handleControlChange(uint8_t status, uint8_t cc, uint8_t value){
+  if(channel != MIDI_OMNI_CHANNEL && channel != getChannel(status))
+    return;
   switch(cc){
 #ifdef OWLMODULAR
   case PATCH_PARAMETER_A:
@@ -233,6 +244,8 @@ void MidiHandler::updateCodecSettings(){
   codec.init(settings);
   codec.start();
   program.resetProgram(true);
+  midi_set_input_channel(settings.midi_input_channel);
+  midi_set_output_channel(settings.midi_output_channel);
 }
 
 void MidiHandler::handleConfigurationCommand(uint8_t* data, uint16_t size){
@@ -269,6 +282,10 @@ void MidiHandler::handleConfigurationCommand(uint8_t* data, uint16_t size){
     settings.output_offset = value;
   }else if(strncmp(SYSEX_CONFIGURATION_OUTPUT_SCALAR, p, 2) == 0){
     settings.output_scalar = value;
+  }else if(strncmp(SYSEX_CONFIGURATION_MIDI_INPUT_CHANNEL, p, 2) == 0){
+    settings.midi_input_channel = value;
+  }else if(strncmp(SYSEX_CONFIGURATION_MIDI_OUTPUT_CHANNEL, p, 2) == 0){
+    settings.midi_output_channel = value;
   }
   updateCodecSettings();
 }
@@ -348,3 +365,6 @@ void MidiHandler::handleSysEx(uint8_t* data, uint16_t size){
   }
 }
 
+int8_t MidiHandler::getChannel(uint8_t status){
+  return status & MIDI_CHANNEL_MASK;
+}

@@ -5,6 +5,7 @@
 #include "owlcontrol.h"
 #include "PatchRegistry.h"
 #include "MidiController.h"
+#include "midicontrol.h"
 #include "CodecController.h"
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
@@ -402,7 +403,8 @@ void setup(){
 #endif
 
   settings.init();
-  midi.init(MIDI_CHANNEL);
+  midi.init(settings.midi_output_channel);
+  midi_set_input_channel(settings.midi_input_channel);
   registry.init();
 
 #ifdef EXPRESSION_PEDAL
@@ -491,6 +493,9 @@ void audioCallback(int16_t *src, int16_t *dst){
 #endif /* BUTTON_PROGRAM_CHANGE */
 }
 
+   bool midi_set_output_channel(uint8_t ch){
+     midi.setOutputChannel(ch);
+   }
 #ifdef __cplusplus
 }
 #endif
