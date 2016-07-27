@@ -57,6 +57,6 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
     APP_Rx_ptr_in = 0;
 }
 
-bool midi_set_input_channel(uint8_t ch){
+void midi_set_input_channel(int8_t ch){
   handler.setInputChannel(ch);
 }

@@ -5,7 +5,7 @@
 
 class MidiHandler {
 protected:
-  int channel;
+  int8_t channel;
 public:
   MidiHandler();
   void handleProgramChange(uint8_t status, uint8_t pc);

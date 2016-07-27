@@ -493,7 +493,7 @@ void audioCallback(int16_t *src, int16_t *dst){
 #endif /* BUTTON_PROGRAM_CHANGE */
 }
 
-   bool midi_set_output_channel(uint8_t ch){
+   void midi_set_output_channel(int8_t ch){
      midi.setOutputChannel(ch);
    }
 #ifdef __cplusplus

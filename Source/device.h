@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "Bollard A"
+#define FIRMWARE_VERSION             "Bollard B"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -104,7 +104,7 @@
 #define AUDIO_OUTPUT_SCALAR          0x1fffe /* 2.0 * 65535 */
 #endif /* OWLMODULAR */
 
-#define MIDI_OMNI_CHANNEL            0xff
+#define MIDI_OMNI_CHANNEL            (-1)
 #define MIDI_OUTPUT_CHANNEL          0
 #define MIDI_MAX_MESSAGE_SIZE        256
 #define NOF_ADC_VALUES               5

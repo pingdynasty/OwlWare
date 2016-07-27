@@ -15,6 +15,7 @@ void DigitalBusReader::readBusFrame(uint8_t* frame){
     // if(nuid == NO_UID)
     //   return rxError("Out of sequence message");
     readMidiFrame(frame);
+    sendFrame(frame); // warning: circular propagation!
     break;
   case OWL_COMMAND_DISCOVER:
     handleDiscover(id, (frame[1] << 16) | (frame[2]<<8) | frame[3]);
