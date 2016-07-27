@@ -8,8 +8,6 @@
  * blocks of 4, 3 bytes
  */
 
-static DigitalBusReader bus;
-
 void bus_setup(){
   debug << "bus_setup";
 }
@@ -52,7 +50,7 @@ void bus_tx_parameter(uint8_t pid, int16_t value){
 /* incoming: callback when message received on digital bus */
 void bus_rx_parameter(uint8_t pid, int16_t value){
   debug << "rx parameter [" << pid << "][" << value << "]" ;
-  setParameter(pid, value);
+  setParameterValue(pid, value);
 }
 
 void bus_rx_command(uint8_t cmd, int16_t data){

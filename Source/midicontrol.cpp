@@ -4,6 +4,7 @@
 #include "usbd_conf.h"
 #include "usbd_audio_core.h"
 #include "MidiReader.h"
+#include "DigitalBusReader.h"
 #include <string.h>
 
 extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
@@ -58,4 +59,5 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
 
 void midi_set_input_channel(int8_t ch){
   midireader.setInputChannel(ch);
+  bus.setInputChannel(ch);
 }

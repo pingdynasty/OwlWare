@@ -15,13 +15,12 @@
 static FirmwareLoader loader;
 
 MidiHandler::MidiHandler() : channel(MIDI_OMNI_CHANNEL){
-  memset(midi_values, 0, NOF_PARAMETERS*sizeof(uint16_t));
 }
 
 void MidiHandler::handlePitchBend(uint8_t status, uint16_t value){
   if(channel != MIDI_OMNI_CHANNEL && channel != getChannel(status))
     return;
-  setParameter(PARAMETER_G, ((int16_t)value - 8192)>>1);
+  setParameterValue(PARAMETER_G, ((int16_t)value - 8192)>>1);
 }
 
 void MidiHandler::handleNoteOn(uint8_t status, uint8_t note, uint8_t velocity){
@@ -55,35 +54,35 @@ void MidiHandler::handleControlChange(uint8_t status, uint8_t cc, uint8_t value)
   switch(cc){
 #ifdef OWLMODULAR
   case PATCH_PARAMETER_A:
-    midi_values[PARAMETER_A] = (127-value)<<5; // invert and scale from 7bit to 12bit value
+    setParameterValue(PARAMETER_A, (127-value)<<5); // invert and scale from 7bit to 12bit value
     break;
   case PATCH_PARAMETER_B:
-    midi_values[PARAMETER_B] = (127-value)<<5;
+    setParameterValue(PARAMETER_B, (127-value)<<5);
     break;
   case PATCH_PARAMETER_C:
-    midi_values[PARAMETER_C] = (127-value)<<5;
+    setParameterValue(PARAMETER_C, (127-value)<<5);
     break;
   case PATCH_PARAMETER_D:
-    midi_values[PARAMETER_D] = (127-value)<<5;
+    setParameterValue(PARAMETER_D, (127-value)<<5);
     break;
   case PATCH_PARAMETER_E:
-    midi_values[PARAMETER_E] = value<<5;
+    setParameterValue(PARAMETER_E, value<<5);
     break;
 #else /* OWLMODULAR */
   case PATCH_PARAMETER_A:
-    midi_values[PARAMETER_A] = value<<5; // scale from 7bit to 12bit value
+    setParameterValue(PARAMETER_A, value<<5); // scale from 7bit to 12bit value
     break;
   case PATCH_PARAMETER_B:
-    midi_values[PARAMETER_B] = value<<5;
+    setParameterValue(PARAMETER_B, value<<5);
     break;
   case PATCH_PARAMETER_C:
-    midi_values[PARAMETER_C] = value<<5;
+    setParameterValue(PARAMETER_C, value<<5);
     break;
   case PATCH_PARAMETER_D:
-    midi_values[PARAMETER_D] = value<<5;
+    setParameterValue(PARAMETER_D, value<<5);
     break;
   case PATCH_PARAMETER_E:
-    midi_values[PARAMETER_E] = value<<5;
+    setParameterValue(PARAMETER_E, value<<5);
     break;
 #endif /* OWLMODULAR */
   case PATCH_CONTROL:
@@ -202,32 +201,32 @@ void MidiHandler::handleControlChange(uint8_t status, uint8_t cc, uint8_t value)
     }
     break;
   case MIDI_CC_MODULATION:
-    setParameter(PARAMETER_F, value<<5);
+    setParameterValue(PARAMETER_F, value<<5);
     break;
     // case MIDI_CC_BREATH:
-    //   setParameter(PARAMETER_MIDI_BREATH, value<<5);
+    //   setParameterValue(PARAMETER_MIDI_BREATH, value<<5);
     //   break;
     // case MIDI_CC_VOLUME:
-    //   setParameter(PARAMETER_MIDI_VOLUME, value<<5);
+    //   setParameterValue(PARAMETER_MIDI_VOLUME, value<<5);
     //   break;
     // case MIDI_CC_BALANCE:
-    //   setParameter(PARAMETER_MIDI_BALANCE, value<<5);
+    //   setParameterValue(PARAMETER_MIDI_BALANCE, value<<5);
     //   break;
     // case MIDI_CC_PAN:
-    //   setParameter(PARAMETER_MIDI_PAN, value<<5);
+    //   setParameterValue(PARAMETER_MIDI_PAN, value<<5);
     //   break;
     // case MIDI_CC_EXPRESSION:
-    //   setParameter(PARAMETER_MIDI_EXPRESSION, value<<5);
+    //   setParameterValue(PARAMETER_MIDI_EXPRESSION, value<<5);
     //   break;
   case MIDI_CC_EFFECT_CTRL_1:
-    setParameter(PARAMETER_G, value<<5);
+    setParameterValue(PARAMETER_G, value<<5);
     break;
   case MIDI_CC_EFFECT_CTRL_2:
-    setParameter(PARAMETER_H, value<<5);
+    setParameterValue(PARAMETER_H, value<<5);
     break;
   default:
     if(cc >= PATCH_PARAMETER_AA && cc <= PATCH_PARAMETER_BH)
-      setParameter(PARAMETER_AA+(cc-PATCH_PARAMETER_AA), value<<5);
+      setParameterValue(PARAMETER_AA+(cc-PATCH_PARAMETER_AA), value<<5);
     break;
   }
 }

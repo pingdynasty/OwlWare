@@ -159,7 +159,7 @@ public:
   }
 
   void handleParameterChange(uint8_t pid, uint16_t value){
-    setParameter(pid, value);
+    setParameterValue(pid, value);
   }
 
   // read a 4-byte data frame

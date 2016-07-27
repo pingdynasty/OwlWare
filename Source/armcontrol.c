@@ -103,6 +103,14 @@ void adcSetupDMA(int16_t* dma){
   ADC_SoftwareStartConv(ADC3);
 }
 
+void adcStartDMA(){
+  DMA_Cmd(DMA2_Stream0, ENABLE);
+}
+
+void adcStopDMA(){
+  DMA_Cmd(DMA2_Stream0, DISABLE);
+}
+
 uint16_t getSampleCounter(){
   // does not work: always returns values <= 5
   // return DMA_GetCurrDataCounter(DMA2_Stream0);

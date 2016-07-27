@@ -14,5 +14,6 @@ private:
   uint32_t datalen = 0;
 };
 
+extern DigitalBusReader bus;
 
 #endif /* _DigitalBusReader_h_ */
