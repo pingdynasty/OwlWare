@@ -23,7 +23,6 @@ extern volatile uint32_t APP_Rx_ptr_out;   /* This pointer is used by the MIDI d
 
 /* status flag that is set when the USB device is connected */
 extern uint8_t usbd_usr_device_status;
-MidiReader handler;
 
 bool midi_device_connected(){
   return usbd_usr_device_status > 0x02;
@@ -32,7 +31,7 @@ bool midi_device_connected(){
 void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){
   length /= 4;
   while(length--){
-    handler.readMidiFrame(buffer);
+    midireader.readMidiFrame(buffer);
     buffer += 4;
   }
 }
@@ -58,5 +57,5 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
 }
 
 void midi_set_input_channel(int8_t ch){
-  handler.setInputChannel(ch);
+  midireader.setInputChannel(ch);
 }

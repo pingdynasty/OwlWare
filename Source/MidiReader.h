@@ -21,5 +21,6 @@ public:
   void reset();
 };
 
+extern MidiReader midireader;
 
 #endif /* _MidiReader_h_ */

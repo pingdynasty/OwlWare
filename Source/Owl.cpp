@@ -5,6 +5,7 @@
 #include "owlcontrol.h"
 #include "PatchRegistry.h"
 #include "MidiController.h"
+#include "MidiReader.h"
 #include "midicontrol.h"
 #include "CodecController.h"
 #include "ApplicationSettings.h"
@@ -26,6 +27,7 @@ if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
 
 CodecController codec;
 MidiController midi;
+MidiReader midireader;
 ApplicationSettings settings;
 PatchRegistry registry;
 
@@ -327,6 +329,21 @@ void setParameterValues(int16_t* values, int size){
   getProgramVector()->parameters_size = size;
 }
 
+int16_t* getParameterValues(){
+  return getProgramVector()->parameters;
+}
+
+void setRemoteControl(bool remote){
+  if(remote){
+    if(getParameterValues() != midireader.getParameterValues())
+      memcpy(midireader.getParameterValues(), getAnalogValues(), NOF_PARAMETERS*sizeof(uint16_t));
+      setParameterValues(midireader.getParameterValues(), NOF_PARAMETERS);
+  }else{
+    if(getParameterValues() != getAnalogValues())
+      setParameterValues(getAnalogValues(), NOF_PARAMETERS);
+  }
+}
+
 void updateProgramVector(ProgramVector* vector){
   vector->checksum = sizeof(ProgramVector);
 #if defined OWLMODULAR
@@ -407,6 +424,10 @@ void setup(){
   midi_set_input_channel(settings.midi_input_channel);
   registry.init();
 
+#ifdef OWLRACK
+
+#endif
+
 #ifdef EXPRESSION_PEDAL
   setupExpressionPedal();
 #endif
@@ -448,7 +469,6 @@ void setup(){
   serial_setup(USART_BAUDRATE);
   bus_setup();
 #endif
-
 
   codec.setup();
   codec.init(settings);

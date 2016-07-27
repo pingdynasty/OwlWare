@@ -91,7 +91,7 @@
    void updateProgramIndex(uint8_t index);
    void togglePushButton();
 
-   void setParameterValues(int16_t* values, int size);
+   void setRemoteControl(bool remote);
 
 #ifdef __cplusplus
 }

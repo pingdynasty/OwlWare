@@ -12,7 +12,6 @@
 #include "MidiHandler.h"
 #include "midicontrol.h"
 
-static int16_t midi_values[NOF_PARAMETERS];
 static FirmwareLoader loader;
 
 MidiHandler::MidiHandler() : channel(MIDI_OMNI_CHANNEL){
@@ -88,12 +87,7 @@ void MidiHandler::handleControlChange(uint8_t status, uint8_t cc, uint8_t value)
     break;
 #endif /* OWLMODULAR */
   case PATCH_CONTROL:
-    if(value == 127){
-      memcpy(midi_values, getAnalogValues(), NOF_PARAMETERS*sizeof(uint16_t));
-      setParameterValues(midi_values, NOF_PARAMETERS);
-    }else{
-      setParameterValues(getAnalogValues(), NOF_PARAMETERS);
-    }
+    setRemoteControl(value == 127);
     break;
   case PATCH_BUTTON:
     if(value == 127){

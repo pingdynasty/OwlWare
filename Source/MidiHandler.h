@@ -2,10 +2,12 @@
 #define _MidiHandler_h_
 
 #include <stdint.h>
+#include "device.h"
 
 class MidiHandler {
 protected:
   int8_t channel;
+  int16_t midi_values[NOF_PARAMETERS];
 public:
   MidiHandler();
   void handleProgramChange(uint8_t status, uint8_t pc);
@@ -26,6 +28,9 @@ public:
     channel = ch;
   }
   static int8_t getChannel(uint8_t status);
+  int16_t* getParameterValues(){
+    return midi_values;
+  }
 private:
   void updateCodecSettings();
   void handleConfigurationCommand(uint8_t* data, uint16_t size);
@@ -33,7 +38,6 @@ private:
   void handleFirmwareRunCommand(uint8_t* data, uint16_t size);
   void handleFirmwareFlashCommand(uint8_t* data, uint16_t size);
   void handleFirmwareStoreCommand(uint8_t* data, uint16_t size);
-
 };
 
 #endif /* _MidiHandler_h_ */
