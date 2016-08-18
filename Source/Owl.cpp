@@ -257,10 +257,15 @@ extern volatile ProgramVectorAudioStatus audioStatus;
 	 }
        }
      }else if(bid < NOF_BUTTONS){
-       if(state)
+       if(state){
 	 setButtonState(bid);
-       else
+	 if(bid == GREEN_BUTTON)
+	   setButtonColour(GREEN);	 
+	 else if(bid == RED_BUTTON)
+	   setButtonColour(RED);
+       }else{
 	 clearButtonState(bid);
+       }
      }else if(bid >= MIDI_NOTE_BUTTON){
        if(state)
 	 midi.sendNoteOn(bid-MIDI_NOTE_BUTTON, (state>>5) & 0x7f);
