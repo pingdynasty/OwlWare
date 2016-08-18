@@ -59,7 +59,8 @@ static void clearGate(){
 static void setButtonColour(LedPin led){
   switch(led){
   case GREEN:
-    setLed(GREEN);
+    if(!getButton(BYPASS_BUTTON))
+      setLed(GREEN);
     setButtonState(GREEN_BUTTON);
     clearButtonState(RED_BUTTON);
     break;
