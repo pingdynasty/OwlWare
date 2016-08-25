@@ -17,28 +17,6 @@
    void jump_to_bootloader();
    char* getFirmwareVersion();
 
-   typedef enum {
-     NONE  = 0,
-     GREEN = LED_GREEN,
-     RED   = LED_RED
-   }  LedPin;
-
-   LedPin getLed();
-
-   inline void setLed(LedPin led){
-     clearPin(LED_PORT, led ^ (LED_RED|LED_GREEN));
-     setPin(LED_PORT, led);
-   }
-
-   inline void toggleLed(){
-     togglePin(LED_PORT, LED_RED|LED_GREEN);
-   }
-
-   inline void blink(){
-     togglePin(LED_PORT, LED_RED|LED_GREEN);
-     togglePin(LED_PORT, LED_RED|LED_GREEN);
-   }
-
    inline void debugSet(){
      setPin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
    }
@@ -49,6 +27,30 @@
 
    inline void debugToggle(){
      togglePin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
+   }
+
+   typedef enum {
+     NONE  = 0,
+     GREEN = LED_GREEN,
+     RED   = LED_RED
+   }  LedPin;
+
+   LedPin getLed();
+
+   inline void setLed(LedPin led){
+#ifdef OWLRACK
+     if(led == LED_GREEN)
+       debugSet();
+     else
+       debugClear();
+#else
+     clearPin(LED_PORT, led ^ (LED_RED|LED_GREEN));
+     setPin(LED_PORT, led);
+#endif
+   }
+
+   inline void toggleLed(){
+     togglePin(LED_PORT, LED_RED|LED_GREEN);
    }
 
    void ledSetup();
