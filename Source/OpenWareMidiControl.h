@@ -2,7 +2,8 @@
 #define OPENWAREMIDICONTROL_H_INCLUDED
 
 #define MIDI_SYSEX_MANUFACTURER        0x7d     /* Educational or development use only */
-#define MIDI_SYSEX_DEVICE              0x52     /* OWL Open Ware Laboratory */
+#define MIDI_SYSEX_DEVICE              0x52
+#define MIDI_SYSEX_OWL_DEVICE          0x20     /* OWL Open Ware Laboratory */
 #define MIDI_SYSEX_VERSION             0x03     /* Revision */
 
 enum PatchParameterId {
