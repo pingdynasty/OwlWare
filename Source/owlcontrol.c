@@ -90,12 +90,16 @@ void jump_to_bootloader(void){
 }
 
 LedPin getLed(){
+#ifdef OWLRACK
+  return debugGet() ? GREEN : NONE;
+#else
   if(getPin(LED_PORT, LED_GREEN))
     return GREEN;
   else if(getPin(LED_PORT, LED_RED))
     return RED;
   else
     return NONE;
+#endif
 }
 
 void ledSetup(){

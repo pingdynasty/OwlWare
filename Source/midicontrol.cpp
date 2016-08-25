@@ -33,6 +33,10 @@ void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){
   length /= 4;
   while(length--){
     midireader.readMidiFrame(buffer);
+#ifdef OWLRACK
+    // propagate message through digital bus
+    bus.sendFrame(buffer);
+#endif
     buffer += 4;
   }
 }
