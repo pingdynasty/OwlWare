@@ -335,6 +335,7 @@ void MidiHandler::handleSysEx(uint8_t* data, uint16_t size){
   if(size < 3 || data[0] != MIDI_SYSEX_MANUFACTURER)     
     return;
   if(data[1] != MIDI_SYSEX_DEVICE && data[1] != (MIDI_SYSEX_OWL_DEVICE | channel))
+    // not for us
     return; // if channel == OMNI && data[1] == 0xff this message will also be processed
   switch(data[2]){
   case SYSEX_CONFIGURATION_COMMAND:

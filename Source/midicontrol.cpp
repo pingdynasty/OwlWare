@@ -6,6 +6,7 @@
 #include "MidiReader.h"
 #include "DigitalBusReader.h"
 #include <string.h>
+#include "device.h"
 
 extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
 /* These are external variables imported from USB-MIDI core to be used for IN
@@ -49,6 +50,10 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
    * byte-by-byte). One consequence of this is that the USB buffer size must be a multiple
    * of 4 (the packet size).
    */
+#ifdef OWLRACK
+  ASSERT(length == 4, "Invalid usb midi data size");
+  bus.sendFrame(buffer); // assuming 4 byte buffer
+#endif
   /* Check if device is online */
   if(USB_OTG_dev.dev.device_status != USB_OTG_CONFIGURED)
     return;

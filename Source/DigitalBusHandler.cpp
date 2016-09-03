@@ -219,3 +219,7 @@ void DigitalBusHandler::sendData(const uint8_t* data, uint32_t len){
 void DigitalBusHandler::handleData(const uint8_t* data, uint32_t len){
   bus_rx_data(data, len);
 }
+
+void DigitalBusHandler::sendReset(){
+  sendFrame(OWL_COMMAND_RESET, 0, 0, 0);
+}

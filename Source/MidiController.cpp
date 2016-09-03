@@ -323,7 +323,7 @@ void MidiController::sendSysEx(uint8_t* data, uint16_t size){
     uint8_t packet[4] = { USB_COMMAND_SYSEX, 
 			  SYSEX, 
 			  MIDI_SYSEX_MANUFACTURER, 
-			  MIDI_SYSEX_OWL_DEVICE | channel };
+			  (uint8_t)(MIDI_SYSEX_OWL_DEVICE | channel) };
     midi_send_usb_buffer(packet, sizeof(packet));
     int count = size/3;
     uint8_t* src = data;

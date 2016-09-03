@@ -56,6 +56,7 @@ public:
   void handleMessage(const char* msg);
   void sendData(const uint8_t* data, uint32_t len);
   void handleData(const uint8_t* data, uint32_t len);
+  void sendReset();
   void rxError(const char* reason);
   void txError(const char* reason);
   // send a 4-byte bus or midi message

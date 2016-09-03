@@ -10,6 +10,7 @@
 
 void bus_setup(){
   debug << "bus_setup";
+  bus.sendReset();
 }
 
 uint8_t* bus_deviceid(){

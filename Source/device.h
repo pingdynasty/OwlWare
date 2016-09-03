@@ -54,6 +54,7 @@
 #define USART_RX_PINSOURCE           GPIO_PinSource1
 #define USART_IRQHandler             UART4_IRQHandler
 #define USART_IRQn                   UART4_IRQn
+#define DIGITAL_BUS_PROPAGATE_MIDI
 
 #define EEPROM_PAGE_BEGIN            ((uint32_t)0x08060000)
 #define EEPROM_PAGE_SIZE             (128*1024)

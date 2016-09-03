@@ -71,8 +71,8 @@ enum OwlProtocol {
   OWL_COMMAND_COMMAND             = 0x60,
   OWL_COMMAND_MESSAGE             = 0x70,
   OWL_COMMAND_DATA                = 0x80,
-  OWL_COMMAND_SYNC                = 0xc0,
-  // use ASCII SYN instead?
+  OWL_COMMAND_SYNC                = 0xc0,  // use ASCII SYN instead?
+  OWL_COMMAND_RESET               = 0xf0,
 };
 
 #endif /* _MidiStatus_h_ */
