@@ -89,6 +89,10 @@ void jump_to_bootloader(void){
   dfu_reboot();
 }
 
+bool debugGet(){
+  return getPin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
+}
+
 LedPin getLed(){
 #ifdef OWLRACK
   return debugGet() ? GREEN : NONE;

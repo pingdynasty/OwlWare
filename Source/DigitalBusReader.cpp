@@ -125,7 +125,7 @@ void DigitalBusReader::readBusFrame(uint8_t* frame){
   case OWL_COMMAND_RESET:
     if(id == 0){
       if(nuid != NO_UID) // propagate
-      sendFrame(frame);
+	sendFrame(frame);
       reset();
     }
     break;

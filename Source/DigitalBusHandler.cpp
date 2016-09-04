@@ -221,5 +221,6 @@ void DigitalBusHandler::handleData(const uint8_t* data, uint32_t len){
 }
 
 void DigitalBusHandler::sendReset(){
-  sendFrame(OWL_COMMAND_RESET, 0, 0, 0);
+  sendFrame(OWL_COMMAND_RESET, OWL_COMMAND_RESET, 
+	    OWL_COMMAND_RESET, OWL_COMMAND_RESET);
 }

@@ -332,29 +332,29 @@ void MidiHandler::handleFirmwareStoreCommand(uint8_t* data, uint16_t size){
 }
 
 void MidiHandler::handleSysEx(uint8_t* data, uint16_t size){
-  if(size < 3 || data[0] != MIDI_SYSEX_MANUFACTURER)     
+  if(size < 5 || data[1] != MIDI_SYSEX_MANUFACTURER)     
     return;
-  if(data[1] != MIDI_SYSEX_DEVICE && data[1] != (MIDI_SYSEX_OWL_DEVICE | channel))
+  if(data[2] != MIDI_SYSEX_DEVICE && data[2] != (MIDI_SYSEX_OWL_DEVICE | channel))
     // not for us
-    return; // if channel == OMNI && data[1] == 0xff this message will also be processed
-  switch(data[2]){
+    return; // if channel == OMNI && data[2] == 0xff this message will also be processed
+  switch(data[3]){
   case SYSEX_CONFIGURATION_COMMAND:
-    handleConfigurationCommand(data+3, size-3);
+    handleConfigurationCommand(data+4, size-5);
     break;
   case SYSEX_DFU_COMMAND:
     jump_to_bootloader();
     break;
   case SYSEX_FIRMWARE_UPLOAD:
-    handleFirmwareUploadCommand(data, size);
+    handleFirmwareUploadCommand(data+1, size-2);
     break;
   case SYSEX_FIRMWARE_RUN:
-    handleFirmwareRunCommand(data+3, size-3);
+    handleFirmwareRunCommand(data+4, size-5);
     break;
   case SYSEX_FIRMWARE_STORE:
-    handleFirmwareStoreCommand(data+3, size-3);
+    handleFirmwareStoreCommand(data+4, size-5);
     break;
   case SYSEX_FIRMWARE_FLASH:
-    handleFirmwareFlashCommand(data+3, size-3);
+    handleFirmwareFlashCommand(data+4, size-5);
     break;
   }
 }

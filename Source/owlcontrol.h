@@ -17,9 +17,7 @@
    void jump_to_bootloader();
    char* getFirmwareVersion();
 
-   inline bool debugGet(){
-     getPin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED
-   }
+   bool debugGet();
 
    inline void debugSet(){
      setPin(GPIOB, GPIO_Pin_1); // PB1, DEBUG LED

@@ -57,9 +57,14 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
   /* Check if device is online */
   if(USB_OTG_dev.dev.device_status != USB_OTG_CONFIGURED)
     return;
+#ifdef OWLRACK
+  if((APP_RX_DATA_SIZE + APP_Rx_ptr_out - APP_Rx_ptr_in) % APP_RX_DATA_SIZE == length)
+    return;
+#else
   /* If the buffer is completely full, wait until the USB peripheral clears
    * it to continue. */
   while((APP_RX_DATA_SIZE + APP_Rx_ptr_out - APP_Rx_ptr_in) % APP_RX_DATA_SIZE == length);
+#endif
   memcpy(&APP_Rx_Buffer[APP_Rx_ptr_in], buffer, length);
   APP_Rx_ptr_in += length;
   if(APP_Rx_ptr_in >= APP_RX_DATA_SIZE)

@@ -69,8 +69,10 @@ void bus_tx_error(const char* reason){
 }
 
 void bus_rx_error(const char* reason){
-  error(USB_ERROR, reason);
   bus_rx_index = 0;
+  bus.reset();
+  bus.sendReset();
+  error(USB_ERROR, reason);
 }
 
 void bus_tx_button(uint8_t bid, int16_t value){
