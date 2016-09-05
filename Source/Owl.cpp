@@ -350,7 +350,7 @@ void setRemoteControl(bool remote){
 }
 
 void updateProgramVector(ProgramVector* vector){
-  vector->checksum = sizeof(ProgramVector);
+  vector->checksum = PROGRAM_VECTOR_CHECKSUM_V12;
 #if defined OWLMODULAR
   vector->hardware_version = OWL_MODULAR_HARDWARE;
 #elif defined OWLRACK

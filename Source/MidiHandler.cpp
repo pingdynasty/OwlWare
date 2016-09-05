@@ -358,6 +358,9 @@ void MidiHandler::handleSysEx(uint8_t* data, uint16_t size){
   case SYSEX_FIRMWARE_FLASH:
     handleFirmwareFlashCommand(data+4, size-5);
     break;
+  default:
+    error(PROGRAM_ERROR, "Invalid SysEx Message");
+    break;
   }
 }
 

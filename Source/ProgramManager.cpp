@@ -38,6 +38,8 @@ static uint32_t getFlashAddress(int sector){
 
 TaskHandle_t xProgramHandle = NULL;
 
+uint8_t ucHeap[configTOTAL_HEAP_SIZE] CCM;
+
 template<uint32_t STACK_SIZE>
 class StaticTask {
 private:
@@ -474,7 +476,8 @@ void ProgramManager::runManager(){
 					     (StackType_t*)def->getStackBase(), 
 					     &xProgramTaskBuffer);
 	}else{
-	  error(PROGRAM_ERROR, "Invalid program stack");
+	  xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
+	  // error(PROGRAM_ERROR, "Invalid program stack");
 	}
 	if(xProgramHandle == NULL)
 	  error(PROGRAM_ERROR, "Failed to start program task");
