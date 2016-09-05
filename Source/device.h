@@ -115,6 +115,8 @@
 #define MAX_SYSEX_FIRMWARE_SIZE      ((16+16+64+128+128)*1024) // FLASH sectors 2-6
 #define MAX_SYSEX_PROGRAM_SIZE       (128*1024) // 128k, one flash sector
 
+#define MAX_FACTORY_PATCHES          36
+#define MAX_USER_PATCHES             4
 #define MAX_NUMBER_OF_PATCHES        40
 #define MAX_NUMBER_OF_RESOURCES      12
 

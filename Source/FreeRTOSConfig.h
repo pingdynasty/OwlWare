@@ -85,7 +85,7 @@
 	extern uint32_t SystemCoreClock;
 /* #endif */
 
-#define configSUPPORT_DYNAMIC_ALLOCATION        0
+#define configSUPPORT_DYNAMIC_ALLOCATION        1
 #define configSUPPORT_STATIC_ALLOCATION         1
 
 #define configUSE_PREEMPTION			1
@@ -97,8 +97,8 @@
 #define configMAX_PRIORITIES			( 5 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 128 )
 /* #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 1024+512+256 ) ) */
-/* #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 7*1024+512 ) ) */
-/* #define configAPPLICATION_ALLOCATED_HEAP        1 */
+#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 7*1024+512 ) )
+#define configAPPLICATION_ALLOCATED_HEAP        1
 #define configMAX_TASK_NAME_LEN			( 10 )
 #define configUSE_TRACE_FACILITY		1
 #define configUSE_16_BIT_TICKS			0

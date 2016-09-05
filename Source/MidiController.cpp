@@ -9,7 +9,7 @@
 #include "OpenWareMidiControl.h"
 #include "ProgramVector.h"
 #include "ProgramManager.h"
-#include "FlashStorage.h"
+// #include "FlashStorage.h"
 #include "Owl.h"
 #include <math.h> /* for ceilf */
 #include "message.h"
@@ -128,15 +128,15 @@ void MidiController::sendDeviceStats(){
   p = stpcpy(p, itoa(program.getManagerStackAllocation(), 10));
   sendSysEx((uint8_t*)buffer, p-buffer);
 #endif /* DEBUG_STACK */
-  p = stpcpy(p, (const char*)"Storage used ");
-  p = stpcpy(p, itoa(storage.getTotalUsedSize(), 10));
-  p = stpcpy(p, (const char*)" deleted ");
-  p = stpcpy(p, itoa(storage.getDeletedSize(), 10));
-  p = stpcpy(p, (const char*)" free ");
-  p = stpcpy(p, itoa(storage.getFreeSize(), 10));
-  p = stpcpy(p, (const char*)" total ");
-  p = stpcpy(p, itoa(storage.getTotalAllocatedSize(), 10));
-  sendSysEx((uint8_t*)buffer, p-buffer);
+  // p = stpcpy(p, (const char*)"Storage used ");
+  // p = stpcpy(p, itoa(storage.getTotalUsedSize(), 10));
+  // p = stpcpy(p, (const char*)" deleted ");
+  // p = stpcpy(p, itoa(storage.getDeletedSize(), 10));
+  // p = stpcpy(p, (const char*)" free ");
+  // p = stpcpy(p, itoa(storage.getFreeSize(), 10));
+  // p = stpcpy(p, (const char*)" total ");
+  // p = stpcpy(p, itoa(storage.getTotalAllocatedSize(), 10));
+  // sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
 void MidiController::sendProgramStats(){

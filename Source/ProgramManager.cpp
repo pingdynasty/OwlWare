@@ -12,7 +12,6 @@
 #include "CodecController.h"
 #include "Owl.h"
 #include "MidiController.h"
-#include "FlashStorage.h"
 
 // FreeRTOS low priority numbers denote low priority tasks. 
 // The idle task has priority zero (tskIDLE_PRIORITY).
@@ -29,6 +28,14 @@ ProgramVector* programVector = &staticVector;
 extern "C" ProgramVector* getProgramVector() { return programVector; }
 volatile ProgramVectorAudioStatus audioStatus = AUDIO_IDLE_STATUS;
 static DynamicPatchDefinition dynamo;
+static DynamicPatchDefinition flashPatches[MAX_USER_PATCHES];
+
+static uint32_t getFlashAddress(int sector){
+  uint32_t addr = ADDR_FLASH_SECTOR_11;
+  addr -= sector*128*1024; // count backwards by 128k blocks, ADDR_FLASH_SECTOR
+  return addr;
+}
+
 TaskHandle_t xProgramHandle = NULL;
 
 template<uint32_t STACK_SIZE>
@@ -74,14 +81,14 @@ volatile int flashSectorToWrite;
 volatile void* flashAddressToWrite;
 volatile uint32_t flashSizeToWrite;
 
-// static void eraseFlashProgram(int sector){
-//   uint32_t addr = getFlashAddress(sector);
-//   eeprom_unlock();
-//   int ret = eeprom_erase(addr);
-//   eeprom_lock();
-//   if(ret != 0)
-//     error(PROGRAM_ERROR, "Failed to erase flash sector");
-// }
+static void eraseFlashProgram(int sector){
+  uint32_t addr = getFlashAddress(sector);
+  eeprom_unlock();
+  int ret = eeprom_erase(addr);
+  eeprom_lock();
+  if(ret != 0)
+    error(PROGRAM_ERROR, "Failed to erase flash sector");
+}
 
 extern "C" {
   void runManagerTask(void* p){
@@ -142,31 +149,47 @@ extern "C" {
   }
 
   void programFlashTask(void* p){
-    uint8_t index = flashSectorToWrite;
+    int sector = flashSectorToWrite;
     uint32_t size = flashSizeToWrite;
     uint8_t* source = (uint8_t*)flashAddressToWrite;
-    if(index == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
+    if(sector >= 0 && sector < MAX_USER_PATCHES && size <= 128*1024){
+      uint32_t addr = getFlashAddress(sector);
+      eeprom_unlock();
+      int ret = eeprom_erase(addr);
+      if(ret == 0)
+	ret = eeprom_write_block(addr, source, size);
+      eeprom_lock();
+      registry.init();
+      if(ret == 0){
+	// load and run program
+	int pc = registry.getNumberOfPatches()-MAX_USER_PATCHES+sector;
+	program.loadProgram(pc);
+	// program.loadDynamicProgram(source, size);
+	program.resetProgram(false);
+      }else{
+	error(PROGRAM_ERROR, "Failed to write program to flash");
+      }
+    }else if(sector == 0xff && size < MAX_SYSEX_FIRMWARE_SIZE){
       flashFirmware(source, size);
     }else{
-      registry.store(index, source, size);
+      error(PROGRAM_ERROR, "Invalid flash program command");
     }
-    midi.sendProgramMessage();
-    midi.sendDeviceStats();
     vTaskDelete(NULL);
-    utilityTask.handle = NULL;
   }
 
   void eraseFlashTask(void* p){
     int sector = flashSectorToWrite;
     if(sector == 0xff){
-      storage.erase();
-      debugMessage("Erased flash storage");
-      registry.init();
+      for(int i=0; i<MAX_USER_PATCHES; ++i)
+	eraseFlashProgram(i);
+      settings.clearFlash();
+    }else if(sector >= 0 && sector < MAX_USER_PATCHES){
+      eraseFlashProgram(sector);
+    }else{
+      error(PROGRAM_ERROR, "Invalid flash erase command");
     }
-    midi.sendProgramMessage();
-    midi.sendDeviceStats();
+    registry.init();
     vTaskDelete(NULL);
-    utilityTask.handle = NULL;
   }
 
   // static int midiMessagesToSend = 0;
@@ -334,8 +357,10 @@ void ProgramManager::startProgramChange(bool isr){
 
 void ProgramManager::loadProgram(uint8_t pid){
   PatchDefinition* def = registry.getPatchDefinition(pid);
-  if(def != NULL && def->getProgramVector() != NULL){
-    currentpatch = def;
+  if(def != NULL && def != patchdef && def->getProgramVector() != NULL){
+    patchdef = def;
+  // if(def != NULL && def->getProgramVector() != NULL){
+  //   currentpatch = def;
     updateProgramIndex(pid);
   }
 }
@@ -343,8 +368,10 @@ void ProgramManager::loadProgram(uint8_t pid){
 void ProgramManager::loadDynamicProgram(void* address, uint32_t length){
   dynamo.load(address, length);
   if(dynamo.getProgramVector() != NULL){
-    currentpatch = &dynamo;
-    registry.setDynamicPatchDefinition(currentpatch);
+    patchdef = &dynamo;
+    registry.setDynamicPatchDefinition(patchdef);
+    // currentpatch = &dynamo;
+    // registry.setDynamicPatchDefinition(currentpatch);
     updateProgramIndex(0);
   }else{
     registry.setDynamicPatchDefinition(NULL);
@@ -361,8 +388,10 @@ uint32_t ProgramManager::getProgramStackUsed(){
 
 uint32_t ProgramManager::getProgramStackAllocation(){
   uint32_t ss = 0;
-  if(currentpatch != NULL)
-    ss = currentpatch->getStackSize();
+  if(patchdef != NULL)
+    ss = patchdef->getStackSize();
+  // if(currentpatch != NULL)
+  //   ss = currentpatch->getStackSize();
   if(ss == 0)
     ss = PROGRAM_TASK_STACK_SIZE*sizeof(portSTACK_TYPE);
   return ss;
@@ -377,6 +406,10 @@ uint32_t ProgramManager::getManagerStackUsed(){
 
 uint32_t ProgramManager::getManagerStackAllocation(){
   return MANAGER_TASK_STACK_SIZE*sizeof(portSTACK_TYPE);
+}
+
+uint32_t ProgramManager::getFreeHeapSize(){
+  return xPortGetFreeHeapSize();
 }
 #endif /* DEBUG_STACK */
 
@@ -451,12 +484,26 @@ void ProgramManager::runManager(){
   }
 }
 
-void ProgramManager::eraseFromFlash(uint8_t sector){
+PatchDefinition* ProgramManager::getPatchDefinitionFromFlash(uint8_t sector){
+  if(sector >= MAX_USER_PATCHES)
+    return NULL;
+  uint32_t addr = getFlashAddress(sector);
+  ProgramHeader* header = (ProgramHeader*)addr;
+  DynamicPatchDefinition* def = &flashPatches[sector];
+  uint32_t size = (uint32_t)header->endAddress - (uint32_t)header->linkAddress;
+  if(header->magic == 0xDADAC0DE && size <= 80*1024){
+    if(def->load((void*)addr, size) && def->verify())
+      return def;
+  }
+  return NULL;
+}
+
+void ProgramManager::eraseProgramFromFlash(uint8_t sector){
   flashSectorToWrite = sector;
   notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|ERASE_FLASH_NOTIFICATION);
 }
 
-void ProgramManager::saveToFlash(uint8_t sector, void* address, uint32_t length){
+void ProgramManager::saveProgramToFlash(uint8_t sector, void* address, uint32_t length){
   flashSectorToWrite = sector;
   flashAddressToWrite = address;
   flashSizeToWrite = length;

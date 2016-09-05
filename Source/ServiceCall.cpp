@@ -85,17 +85,17 @@ int serviceCall(int service, void** params, int len){
     return ret;
     break;
   }
-  case OWL_SERVICE_GET_RESOURCE: {
-    if(len == 2){
-      char* str = (char*)params[0];
-      ResourceHeader** ptr = (ResourceHeader**)params[1];
-      *ptr = registry.getResource(str);
-      return OWL_SERVICE_OK;
-    }else{
-      return OWL_SERVICE_INVALID_ARGS;
-    }
-    break;
-  }
+  // case OWL_SERVICE_GET_RESOURCE: {
+  //   if(len == 2){
+  //     char* str = (char*)params[0];
+  //     ResourceHeader** ptr = (ResourceHeader**)params[1];
+  //     *ptr = registry.getResource(str);
+  //     return OWL_SERVICE_OK;
+  //   }else{
+  //     return OWL_SERVICE_INVALID_ARGS;
+  //   }
+  //   break;
+  // }
   }
   return OWL_SERVICE_INVALID_ARGS;
-}     
+}

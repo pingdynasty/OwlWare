@@ -54,7 +54,7 @@ public:
     if(programFunction == NULL)
       return false;
     // check magic
-    if((*(uint32_t*)programAddress & 0xffffff00) != 0xDADAC000)
+    if(*(uint32_t*)programAddress != 0xDADAC0DE)
       return false;
     // sanity-check stack base address and size
     uint32_t sb = (uint32_t)stackBase;
