@@ -41,8 +41,10 @@ void DigitalBusReader::readBusFrame(uint8_t* frame){
     if(id != uid){
       // it's not from us: process
       handleParameterChange(frame[1], (frame[2]<<8) | frame[3]);
+#ifdef DIGITAL_BUS_OUTPUT
       if(id != nuid) // propagate
 	sendFrame(frame);
+#endif
     }
     break;
   case OWL_COMMAND_BUTTON:
@@ -50,8 +52,10 @@ void DigitalBusReader::readBusFrame(uint8_t* frame){
       return rxError("Out of sequence button message");
     if(id != uid){
       handleButtonChange(frame[1], (frame[2]<<8) | frame[3]);
+#ifdef DIGITAL_BUS_OUTPUT
       if(id != nuid) // propagate
 	sendFrame(frame);
+#endif
     }
     break;
   case OWL_COMMAND_COMMAND:
@@ -59,8 +63,10 @@ void DigitalBusReader::readBusFrame(uint8_t* frame){
       return rxError("Out of sequence command message");
     if(id != uid){
       handleCommand(frame[1], (frame[2]<<8) | frame[3]);
+#ifdef DIGITAL_BUS_OUTPUT
       if(id != nuid) // propagate
 	sendFrame(frame);
+#endif
     }
     break;
   case OWL_COMMAND_MESSAGE:
@@ -84,8 +90,10 @@ void DigitalBusReader::readBusFrame(uint8_t* frame){
 	  handleMessage((const char*)buffer);
 	}
       }
+#ifdef DIGITAL_BUS_OUTPUT
       if(id != nuid) // propagate
 	sendFrame(frame);
+#endif
     }
     break;
   case OWL_COMMAND_DATA:
@@ -112,8 +120,10 @@ void DigitalBusReader::readBusFrame(uint8_t* frame){
 	  pos = 0;
 	}
       }
+#ifdef DIGITAL_BUS_OUTPUT
       if(id != nuid) // propagate
 	sendFrame(frame);
+#endif
     }
     break;
   case OWL_COMMAND_SYNC:

@@ -62,6 +62,7 @@ public:
   // send a 4-byte bus or midi message
   void sendFrame(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4);
   void sendFrame(uint8_t* frame);
+  static bool isMidiFrame(uint8_t* frame);
 };
 
 #endif /* _DigitalBusHandler_h_ */

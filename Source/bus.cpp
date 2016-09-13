@@ -2,6 +2,7 @@
 #include "owlcontrol.h"
 #include "Owl.h"
 #include "DigitalBusReader.h"
+#include <string.h> // for memcpy
 
 /*
  * difference between USB midi and straight midi
@@ -10,7 +11,7 @@
 
 void bus_setup(){
   debug << "bus_setup";
-  bus.sendReset();
+  // bus.sendReset();
 }
 
 uint8_t* bus_deviceid(){
@@ -18,27 +19,90 @@ uint8_t* bus_deviceid(){
   // return ((uint8_t*)0x1ffff7e8); /* STM32F1 */
 }
 
+template<uint16_t size>
+class SerialBuffer {
+private:
+  volatile uint16_t writepos = 0;
+  volatile uint16_t readpos = 0;
+  uint8_t buffer[size];
+public:
+  void push(uint8_t c){
+    buffer[writepos++] = c;
+    if(writepos >= size)
+      writepos = 0;
+  }
+  uint8_t pop(){
+    uint8_t c = buffer[readpos++];
+    if(readpos >= size)
+      readpos = 0;
+    return c;
+  }
+  uint8_t* getWriteHead(){
+    return buffer+writepos;
+  }
+  void incrementWriteHead(uint16_t len){
+    // ASSERT((writepos >= readpos && writepos+len <= size) ||
+    // 	   (writepos < readpos && writepos+len <= readpos), "uart rx overflow");
+    writepos += len;
+    if(writepos >= size)
+      writepos = 0;
+  }
+  uint8_t* getReadHead(){
+    return buffer+readpos;
+  }
+  void incrementReadHead(uint16_t len){
+    // ASSERT((readpos >= writepos && readpos+len <= size) ||
+    // 	   (readpos < writepos && readpos+len <= writepos), "uart rx underflow");
+    readpos += len;
+    if(readpos >= size)
+      readpos = 0;
+  }
+  bool notEmpty(){
+    return writepos != readpos;
+  }
+  uint16_t available(){
+    return (writepos + size - readpos) % size;
+  }
+  void reset(){
+    readpos = writepos = 0;
+  }
+};
+
+static SerialBuffer<128> bus_tx_buf;
+
 extern "C" {
   static uint8_t bus_rx_index = 0;
+
   void USART_IRQHandler(void){
-    static uint8_t frame[4];
-    if(USART_GetFlagStatus(USART_PERIPH, USART_FLAG_ORE) != RESET){
-      /* If overrun condition occurs, clear the ORE flag and recover communication */
-      USART_ReceiveData(USART_PERIPH);
-      bus_rx_index = 0;
-    }else if(USART_GetITStatus(USART_PERIPH, USART_IT_RXNE) != RESET){    
+    if(USART_GetITStatus(USART_PERIPH, USART_IT_RXNE) != RESET){    
       // Reading the receive data register clears the RXNE flag implicitly
+      static uint8_t frame[4];
       char c = USART_ReceiveData(USART_PERIPH);
       frame[bus_rx_index++] = c;
       if(bus_rx_index == 4){
 	bus_rx_index = 0;
-	// MidiReaderStatus status = 
-	// 	bus.readFrame(frame);
-	// if(status == ERROR_STATUS)
-	// 	bus.clear();
 	bus.readBusFrame(frame);
       }
     }
+    if(USART_GetITStatus(USART_PERIPH, USART_IT_TXE) != RESET){
+      if(bus_tx_buf.notEmpty()){
+	USART_SendData(USART_PERIPH, bus_tx_buf.pop());
+      }else{
+	USART_ITConfig(USART_PERIPH, USART_IT_TXE, DISABLE);
+      }
+    }
+    if(USART_GetFlagStatus(USART_PERIPH, USART_FLAG_ORE) != RESET){
+      /* If overrun condition occurs, clear the ORE flag and recover communication */
+      USART_ReceiveData(USART_PERIPH);
+      bus_rx_index = 0;
+    }
+  }
+
+  void serial_write(uint8_t* data, uint16_t size){
+    uint8_t* frame = bus_tx_buf.getWriteHead();
+    memcpy(frame, data, size);
+    bus_tx_buf.incrementWriteHead(size);
+    USART_ITConfig(USART_PERIPH, USART_IT_TXE, ENABLE);
   }
 }
 

@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "D v12b"
+#define FIRMWARE_VERSION             "B v12e"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -54,7 +54,6 @@
 #define USART_RX_PINSOURCE           GPIO_PinSource1
 #define USART_IRQHandler             UART4_IRQHandler
 #define USART_IRQn                   UART4_IRQn
-#define DIGITAL_BUS_PROPAGATE_MIDI
 
 #define EEPROM_PAGE_BEGIN            ((uint32_t)0x08060000)
 #define EEPROM_PAGE_SIZE             (128*1024)

@@ -27,7 +27,11 @@ extern volatile uint32_t APP_Rx_ptr_out;   /* This pointer is used by the MIDI d
 extern uint8_t usbd_usr_device_status;
 
 bool midi_device_connected(){
+#ifdef OWLRACK
+  return true; // always send midi on bus
+#else
   return usbd_usr_device_status > 0x02;
+#endif
 }
 
 void midi_receive_usb_buffer(uint8_t *buffer, uint16_t length){
@@ -52,6 +56,7 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
    */
 #ifdef OWLRACK
   ASSERT(length == 4, "Invalid usb midi data size");
+  // propagate message through digital bus
   bus.sendFrame(buffer); // assuming 4 byte buffer
 #endif
   /* Check if device is online */

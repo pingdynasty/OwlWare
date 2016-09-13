@@ -272,7 +272,9 @@ extern volatile ProgramVectorAudioStatus audioStatus;
        else
 	 midi.sendNoteOff(bid-MIDI_NOTE_BUTTON, 0);
      }
+#ifdef DIGITAL_BUS_OUTPUT
      bus_tx_button(bid, state);
+#endif
    }
 
    // called from program
@@ -301,7 +303,9 @@ extern volatile ProgramVectorAudioStatus audioStatus;
        if(pid >= PARAMETER_AA && pid <= PARAMETER_BH)
 	 midi.sendCc(PATCH_PARAMETER_AA+(pid-PARAMETER_AA), (value>>5) & 0x7f);	 
      }
+#ifdef DIGITAL_BUS_OUTPUT
      bus_tx_parameter(pid, value);
+#endif
    }
 
    // called from midi irq or digital bus

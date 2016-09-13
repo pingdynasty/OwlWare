@@ -255,12 +255,12 @@ void printDouble(double val, uint8_t precision){
   }
 }
 
-void serial_write(uint8_t* data, uint16_t size){
-#ifdef USART_PERIPH
-  for(int i=0; i<size; ++i){
-    // wait until data register is empty
-    while(USART_GetFlagStatus(USART_PERIPH, USART_FLAG_TXE) == RESET);
-    USART_SendData(USART_PERIPH, data[i]);
-  }
-#endif
-}
+/* void serial_write(uint8_t* data, uint16_t size){ */
+/* #ifdef USART_PERIPH */
+/*   for(int i=0; i<size; ++i){ */
+/*     // wait until data register is empty */
+/*     while(USART_GetFlagStatus(USART_PERIPH, USART_FLAG_TXE) == RESET); */
+/*     USART_SendData(USART_PERIPH, data[i]); */
+/*   } */
+/* #endif */
+/* } */
