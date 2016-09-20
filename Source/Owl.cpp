@@ -61,6 +61,8 @@ static void setButtonColour(LedPin led){
   case GREEN:
     if(!getButton(BYPASS_BUTTON))
       setLed(GREEN);
+    else
+      setLed(NONE);
     setButtonState(GREEN_BUTTON);
     clearButtonState(RED_BUTTON);
     break;
