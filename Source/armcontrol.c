@@ -5,7 +5,7 @@
 /**
  * Configure analogue inputs using ADC3 and DMA2 stream 0
  */
-void adcSetupDMA(uint16_t* dma){
+void adcSetupDMA(void* dma){
   ADC_InitTypeDef       ADC_InitStructure;
   ADC_CommonInitTypeDef ADC_CommonInitStructure;
   DMA_InitTypeDef       DMA_InitStructure;
