@@ -55,9 +55,8 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
    * of 4 (the packet size).
    */
 #ifdef OWLRACK
-  ASSERT(length == 4, "Invalid usb midi data size");
   // propagate message through digital bus
-  bus.sendFrame(buffer); // assuming 4 byte buffer
+  bus_tx_midi(buffer);
 #endif
   /* Check if device is online */
   if(USB_OTG_dev.dev.device_status != USB_OTG_CONFIGURED)
@@ -78,5 +77,5 @@ void midi_send_usb_buffer(uint8_t* buffer, uint16_t length) {
 
 void midi_set_input_channel(int8_t ch){
   midireader.setInputChannel(ch);
-  bus.setInputChannel(ch);
+  bus_set_midi_channel(ch);
 }

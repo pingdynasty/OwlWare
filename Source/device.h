@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "B v12e"
+#define FIRMWARE_VERSION             "B v12f"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -40,7 +40,8 @@
 /* #define USART_IRQn                   USART2_IRQn */
 /* #define USART_IRQHandler             USART2_IRQHandler */
 
-#define USART_BAUDRATE               115200
+/* 57600, 115200, 230400, 460800, 921600 */
+#define USART_BAUDRATE               460800
 #define USART_PERIPH                 UART4
 #define USART_CLK                    RCC_APB1Periph_UART4
 #define USART_GPIO_CLK               RCC_AHB1Periph_GPIOA
@@ -122,13 +123,13 @@
 /* I2C clock speed configuration (in Hz)  */
 #define I2C_SPEED                    100000
 
-#define USB_IRQ_PRIORITY             3
+#define USB_IRQ_PRIORITY             4
 #define USB_IRQ_SUBPRIORITY          0
-#define SWITCH_A_PRIORITY            2
+#define SWITCH_A_PRIORITY            3
 #define SWITCH_A_SUBPRIORITY         0
 #define SWITCH_B_PRIORITY            3
 #define SWITCH_B_SUBPRIORITY         0
-#define USART_PRIORITY               3
+#define USART_PRIORITY               2
 #define USART_SUBPRIORITY            0
 #define SYSTICK_PRIORITY             2
 #define SYSTICK_SUBPRIORITY          0

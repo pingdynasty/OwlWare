@@ -21,7 +21,6 @@
 #include "device.h"
 #include "codec.h"
 #include "BitState.hpp"
-#include "DigitalBusReader.h"
 
 #define DEBOUNCE(nm, ms) if(true){static uint32_t nm ## Debounce = 0; \
 if(getSysTicks() < nm ## Debounce+(ms)) return; nm ## Debounce = getSysTicks();}
@@ -31,7 +30,6 @@ MidiController midi;
 MidiReader midireader;
 ApplicationSettings settings;
 PatchRegistry registry;
-DigitalBusReader bus;
 
 // there are only really 2 timestamps needed: LED pushbutton and midi gate
 uint16_t timestamps[NOF_BUTTONS]; 
@@ -231,6 +229,9 @@ extern volatile ProgramVectorAudioStatus audioStatus;
 	 bid = stateChanged.getFirstSetIndex();
        }while(bid > 0); // bid 0 is bypass button which we ignore
      }
+#ifdef OWLRACK
+     bus_process();
+#endif
    }
 
    // called from program

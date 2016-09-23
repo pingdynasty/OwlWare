@@ -18,8 +18,11 @@
 
    void bus_setup();
    int bus_status();
+   void bus_process();
+   void bus_set_midi_channel(uint8_t ch);
    uint8_t* bus_deviceid();
    /* outgoing: send message over digital bus */
+   void bus_tx_midi(uint8_t* frame);
    void bus_tx_parameter(uint8_t pid, int16_t value);
    /* incoming: callback when message received on digital bus */
    void bus_rx_parameter(uint8_t pid, int16_t value);

@@ -1,17 +1,27 @@
 #include "bus.h"
 #include "owlcontrol.h"
 #include "Owl.h"
-#include "DigitalBusReader.h"
 #include <string.h> // for memcpy
+#include "SerialBuffer.hpp"
 
-/*
- * difference between USB midi and straight midi
- * blocks of 4, 3 bytes
- */
+static SerialBuffer<256> bus_tx_buf;
+
+#include "DigitalBusStreamReader.h"
+DigitalBusStreamReader bus;
+// #include "MidiStreamReader.h"
+// MidiStreamReader bus;
 
 void bus_setup(){
-  debug << "bus_setup";
+  // debug << "bus_setup";
   // bus.sendReset();
+}
+
+void bus_process(){
+  bus.process();
+}
+
+void bus_set_midi_channel(uint8_t ch){
+  bus.setInputChannel(ch);
 }
 
 uint8_t* bus_deviceid(){
@@ -19,74 +29,26 @@ uint8_t* bus_deviceid(){
   // return ((uint8_t*)0x1ffff7e8); /* STM32F1 */
 }
 
-template<uint16_t size>
-class SerialBuffer {
-private:
-  volatile uint16_t writepos = 0;
-  volatile uint16_t readpos = 0;
-  uint8_t buffer[size];
-public:
-  void push(uint8_t c){
-    buffer[writepos++] = c;
-    if(writepos >= size)
-      writepos = 0;
-  }
-  uint8_t pop(){
-    uint8_t c = buffer[readpos++];
-    if(readpos >= size)
-      readpos = 0;
-    return c;
-  }
-  uint8_t* getWriteHead(){
-    return buffer+writepos;
-  }
-  void incrementWriteHead(uint16_t len){
-    // ASSERT((writepos >= readpos && writepos+len <= size) ||
-    // 	   (writepos < readpos && writepos+len <= readpos), "uart rx overflow");
-    writepos += len;
-    if(writepos >= size)
-      writepos = 0;
-  }
-  uint8_t* getReadHead(){
-    return buffer+readpos;
-  }
-  void incrementReadHead(uint16_t len){
-    // ASSERT((readpos >= writepos && readpos+len <= size) ||
-    // 	   (readpos < writepos && readpos+len <= writepos), "uart rx underflow");
-    readpos += len;
-    if(readpos >= size)
-      readpos = 0;
-  }
-  bool notEmpty(){
-    return writepos != readpos;
-  }
-  uint16_t available(){
-    return (writepos + size - readpos) % size;
-  }
-  void reset(){
-    readpos = writepos = 0;
-  }
-};
-
-static SerialBuffer<128> bus_tx_buf;
-
 extern "C" {
-  static uint8_t bus_rx_index = 0;
+  // static uint8_t bus_rx_index = 0;
 
   void USART_IRQHandler(void){
     if(USART_GetITStatus(USART_PERIPH, USART_IT_RXNE) != RESET){    
       // Reading the receive data register clears the RXNE flag implicitly
-      static uint8_t frame[4];
       char c = USART_ReceiveData(USART_PERIPH);
-      frame[bus_rx_index++] = c;
-      if(bus_rx_index == 4){
-	bus_rx_index = 0;
-	bus.readBusFrame(frame);
-      }
+      bus.read(c);
     }
+    //   static uint8_t frame[4];
+    //   char c = USART_ReceiveData(USART_PERIPH);
+    //   frame[bus_rx_index++] = c;
+    //   if(bus_rx_index == 4){
+    // 	bus_rx_index = 0;
+    // 	bus.readBusFrame(frame);
+    //   }
+    // }
     if(USART_GetITStatus(USART_PERIPH, USART_IT_TXE) != RESET){
       if(bus_tx_buf.notEmpty()){
-	USART_SendData(USART_PERIPH, bus_tx_buf.pop());
+	USART_SendData(USART_PERIPH, bus_tx_buf.pull());
       }else{
 	USART_ITConfig(USART_PERIPH, USART_IT_TXE, DISABLE);
       }
@@ -94,27 +56,30 @@ extern "C" {
     if(USART_GetFlagStatus(USART_PERIPH, USART_FLAG_ORE) != RESET){
       /* If overrun condition occurs, clear the ORE flag and recover communication */
       USART_ReceiveData(USART_PERIPH);
-      bus_rx_index = 0;
+      // bus_rx_index = 0;
     }
   }
 
   void serial_write(uint8_t* data, uint16_t size){
-    uint8_t* frame = bus_tx_buf.getWriteHead();
-    memcpy(frame, data, size);
-    bus_tx_buf.incrementWriteHead(size);
+    bus_tx_buf.push(data, size);
     USART_ITConfig(USART_PERIPH, USART_IT_TXE, ENABLE);
   }
 }
 
 /* outgoing: send message over digital bus */
+void bus_tx_midi(uint8_t* frame){
+  serial_write(frame, 4); // assuming 4 byte buffer
+  // bus.sendFrame(frame);
+}
+
 void bus_tx_parameter(uint8_t pid, int16_t value){
-  debug << "tx parameter [" << pid << "][" << value << "]" ;
+  // debug << "tx parameter [" << pid << "][" << value << "]" ;
   bus.sendParameterChange(pid, value);
 }
 
 /* incoming: callback when message received on digital bus */
 void bus_rx_parameter(uint8_t pid, int16_t value){
-  debug << "rx parameter [" << pid << "][" << value << "]" ;
+  // debug << "rx parameter [" << pid << "][" << value << "]" ;
   setParameterValue(pid, value);
 }
 
@@ -133,18 +98,17 @@ void bus_tx_error(const char* reason){
 }
 
 void bus_rx_error(const char* reason){
-  bus_rx_index = 0;
   bus.reset();
   bus.sendReset();
   error(USB_ERROR, reason);
 }
 
 void bus_tx_button(uint8_t bid, int16_t value){
-  debug << "tx button [" << bid << "][" << value << "]" ;
+  // debug << "tx button [" << bid << "][" << value << "]" ;
   bus.sendButtonChange(bid, value);
 }
 
 void bus_rx_button(uint8_t bid, int16_t value){
-  debug << "rx button [" << bid << "][" << value << "]" ;
+  // debug << "rx button [" << bid << "][" << value << "]" ;
   setButton(bid, value);
 }
