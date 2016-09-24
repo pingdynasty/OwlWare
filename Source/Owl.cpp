@@ -434,10 +434,6 @@ void setup(){
   midi_set_input_channel(settings.midi_input_channel);
   registry.init();
 
-#ifdef OWLRACK
-
-#endif
-
 #ifdef EXPRESSION_PEDAL
   setupExpressionPedal();
 #endif

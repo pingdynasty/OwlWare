@@ -8,6 +8,7 @@
 #include <string.h>
 #include "device.h"
 
+extern MidiReader midireader;
 extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
 /* These are external variables imported from USB-MIDI core to be used for IN
    transfer management. It is extremely similar in structure to USB CDC-class

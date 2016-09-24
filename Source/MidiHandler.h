@@ -16,7 +16,7 @@ public:
   void handlePitchBend(uint8_t status, uint16_t value);
   void handleSysEx(uint8_t* data, uint16_t size);
 
-  void handleSystemCommon(uint8_t cmd){}
+  void handleSystemRealTime(uint8_t cmd){}
   void handleSystemCommon(uint8_t cmd1, uint8_t cmd2){}
   void handleSystemCommon(uint8_t cmd1, uint8_t cmd2, uint8_t cmd3){}
   void handleChannelPressure(uint8_t status, uint8_t value){}

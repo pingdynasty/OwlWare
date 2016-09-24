@@ -63,15 +63,11 @@ enum UsbMidi {
 };
 
 enum OwlProtocol {
-  OWL_COMMAND_DISCOVER            = 0x10,
-  OWL_COMMAND_ENUM                = 0x20,
-  OWL_COMMAND_IDENT               = 0x30,
-  OWL_COMMAND_PARAMETER           = 0x40,
-  OWL_COMMAND_BUTTON              = 0x50,
-  OWL_COMMAND_COMMAND             = 0x60,
-  OWL_COMMAND_MESSAGE             = 0x70,
-  OWL_COMMAND_DATA                = 0x80,
-  OWL_COMMAND_SYNC                = 0xc0,  // use ASCII SYN instead?
+  OWL_COMMAND_DISCOVER            = 0xa0,
+  OWL_COMMAND_PARAMETER           = 0xb0,
+  OWL_COMMAND_COMMAND             = 0xc0,
+  OWL_COMMAND_MESSAGE             = 0xd0,
+  OWL_COMMAND_DATA                = 0xe0,
   OWL_COMMAND_RESET               = 0xf0,
 };
 

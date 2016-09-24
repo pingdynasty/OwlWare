@@ -102,13 +102,3 @@ void bus_rx_error(const char* reason){
   bus.sendReset();
   error(USB_ERROR, reason);
 }
-
-void bus_tx_button(uint8_t bid, int16_t value){
-  // debug << "tx button [" << bid << "][" << value << "]" ;
-  bus.sendButtonChange(bid, value);
-}
-
-void bus_rx_button(uint8_t bid, int16_t value){
-  // debug << "rx button [" << bid << "][" << value << "]" ;
-  setButton(bid, value);
-}

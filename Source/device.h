@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "B v12f"
+#define FIRMWARE_VERSION             "B v12g"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
