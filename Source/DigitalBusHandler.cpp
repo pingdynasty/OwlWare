@@ -1,6 +1,5 @@
 #include "DigitalBusHandler.h"
 #include "MidiStatus.h"
-#include "serial.h"
 #include "bus.h"
 #include <string.h>
 
@@ -18,8 +17,7 @@ void DigitalBusHandler::sendFrame(uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4
 }
 
 void DigitalBusHandler::sendFrame(uint8_t* frame){
-  // if(isMidiFrame(frame)) // todo: remove
-    serial_write(frame, 4);
+  serial_write(frame, 4);
 }
 
 uint32_t DigitalBusHandler::generateToken(){
@@ -38,12 +36,6 @@ bool DigitalBusHandler::connected(){
   case DISCOVER:
     startDiscover();
     break;
-  // case ENUMERATE:
-  //   startEnum();
-  //   break;
-  // case IDENTIFY:
-  //   startIdent();
-  //   break;
   case CONNECTED:
     break;
   }
@@ -68,10 +60,12 @@ void DigitalBusHandler::startDiscover(){
 }
 
 void DigitalBusHandler::sendDiscover(uint8_t seq, uint32_t token){
+  // std::cout << "disco tx [0x" << std::hex << (int)seq << "][" << token << "]" << std::endl;
   sendFrame(OWL_COMMAND_DISCOVER|seq, token>>16, token>>8, token);
 }
 
 void DigitalBusHandler::handleDiscover(uint8_t seq, uint32_t other){
+  // std::cout << "disco rx [0x" << std::hex << (int)seq << "][" << token << "][" << other << "]" << std::endl;
   // on receipt of other token, add +1 to seq and pass it on, then send own token.
   // once we get our own token back, the seq tells us how many peers there are.
   // lowest token then takes precedence.
@@ -80,10 +74,9 @@ void DigitalBusHandler::handleDiscover(uint8_t seq, uint32_t other){
     peers = seq;
     status = CONNECTED;
   }else{
-    if(seq < 0x0f)
-      // increment seq and pass it on
-      sendDiscover(seq+1, other);
-    if(peers == 0)
+    if(DIGITAL_BUS_ENABLE_BUS && seq < 0x0f)      
+      sendDiscover(seq+1, other); // increment seq and pass it on
+    if(DIGITAL_BUS_ENABLE_BUS && peers == 0)
       startDiscover();
   }
 }
@@ -94,8 +87,6 @@ void DigitalBusHandler::sendParameterChange(uint8_t pid, int16_t value){
 
 void DigitalBusHandler::handleParameterChange(uint8_t pid, int16_t value){
   bus_rx_parameter(pid, value);
-  // todo
-  // setParameterValue(pid, value);  
 }
 
 void DigitalBusHandler::sendCommand(uint8_t cmd, int16_t data){
@@ -127,7 +118,6 @@ void DigitalBusHandler::sendMessage(const char* msg){
   }
 }
 
-/* Received 3 bytes of string message */
 void DigitalBusHandler::handleMessage(const char* str){
   bus_rx_message(str);
 }
@@ -156,8 +146,7 @@ void DigitalBusHandler::handleData(const uint8_t* data, uint32_t len){
 }
 
 void DigitalBusHandler::sendReset(){
-  sendFrame(OWL_COMMAND_RESET, OWL_COMMAND_RESET, 
-	    OWL_COMMAND_RESET, OWL_COMMAND_RESET);
+  sendFrame(OWL_COMMAND_RESET, OWL_COMMAND_RESET, OWL_COMMAND_RESET, OWL_COMMAND_RESET);
 }
 
 bool DigitalBusHandler::isMidiFrame(uint8_t* frame){

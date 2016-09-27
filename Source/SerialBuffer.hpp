@@ -89,11 +89,21 @@ public:
   bool notEmpty(){
     return writepos != readpos;
   }
-  uint16_t getWriteCapacity(){
-    return size-writepos;
-  }
   uint16_t available(){
     return (writepos + size - readpos) % size;
+  }
+  uint16_t getContiguousWriteCapacity(){
+    if(writepos < readpos)
+      return readpos - writepos;
+    else
+      return size - writepos;
+    // return size-writepos;
+  }
+  uint16_t getContiguousReadCapacity(){
+    if(writepos < readpos)
+      return size - readpos;
+    else
+      return writepos - readpos;
   }
   void reset(){
     readpos = writepos = 0;

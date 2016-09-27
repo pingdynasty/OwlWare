@@ -1,88 +1,41 @@
 #include "DigitalBusReader.h"
 #include "bus.h"
 #include <string.h>
-#include "device.h"
-
-void DigitalBusReader::appendFrame(uint8_t* frame){
-
-}
 
 // read a 4-byte data frame
 bool DigitalBusReader::readBusFrame(uint8_t* frame){
   // OWL Digital Bus Protocol
-  uint8_t id = frame[0]&0x0f;
+  uint8_t seq = frame[0]&0x0f;
   switch(frame[0]&0xf0){
   case 0:
     if(!readMidiFrame(frame))
       return rxError("Invalid MIDI message");
-#ifdef DIGITAL_BUS_PROPAGATE_MIDI
-    sendFrame(frame); // warning: circular propagation!
-#endif
+    if(DIGITAL_BUS_PROPAGATE_MIDI)
+      sendFrame(frame); // warning: circular propagation!
     break;
   case OWL_COMMAND_DISCOVER:
-    handleDiscover(id, (frame[1] << 16) | (frame[2]<<8) | frame[3]);
+    handleDiscover(seq, (frame[1] << 16) | (frame[2]<<8) | frame[3]);
     break;
-  // case OWL_COMMAND_ENUM:
-  //   if(peers == 0)
-  //     return rxError("Out of sequence enum message");
-  //   handleEnum(id, frame[1], frame[2], frame[3]);
-  //   break;
-  // case OWL_COMMAND_IDENT:
-  //   if(nuid == NO_UID)
-  //     return rxError("Out of sequence ident message");
-  //   if(id != uid){
-  //     handleIdent(id, frame[1], frame[2], frame[3]);
-  //     if(id != nuid) // propagate
-  // 	sendFrame(frame);
-  //   }
-  //   break;
   case OWL_COMMAND_PARAMETER:
-    if(id > peers)
-      return rxError("Invalid bus message");
+    if(seq > peers)
+      return rxError("Invalid bus parameter");
     handleParameterChange(frame[1], (frame[2]<<8) | frame[3]);
-#ifdef DIGITAL_BUS_OUTPUT
-    if(id > 1)
+    if(DIGITAL_BUS_ENABLE_BUS && seq > 1)
       sendFrame(frame[0]-1, frame[1], frame[2], frame[3]);
-#endif
     break;
-//   case OWL_COMMAND_BUTTON:
-//     if(nuid == NO_UID)
-//       return rxError("Out of sequence button message");
-//     if(id != uid){
-//       handleButtonChange(frame[1], (frame[2]<<8) | frame[3]);
-// #ifdef DIGITAL_BUS_OUTPUT
-//       if(id != nuid) // propagate
-// 	sendFrame(frame);
-// #endif
-//     }
-//     break;
   case OWL_COMMAND_COMMAND:
-    // if(nuid == NO_UID)
-    //   return rxError("Out of sequence command message");
-    // if(id != uid){
-    if(id > peers)
-      return rxError("Invalid bus message");
+    if(seq > peers)
+      return rxError("Invalid bus command");
     handleCommand(frame[1], (frame[2]<<8) | frame[3]);
-#ifdef DIGITAL_BUS_OUTPUT
-    if(id > 1)
+    if(DIGITAL_BUS_ENABLE_BUS && seq > 1)
       sendFrame(frame[0]-1, frame[1], frame[2], frame[3]);
-#endif
-// #ifdef DIGITAL_BUS_OUTPUT
-//       if(id != nuid) // propagate
-// 	sendFrame(frame);
-// #endif
-// }
     break;
   case OWL_COMMAND_MESSAGE:
-    // if(nuid == NO_UID)
-    //   return rxError("Out of sequence message");
-    // if(id != uid){
-    // if(appendFrame(frame));
-    if(id > peers)
+    if(seq > peers)
       return rxError("Invalid bus message");
     if(txuid == NO_UID)
-      txuid = id;
-    if(txuid == id){
+      txuid = seq;
+    if(txuid == seq){
       // ignore if we are not exclusively listening to long messages from this uid
       if(pos+3 < size){
         strncpy((char*)buffer+pos, (char*)frame+1, 3);
@@ -96,26 +49,15 @@ bool DigitalBusReader::readBusFrame(uint8_t* frame){
 	handleMessage((const char*)buffer);
       }
     }
-#ifdef DIGITAL_BUS_OUTPUT
-    if(id > 1)
+    if(DIGITAL_BUS_ENABLE_BUS && seq > 1)
       sendFrame(frame[0]-1, frame[1], frame[2], frame[3]);
-#endif
-//       }
-// #ifdef DIGITAL_BUS_OUTPUT
-//       if(id != nuid) // propagate
-// 	sendFrame(frame);
-// #endif
-//     }
     break;
   case OWL_COMMAND_DATA:
-    // if(nuid == NO_UID)
-    //   return rxError("Out of sequence data message");
-    // if(id != uid){
-    if(id > peers)
-      return rxError("Invalid bus message");
+    if(seq > peers)
+      return rxError("Invalid bus data");
     if(txuid == NO_UID)
-      txuid = id;
-    if(txuid == id){
+      txuid = seq;
+    if(txuid == seq){
       if(datalen == 0){
 	datalen = (frame[1]<<16) | (frame[2]<<8) | frame[3];
 	pos = 0;
@@ -133,29 +75,19 @@ bool DigitalBusReader::readBusFrame(uint8_t* frame){
 	pos = 0;
       }
     }
-      // #ifdef DIGITAL_BUS_OUTPUT
-      //       if(id != nuid) // propagate
-      // 	sendFrame(frame);
-      // #endif
-      //     }
-#ifdef DIGITAL_BUS_OUTPUT
-    if(id > 1)
+    if(DIGITAL_BUS_ENABLE_BUS && seq > 1)
       sendFrame(frame[0]-1, frame[1], frame[2], frame[3]);
-#endif
     break;
   case OWL_COMMAND_RESET:
-    // if(id == 0){
-    //   if(nuid != NO_UID) // propagate
-    // 	sendFrame(frame);
-    // }
-    // #ifdef DIGITAL_BUS_OUTPUT
-    //     if(id > 1)
-    //       sendFrame(frame[0]-1, frame[1], frame[2], frame[3]);
-    // #endif
-    reset();
+    if(DIGITAL_BUS_ENABLE_BUS && peers > 1){
+      reset();
+      sendReset();
+    }else{
+      reset();
+    }
     break;
   default:
-    return rxError("Invalid message");
+    return rxError("Invalid bus message");
     break;
   }
   return true;
@@ -163,9 +95,6 @@ bool DigitalBusReader::readBusFrame(uint8_t* frame){
 
 void DigitalBusReader::reset(){
   MidiReader::reset();
-  // uid = 0;
-  // nuid = NO_UID;
-  // token = NO_TOKEN;
   peers = 0;
   parameterOffset = 0;
   status = DigitalBusHandler::IDLE;

@@ -8,15 +8,11 @@ class DigitalBusHandler : public MidiReader {
 public:
   enum DigitalBusStatus {
     IDLE = BUS_STATUS_IDLE,
-    DISCOVER = BUS_STATUS_DISCO,
-    ENUMERATE = BUS_STATUS_ENUM,
-    IDENTIFY = BUS_STATUS_IDENT,
+    DISCOVER = BUS_STATUS_DISCOVER,
     CONNECTED = BUS_STATUS_CONNECTED,
     ERROR = BUS_STATUS_ERROR
   };
 protected:
-  /* uint8_t uid; // this device id */
-  /* uint8_t nuid; // downstream device id */
   uint32_t token;
   uint8_t peers;
   uint16_t parameterOffset;
@@ -35,8 +31,6 @@ public:
   }
   uint32_t generateToken();
   uint8_t getPeers(){ return peers; }
-  /* uint8_t getUid(){ return uid; } */
-  /* uint8_t getNuid(){ return nuid; } */
   void startDiscover();
   void sendDiscover(uint8_t seq, uint32_t token);
   void handleDiscover(uint8_t seq, uint32_t other);

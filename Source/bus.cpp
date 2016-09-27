@@ -10,6 +10,8 @@ static SerialBuffer<256> bus_tx_buf;
 DigitalBusStreamReader bus;
 // #include "MidiStreamReader.h"
 // MidiStreamReader bus;
+bool DIGITAL_BUS_PROPAGATE_MIDI = 1;
+bool DIGITAL_BUS_ENABLE_BUS = 0;
 
 void bus_setup(){
   // debug << "bus_setup";
