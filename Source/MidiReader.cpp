@@ -1,19 +1,27 @@
 #include "MidiReader.h"
 #include "bus.h"
-#include "message.h"
 
 bool MidiReader::readMidiFrame(uint8_t* frame){
   // apparently no running status in USB MIDI frames
   switch(frame[0]){
   case USB_COMMAND_MISC:
   case USB_COMMAND_CABLE_EVENT:
-    // ignore
     return false;
     break;
   case USB_COMMAND_SINGLE_BYTE:
-    if((frame[1]&0xf0) != SYSTEM_COMMON)
+    if(frame[1] == 0xF7 && pos > 2){
+      // suddenly found the end of our sysex as a Single Byte Unparsed
+      buffer[pos++] = frame[1];
+      handleSysEx(buffer, pos);
+      pos = 0;
+    }else if(frame[1]&0x80){
+      handleSystemRealTime(frame[1]);
+    }else if(pos > 2){
+      // we are probably in the middle of a sysex
+      buffer[pos++] = frame[1];
+    }else{
       return false;
-    handleSystemRealTime(frame[1]);
+    }
     break;
   case USB_COMMAND_2BYTE_SYSTEM_COMMON:
     if((frame[1]&0xf0) != SYSTEM_COMMON)
