@@ -1,5 +1,6 @@
 #include "bus.h"
 #include "owlcontrol.h"
+#include "clock.h"
 #include "Owl.h"
 #include <string.h> // for memcpy
 #include "SerialBuffer.hpp"
@@ -13,13 +14,21 @@ DigitalBusStreamReader bus;
 bool DIGITAL_BUS_PROPAGATE_MIDI = 1;
 bool DIGITAL_BUS_ENABLE_BUS = 0;
 
+#define BUS_IDLE_INTERVAL 6197
+
 void bus_setup(){
   // debug << "bus_setup";
   // bus.sendReset();
 }
 
-void bus_process(){
+int bus_status(){
   bus.process();
+  static uint32_t lastpolled = 0;
+  if(getSysTicks() > lastpolled + BUS_IDLE_INTERVAL){
+    bus.connected();
+    lastpolled = getSysTicks();
+  }
+  return bus.getStatus();
 }
 
 void bus_set_midi_channel(uint8_t ch){

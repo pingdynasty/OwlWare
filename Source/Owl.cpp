@@ -229,8 +229,8 @@ extern volatile ProgramVectorAudioStatus audioStatus;
 	 bid = stateChanged.getFirstSetIndex();
        }while(bid > 0); // bid 0 is bypass button which we ignore
      }
-#ifdef OWLRACK
-     bus_process();
+#if defined OWLRACK || defined OWLMODULAR
+     bus_status();
 #endif
    }
 
@@ -273,9 +273,7 @@ extern volatile ProgramVectorAudioStatus audioStatus;
        else
 	 midi.sendNoteOff(bid-MIDI_NOTE_BUTTON, 0);
      }
-#ifdef DIGITAL_BUS_OUTPUT
-     bus_tx_button(bid, state);
-#endif
+     // bus_tx_button(bid, state);
    }
 
    // called from program
@@ -304,9 +302,7 @@ extern volatile ProgramVectorAudioStatus audioStatus;
        if(pid >= PARAMETER_AA && pid <= PARAMETER_BH)
 	 midi.sendCc(PATCH_PARAMETER_AA+(pid-PARAMETER_AA), (value>>5) & 0x7f);	 
      }
-#ifdef DIGITAL_BUS_OUTPUT
      bus_tx_parameter(pid, value);
-#endif
    }
 
    // called from midi irq or digital bus
