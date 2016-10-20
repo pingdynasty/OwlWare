@@ -54,6 +54,8 @@ Open a terminal or command window in the __OwlWare__ directory and type in:
 * `make bin` to build `Builds/OwlWare.bin`
 * `make clean all` to rebuild all intermediary files
 
+### Build Options
+The default configuration builds an OWL Pedal debug build. To build the release version (no debug information, apprx 2x performance) add `CONFIG=Release`. To build the OWL Modular version, add `PLATFORM=Modular`. Make sure to do a `make clean` after changing build options.
 
 ## Deploy
 In the __OwlWare__ directory, type in:
