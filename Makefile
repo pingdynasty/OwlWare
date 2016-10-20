@@ -35,7 +35,7 @@ CPPFLAGS += -ffunction-sections
 #CPPFLAGS  += -fno-omit-frame-pointer
 CPPFLAGS += -nostdlib -nostartfiles -fno-builtin -ffreestanding
 CPPFLAGS += -mtune=cortex-m4
-CXXFLAGS = -fno-rtti -fno-exceptions -std=c++11
+CXXFLAGS = -fno-rtti -fno-exceptions -std=gnu++11
 CFLAGS  += -std=gnu99
 
 C_SRC  = codec.c i2s.c errorhandlers.c crc32.c # fsmc_sram.c 
