@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "v12g"
+#define FIRMWARE_VERSION             "v12h"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -77,7 +77,7 @@
 #define AUDIO_CHANNELS               2
 #define AUDIO_SAMPLINGRATE           48000
 #define AUDIO_BLOCK_SIZE             128   /* size in samples of a single channel audio block */
-#define AUDIO_MAX_BLOCK_SIZE         1024
+#define AUDIO_MAX_BLOCK_SIZE         512
 
 #define CCMRAM                      ((uint32_t)0x10000000)
 #define PATCHRAM                    ((uint32_t)0x2000c000)
