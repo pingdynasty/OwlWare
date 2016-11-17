@@ -11,8 +11,8 @@ static SerialBuffer<256> bus_tx_buf;
 DigitalBusStreamReader bus;
 // #include "MidiStreamReader.h"
 // MidiStreamReader bus;
-bool DIGITAL_BUS_PROPAGATE_MIDI = 1;
-bool DIGITAL_BUS_ENABLE_BUS = 0;
+bool DIGITAL_BUS_PROPAGATE_MIDI = 0;
+bool DIGITAL_BUS_ENABLE_BUS = 1;
 
 #define BUS_IDLE_INTERVAL 6197
 

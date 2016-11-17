@@ -5,7 +5,7 @@
 /**
  * Configure analogue inputs using ADC3 and DMA2 stream 0
  */
-void adcSetupDMA(int16_t* dma){
+void adcSetupDMA(void* dma){
   ADC_InitTypeDef       ADC_InitStructure;
   ADC_CommonInitTypeDef ADC_CommonInitStructure;
   DMA_InitTypeDef       DMA_InitStructure;
@@ -104,6 +104,11 @@ void adcSetupDMA(int16_t* dma){
 }
 
 void adcStartDMA(){
+  /* The DMA_Cmd() function may be used to perform Pause-Resume operation. When a  */
+  /* transfer is ongoing, calling this function to disable the Stream will cause the  */
+  /* transfer to be paused. All configuration registers and the number of remaining  */
+  /* data will be preserved. When calling again this function to re-enable the Stream,  */
+  /* the transfer will be resumed from the point where it was paused.           */
   DMA_Cmd(DMA2_Stream0, ENABLE);
 }
 
@@ -117,5 +122,5 @@ uint16_t getSampleCounter(){
   // todo:
   volatile uint32_t *DWT_CYCCNT = (volatile uint32_t *)0xE0001004; //address of the register
   // reset every start of block (after lock in programReady())
-  return (*DWT_CYCCNT)/3500;
+  return (*DWT_CYCCNT)/3500; // assumes 48kHz sampling rate / 168MHz MCU
 }
