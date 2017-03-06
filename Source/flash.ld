@@ -16,8 +16,7 @@ MEMORY
 {
   BOOTLOADER (r)   : ORIGIN = 0x08000000, LENGTH = 16K    /* Sector 0 */
   EEPROM (r)       : ORIGIN = 0x08004000, LENGTH = 16K    /* Sector 1 */
-  FLASH (rx)       : ORIGIN = 0x08008000, LENGTH = 352K   /* Sector 2-6 */
-  PATCHFLASH (rx)  : ORIGIN = 0x08060000, LENGTH = 128K   /* Sector 7 */
+  FLASH (rx)       : ORIGIN = 0x08008000, LENGTH = 480K   /* Sector 2-7 */
   PROGRAM3 (r)     : ORIGIN = 0x08080000, LENGTH = 128K   /* Sector 8 */
   PROGRAM2 (r)     : ORIGIN = 0x080a0000, LENGTH = 128K   /* Sector 9 */
   PROGRAM1 (r)     : ORIGIN = 0x080c0000, LENGTH = 128K   /* Sector 10 */

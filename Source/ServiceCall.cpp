@@ -4,6 +4,9 @@
 #include "ApplicationSettings.h"
 #include "OpenWareMidiControl.h"
 
+#include "FastLogTable.h"
+#include "FastPowTables.h"
+
 int SERVICE_ARM_CFFT_INIT_F32(arm_cfft_instance_f32* instance, int len){
   switch(len) { 
   case 16:
@@ -40,12 +43,13 @@ int SERVICE_ARM_CFFT_INIT_F32(arm_cfft_instance_f32* instance, int len){
 }
 
 int serviceCall(int service, void** params, int len){
+  int ret = OWL_SERVICE_INVALID_ARGS;
   switch(service){
   case OWL_SERVICE_VERSION:
     if(len > 0){
       int* value = (int*)params[0];
       *value = OWL_SERVICE_VERSION_V1;
-      return OWL_SERVICE_OK;
+      ret = OWL_SERVICE_OK;
     }
     break;
   case OWL_SERVICE_ARM_RFFT_FAST_INIT_F32:
@@ -53,19 +57,19 @@ int serviceCall(int service, void** params, int len){
       arm_rfft_fast_instance_f32* instance = (arm_rfft_fast_instance_f32*)params[0];
       int fftlen = *(int*)params[1];
       arm_rfft_fast_init_f32(instance, fftlen);
-      return OWL_SERVICE_OK;
+      ret = OWL_SERVICE_OK;
     }
     break;
   case OWL_SERVICE_ARM_CFFT_INIT_F32:
     if(len == 2){
       arm_cfft_instance_f32* instance = (arm_cfft_instance_f32*)params[0];
       int fftlen = *(int*)params[1];
-      return SERVICE_ARM_CFFT_INIT_F32(instance, fftlen);
+      ret = SERVICE_ARM_CFFT_INIT_F32(instance, fftlen);
     }
     break;
   case OWL_SERVICE_GET_PARAMETERS: {
     int index = 0;
-    int ret = OWL_SERVICE_OK;
+    ret = OWL_SERVICE_OK;
     while(len >= index+2){
       char* p = (char*)params[index++];
       int32_t* value = (int32_t*)params[index++];
@@ -81,9 +85,26 @@ int serviceCall(int service, void** params, int len){
 	ret = OWL_SERVICE_INVALID_ARGS;
       }
     }
-    return ret;
+    break;
+  }
+  case OWL_SERVICE_GET_ARRAY: {
+    int index = 0;
+    ret = OWL_SERVICE_OK;
+    while(len >= index+2){
+      char* p = (char*)params[index++];
+      void** value = (void**)params[index++];
+      if(strncmp(SYSTEM_TABLE_ICSI_LOG, p, 3) == 0){
+	*value = (void*)fast_log_table;
+      }else if(strncmp(SYSTEM_TABLE_ICSI_E_H, p, 3) == 0){
+	*value = (void*)fast_pow_h_table;
+      }else if(strncmp(SYSTEM_TABLE_ICSI_E_L, p, 3) == 0){
+	*value = (void*)fast_pow_l_table;
+      }else{
+	ret = OWL_SERVICE_INVALID_ARGS;
+      }
+    }
     break;
   }
   }
-  return OWL_SERVICE_INVALID_ARGS;
+  return ret;
 }     
