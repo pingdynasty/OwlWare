@@ -111,6 +111,7 @@ void MidiController::sendDeviceInfo(){
   sendProgramMessage();
   sendProgramStats();
   sendDeviceStats();
+  sendStatus();
 }
 
 void MidiController::sendDeviceStats(){
@@ -143,27 +144,34 @@ void MidiController::sendProgramStats(){
   char buffer[64];
   buffer[0] = SYSEX_PROGRAM_STATS;
   char* p = &buffer[1];
-  uint8_t err = getErrorStatus();
-  switch(err & 0xf0){
-  case NO_ERROR: {
 #ifdef DEBUG_DWT
-    p = stpcpy(p, (const char*)"CPU: ");
-    float percent = (program.getCyclesPerBlock()/settings.audio_blocksize) / (float)ARM_CYCLES_PER_SAMPLE;
-    p = stpcpy(p, itoa(ceilf(percent*100), 10));
-    p = stpcpy(p, (const char*)"% ");
+  p = stpcpy(p, (const char*)"CPU: ");
+  float percent = (program.getCyclesPerBlock()/settings.audio_blocksize) / (float)ARM_CYCLES_PER_SAMPLE;
+  p = stpcpy(p, itoa(ceilf(percent*100), 10));
+  p = stpcpy(p, (const char*)"% ");
 #endif /* DEBUG_DWT */
 #ifdef DEBUG_STACK
-    p = stpcpy(p, (const char*)"Stack: ");
-    int stack = program.getProgramStackUsed();
-    p = stpcpy(p, itoa(stack, 10));
-    p = stpcpy(p, (const char*)" Heap: ");
+  p = stpcpy(p, (const char*)"Stack: ");
+  int stack = program.getProgramStackUsed();
+  p = stpcpy(p, itoa(stack, 10));
+  p = stpcpy(p, (const char*)" Heap: ");
 #else
-    p = stpcpy(p, (const char*)"Memory: ");
+  p = stpcpy(p, (const char*)"Memory: ");
 #endif /* DEBUG_STACK */
-    int mem = program.getHeapMemoryUsed();
-    p = stpcpy(p, itoa(mem, 10));
-    break;
-  }
+  int mem = program.getHeapMemoryUsed();
+  p = stpcpy(p, itoa(mem, 10));
+  sendSysEx((uint8_t*)buffer, p-buffer);
+}
+
+void MidiController::sendStatus(){
+  char buffer[64];
+  buffer[0] = SYSEX_PROGRAM_STATS;
+  char* p = &buffer[1];
+  uint8_t err = getErrorStatus();
+  switch(err & 0xf0){
+  case NO_ERROR:
+    sendProgramStats();
+    return;
   case MEM_ERROR:
     p = stpcpy(p, (const char*)"Memory Error 0x");
     p = stpcpy(p, itoa(err, 16));

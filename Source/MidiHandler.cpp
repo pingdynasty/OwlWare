@@ -156,7 +156,7 @@ void MidiHandler::handleControlChange(uint8_t status, uint8_t cc, uint8_t value)
       midi.sendProgramMessage();
       break;
     case SYSEX_PROGRAM_STATS:
-      midi.sendProgramStats();
+      midi.sendStatus();
       break;
     case PATCH_BUTTON:
       midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
