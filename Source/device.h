@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "v13pre"
+#define FIRMWARE_VERSION             "v13-pre1"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -27,6 +27,7 @@
 #define CCMRAM                      ((uint32_t)0x10000000)
 #define PATCHRAM                    ((uint32_t)0x2000c000)
 #define EXTRAM                      ((uint32_t)0x68000000)
+#define PROGRAMSTACK_SIZE           (6*1024)
 
 #ifdef OWLMODULAR
 /* +0db in and out */

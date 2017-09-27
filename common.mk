@@ -3,8 +3,6 @@ ELF=$(BUILD)/OwlWare.elf
 BIN=$(BUILD)/OwlWare.bin
 
 # Tool path
-# TOOLROOT ?= Tools/gcc-arm-none-eabi-5_3-2016q1/bin/ # missing strnlen/strlcpy
-# TOOLROOT ?= Tools/gcc-arm-none-eabi-5_2-2015q4/bin/
 TOOLROOT ?= Tools/gcc-arm-none-eabi-5_4-2016q3/bin/
 STLINK ?= $(TEMPLATEROOT)/Tools/stlink/
 DFUUTIL ?= $(TEMPLATEROOT)/Tools/dfu-util/dfu-util

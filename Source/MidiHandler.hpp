@@ -266,8 +266,6 @@ public:
       settings.audio_samplingrate = value;
     }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_BLOCKSIZE, p, 2) == 0){
       settings.audio_blocksize = value;
-    }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_BITDEPTH, p, 2) == 0){
-      settings.audio_bitdepth = value;
     }else if(strncmp(SYSEX_CONFIGURATION_AUDIO_DATAFORMAT, p, 2) == 0){
       settings.audio_dataformat = value;
     }else if(strncmp(SYSEX_CONFIGURATION_CODEC_PROTOCOL, p, 2) == 0){

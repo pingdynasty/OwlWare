@@ -1,3 +1,4 @@
+#include <new>
 #include "FactoryPatches.h"
 #include "PatchProcessor.h"
 #include "PatchRegistry.h"
@@ -8,25 +9,27 @@
 #include "ProgramVector.h"
 #include "BiquadFilter.hpp"
 
-// #define STATIC_PROGRAM_STACK_SIZE   (64*1024)
-// #define STATIC_PROGRAM_STACK_BASE   ((uint32_t*)CCMRAM)
 #define STATIC_PROGRAM_STACK_BASE   0
 #define STATIC_PROGRAM_STACK_SIZE   0
 
 extern ProgramVector staticVector;
-static PatchProcessor proc CCM; // 4kb SampleBuffer
+static PatchProcessor* proc;
 
 PatchProcessor* getInitialisingPatchProcessor(){
-  return &proc;
+  return proc;
 }
 
 void FactoryPatchDefinition::run(){
-  sram_init((char*)EXTRAM, 1024*1024);
+  extern char _EXTRAM, _CCMRAM;
+  // placement new puts the patch processor (and sample
+  // buffer) into spare (program heap) CCMRAM
+  proc = new (&_CCMRAM) PatchProcessor();
+  sram_init((char*)&_EXTRAM, 1024*1024);
   Patch* patch = create();
   ASSERT(patch != NULL, "Memory allocation failed");
-  proc.setPatch(patch);
+  proc->setPatch(patch);
   getProgramVector()->heap_bytes_used = sram_used();
-  proc.run();
+  proc->run();
 }
 
 #include "factory.h"

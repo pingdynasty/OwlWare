@@ -21,13 +21,10 @@ MEMORY
   PROGRAM2 (r)     : ORIGIN = 0x080a0000, LENGTH = 128K   /* Sector 9 */
   PROGRAM1 (r)     : ORIGIN = 0x080c0000, LENGTH = 128K   /* Sector 10 */
   PROGRAM0 (r)     : ORIGIN = 0x080e0000, LENGTH = 128K   /* Sector 11 */ /* total Flash memory is 1Mb */
-  CCMRAM (rw)      : ORIGIN = 0x10000000, LENGTH = 16K    /* Closely Coupled Memory */
+  CCMRAM (rw)      : ORIGIN = 0x10000000, LENGTH = 64K    /* Closely Coupled Memory */
   RAM (rwx)        : ORIGIN = 0x20000000, LENGTH = 48K
   PATCHRAM (rwx)   : ORIGIN = 0x2000c000, LENGTH = 64K    /* total RAM is 112kb */
-  BANK1_SRAM1 (rwx): ORIGIN = 0x60000000, LENGTH = 0K
-  BANK1_SRAM2 (rwx): ORIGIN = 0x64000000, LENGTH = 0K
-  BANK1_SRAM3 (rwx): ORIGIN = 0x68000000, LENGTH = 1M
-  BANK1_SRAM4 (rwx): ORIGIN = 0x6c000000, LENGTH = 0K
+  EXTRAM (rwx)     : ORIGIN = 0x68000000, LENGTH = 1M
 }
 
 /* Define output sections */
@@ -57,7 +54,7 @@ SECTIONS
     KEEP (*(.fini))
 
     . = ALIGN(8);
-    _etext = .;        /* define a global symbols at end of code */
+    _etext = .;        /* define a global symbol at end of code */
   } >FLASH
 
 .fastcode : /* AT(LOADADDR(.startup) + SIZEOF(.startup)) */
@@ -132,7 +129,6 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     *(.bss)
     *(.bss*)
     *(COMMON)
-
     . = ALIGN(8);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
@@ -156,16 +152,20 @@ _fastcode_size = _fastcode_end - _fastcode_start;
     . = ALIGN(8);
     *(.ccmdata)
     . = ALIGN(8);
+    PROVIDE (_CCMRAM = .);
   } >CCMRAM
+  _CCMRAM_END = ORIGIN(CCMRAM) + LENGTH(CCMRAM);
 
   /* External SRAM, vars must be located here explicitly */
   /* Example: int foo __attribute__ ((section (".extdata"))); */
-/* .extdata (NOLOAD) : */
-/* { */
-/*   . = ALIGN(8); */
-/*   *(.extdata) */
-/*   . = ALIGN(8); */
-/* } >BANK1_SRAM3 */
+  .extdata (NOLOAD) :
+  {
+    . = ALIGN(8);
+    *(.extdata)
+    . = ALIGN(8);
+    PROVIDE ( _EXTRAM = . );
+  } >EXTRAM
+  _EXTRAM_END = ORIGIN(EXTRAM) + LENGTH(EXTRAM);
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

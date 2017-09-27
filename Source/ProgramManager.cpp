@@ -58,6 +58,7 @@ SemaphoreHandle_t xSemaphore = NULL;
 #endif // AUDIO_TASK_SEMAPHORE
 
 uint8_t ucHeap[configTOTAL_HEAP_SIZE] CCM;
+uint8_t programStack[PROGRAMSTACK_SIZE] CCM;
 
 #define START_PROGRAM_NOTIFICATION  0x01
 #define STOP_PROGRAM_NOTIFICATION   0x02
@@ -420,12 +421,7 @@ uint32_t ProgramManager::getProgramStackUsed(){
 }
 
 uint32_t ProgramManager::getProgramStackAllocation(){
-  uint32_t ss = 0;
-  if(patchdef != NULL)
-    ss = patchdef->getStackSize();
-  if(ss == 0)
-    ss = PROGRAM_TASK_STACK_SIZE*sizeof(portSTACK_TYPE);
-  return ss;
+  return PROGRAMSTACK_SIZE;
 }
 
 uint32_t ProgramManager::getManagerStackUsed(){
@@ -481,15 +477,19 @@ void ProgramManager::runManager(){
       PatchDefinition* def = getPatchDefinition();
       if(xProgramHandle == NULL && def != NULL){
 	BaseType_t ret;
-	if(def->getStackBase() != 0 && 
-	   def->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
-	  ret = xTaskGenericCreate(runProgramTask, "Program", 
-				   def->getStackSize()/sizeof(portSTACK_TYPE), 
-				   NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle, 
-				   def->getStackBase(), NULL);
-	}else{
-	  ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
-	}
+	ret = xTaskGenericCreate(runProgramTask, "Program", 
+				 PROGRAMSTACK_SIZE/sizeof(portSTACK_TYPE), 
+				 NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle, 
+				 (uint32_t*)programStack, NULL);
+	// if(def->getStackBase() != 0 && 
+	//    def->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
+	//   ret = xTaskGenericCreate(runProgramTask, "Program", 
+	// 			   def->getStackSize()/sizeof(portSTACK_TYPE), 
+	// 			   NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle, 
+	// 			   def->getStackBase(), NULL);
+	// }else{
+	//   ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
+	// }
 	if(ret != pdPASS)
 	  setErrorMessage(PROGRAM_ERROR, "Failed to start program task");
       }
