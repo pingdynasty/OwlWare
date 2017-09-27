@@ -344,7 +344,7 @@ void updateProgramVector(ProgramVector* vector){
 #endif
   vector->audio_input = NULL;
   vector->audio_output = NULL;
-  vector->audio_bitdepth = settings.audio_bitdepth;
+  vector->audio_format = AUDIO_FORMAT_24B16;
   vector->audio_blocksize = settings.audio_blocksize;
   vector->audio_samplingrate = settings.audio_samplingrate;
   vector->parameters = getAnalogValues();
@@ -359,12 +359,17 @@ void updateProgramVector(ProgramVector* vector){
   vector->programStatus = onProgramStatus;
   vector->serviceCall = serviceCall;
   vector->message = NULL;
-
   vector->setButton = onSetButton;
   vector->setPatchParameter = onSetPatchParameter;
-
   vector->buttonChangedCallback = NULL;
-  vector->encoderChangedCallback = NULL;
+  extern char _EXTRAM, _EXTRAM_END;
+  extern char _CCMRAM, _CCMRAM_END;
+  static MemorySegment heapSegments[] = {
+    { (uint8_t*)&_CCMRAM, (uint32_t)(&_CCMRAM_END - &_CCMRAM) },
+    { (uint8_t*)&_EXTRAM, (uint32_t)(&_EXTRAM_END - &_EXTRAM) },
+    { NULL, 0 }
+  };
+  vector->heapSegments = (MemorySegment*)heapSegments;
 }
 
 void setup(){
