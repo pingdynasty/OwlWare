@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "v13-pre1"
+#define FIRMWARE_VERSION             "v13-pre2"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */

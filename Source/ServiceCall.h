@@ -6,9 +6,8 @@
 #define OWL_SERVICE_OK                     0x000
 #define OWL_SERVICE_INVALID_ARGS           -1
 
-#define SYSTEM_TABLE_ICSI_LOG              "ILG"
-#define SYSTEM_TABLE_ICSI_E_H              "IEH"
-#define SYSTEM_TABLE_ICSI_E_L              "IEL"
+#define SYSTEM_TABLE_LOG                   "SLG"
+#define SYSTEM_TABLE_POW                   "SPW"
 
 #define OWL_SERVICE_VERSION                OWL_SERVICE_VERSION_V1
 

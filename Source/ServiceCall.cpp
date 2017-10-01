@@ -5,7 +5,7 @@
 #include "OpenWareMidiControl.h"
 
 #include "FastLogTable.h"
-#include "FastPowTables.h"
+#include "FastPowTable.h"
 
 int SERVICE_ARM_CFFT_INIT_F32(arm_cfft_instance_f32* instance, int len){
   switch(len) { 
@@ -88,21 +88,39 @@ int serviceCall(int service, void** params, int len){
     break;
   }
   case OWL_SERVICE_GET_ARRAY: {
+    // get array and array size
+    // expects three parameters: name, &array and &size
     int index = 0;
     ret = OWL_SERVICE_OK;
-    while(len >= index+2){
+    if(len >= index+3){
       char* p = (char*)params[index++];
-      void** value = (void**)params[index++];
-      if(strncmp(SYSTEM_TABLE_ICSI_LOG, p, 3) == 0){
-	*value = (void*)fast_log_table;
-      }else if(strncmp(SYSTEM_TABLE_ICSI_E_H, p, 3) == 0){
-	*value = (void*)fast_pow_h_table;
-      }else if(strncmp(SYSTEM_TABLE_ICSI_E_L, p, 3) == 0){
-	*value = (void*)fast_pow_l_table;
+      void** array = (void**)params[index++];
+      int* size = (int*)params[index++];
+      if(strncmp(SYSTEM_TABLE_LOG, p, 3) == 0){
+	*array = (void*)fast_log_table;
+	*size = fast_log_table_size;
+      }else if(strncmp(SYSTEM_TABLE_POW, p, 3) == 0){
+	*array = (void*)fast_pow_table;
+	*size = fast_pow_table_size;
       }else{
+	*array = NULL;
+	*size = 0;
 	ret = OWL_SERVICE_INVALID_ARGS;
       }
     }
+    // while(len >= index+2){
+    //   char* p = (char*)params[index++];
+    //   void** value = (void**)params[index++];
+    //   if(strncmp(SYSTEM_TABLE_ICSI_LOG, p, 3) == 0){
+    // 	*value = (void*)fast_log_table;
+    //   }else if(strncmp(SYSTEM_TABLE_ICSI_E_H, p, 3) == 0){
+    // 	*value = (void*)fast_pow_h_table;
+    //   }else if(strncmp(SYSTEM_TABLE_ICSI_E_L, p, 3) == 0){
+    // 	*value = (void*)fast_pow_l_table;
+    //   }else{
+    // 	ret = OWL_SERVICE_INVALID_ARGS;
+    //   }
+    // }
     break;
   }
   }
