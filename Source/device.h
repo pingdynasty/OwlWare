@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "v13"
+#define FIRMWARE_VERSION             "v14"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -54,7 +54,7 @@
 #define MIDI_CHANNEL                 0
 #define MIDI_MAX_MESSAGE_SIZE        256
 #define NOF_ADC_VALUES               5
-#define NOF_PARAMETERS               24
+#define NOF_PARAMETERS               40
 #define NOF_BUTTONS                  5
 #define MAX_BUFFERS_PER_PATCH        8
 #define MAX_SYSEX_FIRMWARE_SIZE      ((16+16+64+128+128)*1024) // FLASH sectors 2-6

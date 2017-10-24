@@ -243,7 +243,7 @@ public:
       setParameter(PARAMETER_H, value<<5);
       break;
     default:
-      if(cc >= PATCH_PARAMETER_AA && cc <= PATCH_PARAMETER_BH)
+      if(cc >= PATCH_PARAMETER_AA && cc <= PATCH_PARAMETER_DH)
 	setParameter(PARAMETER_AA+(cc-PATCH_PARAMETER_AA), value<<5);
       break;
     }
