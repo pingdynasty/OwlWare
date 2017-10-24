@@ -5,89 +5,63 @@
 #include <string.h>
 #include "StompBox.h"
 #include "device.h"
-#ifdef ARM_CORTEX
-#include "arm_math.h"
-#endif //ARM_CORTEX
+
 class SampleBuffer : public AudioBuffer {
 protected:
-  // FloatArray left;//[AUDIO_MAX_BLOCK_SIZE];
-  // FloatArray right;//[AUDIO_MAX_BLOCK_SIZE];
+  // FloatArray left;
+  // FloatArray right;
   float left[AUDIO_MAX_BLOCK_SIZE];
   float right[AUDIO_MAX_BLOCK_SIZE];
   uint16_t size;
+  const float mul = 1/2147483648.0f;
 public:
-  void split(int16_t* input, uint16_t blocksize){
-#if AUDIO_BITDEPTH == 16
+  // SampleBuffer(int blocksize){
+  //   left = FloatArray::create(blocksize);
+  //   right = FloatArray::create(blocksize);
+  // }
+  void split32(int32_t* input, uint16_t blocksize){
     size = blocksize;
-    float* l = left;
-    float* r = right;
-    uint32_t blkCnt = size >> 1u;
-    while(blkCnt > 0u){
-      *l++ = ((float)*input++) / 32768.0f;
-      *r++ = ((float)*input++) / 32768.0f;
-      *l++ = ((float)*input++) / 32768.0f;
-      *r++ = ((float)*input++) / 32768.0f;
-      blkCnt--;
+    for(int i=0; i<size; ++i){
+      left[i] = (int32_t)((*input++)<<8) * mul;
+      right[i] = (int32_t)((*input++)<<8) * mul;
     }
-#else /* AUDIO_BITDEPTH != 16 */
-    size = blocksize;
-#ifdef AUDIO_BIGEND
-    float* l = left;
-    float* r = right;
-    uint32_t blkCnt = size;
-    int32_t qint;
-    while(blkCnt > 0u){
-      qint = (*input++)<<16;
-      qint |= *input++;
-      *l++ = qint / 2147483648.0f;
-      qint = (*input++)<<16;
-      qint |= *input++;
-      *r++ = qint / 2147483648.0f;
-      // *l++ = (int32_t)((*input++)<<16|*++input) / 2147483648.0f;
-      // *r++ = (int32_t)((*input++)<<16|*++input) / 2147483648.0f;
-      // *l++ = (int32_t)((*input++)<<16|*++input) / 2147483648.0f;
-      // *r++ = (int32_t)((*input++)<<16|*++input) / 2147483648.0f;
-      blkCnt--;
-    }
-#else /* AUDIO_BIGEND */
-    float* l = left;
-    float* r = right;
-    uint32_t blkCnt = size>>1;
-    while(blkCnt > 0u){
-      *l++ = (int32_t)((*input++)|(*++input)<<16) / 2147483648.0f;
-      *r++ = (int32_t)((*input++)|(*++input)<<16) / 2147483648.0f;
-      *l++ = (int32_t)((*input++)|(*++input)<<16) / 2147483648.0f;
-      *r++ = (int32_t)((*input++)|(*++input)<<16) / 2147483648.0f;
-      blkCnt--;
-    }
-#endif /* AUDIO_BIGEND */
-#endif /* AUDIO_BITDEPTH != 16 */
   }
-  void comb(int16_t* output){
-#if AUDIO_BITDEPTH == 16
-    float* l = left;
-    float* r = right;
-    uint32_t blkCnt = size >> 1u;
-    while(blkCnt > 0u){
-#ifdef AUDIO_SATURATE_SAMPLES
-      *output++ = (q15_t)__SSAT((q31_t)((*l++) * 32768.0f), 16);
-      *output++ = (q15_t)__SSAT((q31_t)((*r++) * 32768.0f), 16);
-      *output++ = (q15_t)__SSAT((q31_t)((*l++) * 32768.0f), 16);
-      *output++ = (q15_t)__SSAT((q31_t)((*r++) * 32768.0f), 16);
-#else
-      *output++ = (q15_t)((*l++) * 32768.0f);
-      *output++ = (q15_t)((*r++) * 32768.0f);
-      *output++ = (q15_t)((*l++) * 32768.0f);
-      *output++ = (q15_t)((*r++) * 32768.0f);
-#endif
-      blkCnt--;
+  void comb32(int32_t* output){
+    int32_t* dest = output;
+    for(int i=0; i<size; ++i){
+      *dest++ = ((int32_t)(left[i] * 8388608.0f));
+      *dest++ = ((int32_t)(right[i] * 8388608.0f));
     }
-#else /* AUDIO_BITDEPTH != 16 */
-#ifdef AUDIO_BIGEND
-    float* l = left;
-    float* r = right;
+  }
+  void split16(int32_t* data, uint16_t blocksize){
+    uint16_t* input = (uint16_t*)data;
+    size = blocksize;
+    // for(int i=0; i<size; ++i){
+    //   left[i] = ((input[i*4]<<16) | input[i*4+1]) * mul;
+    //   right[i] = ((input[i*4+2]<<16) | input[i*4+3]) * mul;
+    // }
+    float* l = (float*)left;
+    float* r = (float*)right;
+    int32_t qint;
+    while(blocksize){
+      qint = (*input++)<<16;
+      qint |= *input++;
+      *l++ = qint * mul;
+      qint = (*input++)<<16;
+      qint |= *input++;
+      *r++ = qint * mul;
+      // *l++ = (int32_t)((*input++)<<16|*++input) * mul;
+      // *r++ = (int32_t)((*input++)<<16|*++input) * mul;
+      // *l++ = (int32_t)((*input++)<<16|*++input) * mul;
+      // *r++ = (int32_t)((*input++)<<16|*++input) * mul;
+      blocksize--;
+    }
+  }
+  void comb16(int32_t* output){
+    float* l = (float*)left;
+    float* r = (float*)right;
     uint32_t blkCnt = size;
-    int16_t* dst = output;
+    uint16_t* dst = (uint16_t*)output;
     int32_t qint;
     while(blkCnt > 0u){
 #ifdef AUDIO_SATURATE_SAMPLES
@@ -107,40 +81,20 @@ public:
 #endif /* AUDIO_SATURATE_SAMPLES */
       blkCnt--;
     }
-#else /* AUDIO_BIGEND */
-    // todo: test if this works in big-endian on ARM
-    float* l = left;
-    float* r = right;
-    uint32_t blkCnt = size>>1;
-    int32_t* dst = (int32_t*)output;
-    while(blkCnt > 0u){
-      *dst++ = *l++ * 2147483648.0f;
-      *dst++ = *r++ * 2147483648.0f;
-      *dst++ = *l++ * 2147483648.0f;
-      *dst++ = *r++ * 2147483648.0f;
-      blkCnt--;
-    }
-#endif /* AUDIO_BIGEND */
-#endif /* AUDIO_BITDEPTH == 16 */
   }
   void clear(){
     memset(left, 0, getSize()*sizeof(float));
     memset(right, 0, getSize()*sizeof(float));
+    // left.clear();
+    // right.clear();
   }
   inline FloatArray getSamples(int channel){
+    // return channel == LEFT_CHANNEL ? left : right;
     return channel == 0 ? FloatArray(left, size) : FloatArray(right, size);
   }
-  // inline float* getSamples(int channel){
-  //   return channel == 0 ? left : right;
-  // }
   inline int getChannels(){
-    return AUDIO_CHANNELS;
+    return 2;
   }
-  // void setSize(uint16_t sz){
-  // // size is set by split()
-  //   if(sz <= AUDIO_MAX_BLOCK_SIZE)
-  //     size = sz;
-  // }
   inline int getSize(){
     return size;
   }

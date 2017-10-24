@@ -477,8 +477,8 @@ void audioCallback(int16_t *src, int16_t *dst){
 #ifdef DEBUG_AUDIO
   togglePin(GPIOA, GPIO_Pin_7); // PA7 DEBUG
 #endif
-  getProgramVector()->audio_input = src;
-  getProgramVector()->audio_output = dst;
+  getProgramVector()->audio_input = (int32_t*)src;
+  getProgramVector()->audio_output = (int32_t*)dst;
   // program.audioReady();
   audioStatus = AUDIO_READY_STATUS;
 

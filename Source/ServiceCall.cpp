@@ -108,19 +108,6 @@ int serviceCall(int service, void** params, int len){
 	ret = OWL_SERVICE_INVALID_ARGS;
       }
     }
-    // while(len >= index+2){
-    //   char* p = (char*)params[index++];
-    //   void** value = (void**)params[index++];
-    //   if(strncmp(SYSTEM_TABLE_ICSI_LOG, p, 3) == 0){
-    // 	*value = (void*)fast_log_table;
-    //   }else if(strncmp(SYSTEM_TABLE_ICSI_E_H, p, 3) == 0){
-    // 	*value = (void*)fast_pow_h_table;
-    //   }else if(strncmp(SYSTEM_TABLE_ICSI_E_L, p, 3) == 0){
-    // 	*value = (void*)fast_pow_l_table;
-    //   }else{
-    // 	ret = OWL_SERVICE_INVALID_ARGS;
-    //   }
-    // }
     break;
   }
   }

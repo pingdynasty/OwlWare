@@ -7,8 +7,7 @@
 #include "owlcontrol.h"
 
 PatchProcessor::PatchProcessor() 
-  : patch(NULL){}
- // todo: initialise suitable SampleBuffer: 16/24 bit, max size
+  : patch(NULL) {}
 
 PatchProcessor::~PatchProcessor(){
 }
@@ -23,10 +22,10 @@ void PatchProcessor::run(){
   ASSERT(vector->audio_samplingrate != 0, "Audio samplingrate must not be 0");
   for(;;){
     vector->programReady();
-    buffer.split(vector->audio_input, vector->audio_blocksize);
+    buffer.split16(vector->audio_input, vector->audio_blocksize);
     setParameterValues(vector->parameters);
     patch->processAudio(buffer);
-    buffer.comb(vector->audio_output);
+    buffer.comb16(vector->audio_output);
   }
 }
 
@@ -49,19 +48,21 @@ void PatchProcessor::setParameterValues(int16_t *params){
    * y(n) = (1-alpha)*y(n-1) + alpha*y(n)
    * with alpha=0.5, fs=48k, bs=128, then w0 ~= 18hz
    */
-  for(int i=0; i<NOF_ADC_VALUES; ++i)
+  for(int i=0; i<NOF_ADC_VALUES; ++i){
 #ifdef SMOOTH_HYSTERESIS
     if(abs(params[i]-parameterValues[i]) > 7)
 #endif
       // 16 = half a midi step (4096/128=32)
 #ifdef OWLMODULAR
-      if(i<4)
+      if(i<4){
 	parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + 4095 - params[i])/(SMOOTH_FACTOR+1);
-      else
+      }else{
 	parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR - params[i])/(SMOOTH_FACTOR+1);
+      }
 #else /* OWLMODULAR */
       parameterValues[i] = (parameterValues[i]*SMOOTH_FACTOR + params[i])/(SMOOTH_FACTOR+1);
 #endif /* OWLMODULAR */
+  }
   // for(int i=NOF_ADC_VALUES; i<NOF_PARAMETERS; ++i)
   //   // todo!
 }

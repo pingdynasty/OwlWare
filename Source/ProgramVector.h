@@ -40,8 +40,8 @@
    typedef struct {
      uint8_t checksum;
      uint8_t hardware_version;
-     int16_t* audio_input;
-     int16_t* audio_output;
+     int32_t* audio_input;
+     int32_t* audio_output;
      uint8_t audio_format;
      uint16_t audio_blocksize;
      uint32_t audio_samplingrate;
