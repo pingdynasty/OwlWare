@@ -186,47 +186,6 @@ extern "C" {
     vTaskDelete(NULL);
   }
 
-  // static int midiMessagesToSend = 0;
-  // void sendMidiDataTask(void* p){
-  //   switch(midiMessagesToSend){
-  //   case SYSEX_PRESET_NAME_COMMAND:
-  //     midi.sendPatchNames();
-  //     break;
-  //   // case 0:
-  //   //   midi.sendDeviceInfo();
-  //   //   break;
-  //   // case SYSEX_PARAMETER_NAME_COMMAND:
-  //   //   midi.sendPatchParameterNames();
-  //   //   break;
-  //   // case SYSEX_FIRMWARE_VERSION:
-  //   //   midi.sendFirmwareVersion();
-  //   //   break;
-  //   // case SYSEX_DEVICE_ID:
-  //   //   midi.sendDeviceId();
-  //   //   break;
-  //   // case SYSEX_DEVICE_STATS:
-  //   //   midi.sendDeviceStats();
-  //   //   break;
-  //   // case SYSEX_PROGRAM_MESSAGE:
-  //   //   midi.sendProgramMessage();
-  //   //   break;
-  //   // case SYSEX_PROGRAM_STATS:
-  //   //   midi.sendProgramStats();
-  //   //   break;
-  //   // case PATCH_BUTTON:
-  //   //   midi.sendCc(PATCH_BUTTON, isPushButtonPressed() ? 127 : 0);
-  //   //   break;
-  //   // case LED:
-  //   //   midi.sendCc(LED, getLed() == NONE ? 0 : getLed() == GREEN ? 42 : 84);
-  //   //   break;
-  //   // case 127:
-  //   //   midi.sendSettings();
-  //   //   break;
-  //   }
-  //   midiMessagesToSend = -1;
-  //   vTaskDelete(NULL);    
-  // }
-
 #ifdef BUTTON_PROGRAM_CHANGE
 #ifndef abs
 #define abs(x) ((x)>0?(x):-(x))
@@ -385,14 +344,6 @@ void ProgramManager::startProgramChange(bool isr){
     notifyManager(STOP_PROGRAM_NOTIFICATION|PROGRAM_CHANGE_NOTIFICATION);
 }
 
-// void ProgramManager::sendMidiData(int type, bool isr){
-//   midiMessagesToSend = type;
-//   if(isr)
-//     notifyManagerFromISR(MIDI_SEND_NOTIFICATION);
-//   else
-//     notifyManager(MIDI_SEND_NOTIFICATION);
-// }
-
 void ProgramManager::loadProgram(uint8_t pid){
   PatchDefinition* def = registry.getPatchDefinition(pid);
   if(def != NULL && def != patchdef && def->getProgramVector() != NULL){
@@ -476,23 +427,11 @@ void ProgramManager::runManager(){
     if(ulNotifiedValue & START_PROGRAM_NOTIFICATION){ // start
       PatchDefinition* def = getPatchDefinition();
       if(xProgramHandle == NULL && def != NULL){
-	BaseType_t ret;
-	ret = xTaskGenericCreate(runProgramTask, "Program", 
-				 PROGRAMSTACK_SIZE/sizeof(portSTACK_TYPE), 
-				 NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle, 
-				 (uint32_t*)programStack, NULL);
-	// if(def->getStackBase() != 0 && 
-	//    def->getStackSize() > configMINIMAL_STACK_SIZE*sizeof(portSTACK_TYPE)){
-	//   ret = xTaskGenericCreate(runProgramTask, "Program", 
-	// 			   def->getStackSize()/sizeof(portSTACK_TYPE), 
-	// 			   NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle, 
-	// 			   def->getStackBase(), NULL);
-	// }else{
-	//   ret = xTaskCreate(runProgramTask, "Program", PROGRAM_TASK_STACK_SIZE, NULL, PROGRAM_TASK_PRIORITY, &xProgramHandle);
-	// }
-	if(ret != pdPASS)
-	  setErrorMessage(PROGRAM_ERROR, "Failed to start program task");
-      }
+      	static StaticTask_t audioTaskBuffer;
+	xProgramHandle = xTaskCreateStatic(runProgramTask, "Program", 
+					   PROGRAMSTACK_SIZE/sizeof(portSTACK_TYPE), 
+					   NULL, PROGRAM_TASK_PRIORITY, 
+					   (StackType_t*)programStack, &audioTaskBuffer);
 #ifdef BUTTON_PROGRAM_CHANGE
     }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
       if(xProgramHandle == NULL){
@@ -510,12 +449,6 @@ void ProgramManager::runManager(){
       BaseType_t ret = xTaskCreate(eraseFlashTask, "Flash Erase", FLASH_TASK_STACK_SIZE, NULL, FLASH_TASK_PRIORITY, &xFlashTaskHandle);
       if(ret != pdPASS)
 	setErrorMessage(PROGRAM_ERROR, "Failed to start Flash Erase task");
-    // }else if(ulNotifiedValue & MIDI_SEND_NOTIFICATION){ // erase flash
-    //   TaskHandle_t handle = NULL;
-    //   BaseType_t ret = xTaskCreate(sendMidiDataTask, "MIDI", PC_TASK_STACK_SIZE, NULL, PC_TASK_PRIORITY, &handle);
-    //   if(ret != pdPASS){
-    // 	setErrorMessage(PROGRAM_ERROR, "Failed to start MIDI Send task");
-    //   }
     }
   }
 }
@@ -544,6 +477,16 @@ void ProgramManager::saveProgramToFlash(uint8_t sector, void* address, uint32_t 
   flashAddressToWrite = address;
   flashSizeToWrite = length;
   notifyManagerFromISR(STOP_PROGRAM_NOTIFICATION|PROGRAM_FLASH_NOTIFICATION);
+}
+
+extern "C" {
+  static StaticTask_t xIdleTaskTCBBuffer;
+  static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
+  void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize){
+    *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+    *ppxIdleTaskStackBuffer = &xIdleStack[0];
+    *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+  }
 }
 
 /*
