@@ -86,4 +86,4 @@ deploy: bootloader
 	$(DFUCMD) -s 0x080C0000 -D binaries/patch1.bin
 	$(DFUCMD) -s 0x080A0000 -D binaries/patch2.bin
 	$(DFUCMD) -s 0x08080000 -D binaries/patch3.bin
-	$(DFUCMD) -s 0x8008000:leave -D binaries/OwlWare-v13-$(PLATFORM).bin
+	$(DFUCMD) -s 0x8008000:leave -D binaries/OwlWare-v14-$(PLATFORM).bin
