@@ -432,6 +432,7 @@ void ProgramManager::runManager(){
 					   PROGRAMSTACK_SIZE/sizeof(portSTACK_TYPE), 
 					   NULL, PROGRAM_TASK_PRIORITY, 
 					   (StackType_t*)programStack, &audioTaskBuffer);
+      }
 #ifdef BUTTON_PROGRAM_CHANGE
     }else if(ulNotifiedValue & PROGRAM_CHANGE_NOTIFICATION){ // program change
       if(xProgramHandle == NULL){
