@@ -22,8 +22,8 @@
  extern "C" {
 #endif
 
-   char* ftoa(float val, int base);
-   char* itoa(int val, int base);
+   char* msg_ftoa(float val, int base);
+   char* msg_itoa(int val, int base);
    void debugMessage(const char* msg);
    void setErrorStatus(int8_t err);
    void error(int8_t err, const char* msg);
@@ -35,7 +35,7 @@
 #ifdef __cplusplus
 }
 
-char* itoa(int val, int base, int pad);
+char* msg_itoa(int val, int base, int pad);
 
 class Debug {
 private:

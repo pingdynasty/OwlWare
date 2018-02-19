@@ -119,23 +119,23 @@ void MidiController::sendDeviceStats(){
   char* p = &buffer[1];
 #ifdef DEBUG_STACK
   p = stpcpy(p, (const char*)"Program Stack ");
-  p = stpcpy(p, itoa(program.getProgramStackUsed(), 10));
+  p = stpcpy(p, msg_itoa(program.getProgramStackUsed(), 10));
   p = stpcpy(p, (const char*)"/");
-  p = stpcpy(p, itoa(program.getProgramStackAllocation(), 10));
+  p = stpcpy(p, msg_itoa(program.getProgramStackAllocation(), 10));
   p = stpcpy(p, (const char*)" Manager ");
-  p = stpcpy(p, itoa(program.getManagerStackUsed(), 10));
+  p = stpcpy(p, msg_itoa(program.getManagerStackUsed(), 10));
   p = stpcpy(p, (const char*)"/");
-  p = stpcpy(p, itoa(program.getManagerStackAllocation(), 10));
+  p = stpcpy(p, msg_itoa(program.getManagerStackAllocation(), 10));
   sendSysEx((uint8_t*)buffer, p-buffer);
 #endif /* DEBUG_STACK */
   // p = stpcpy(p, (const char*)"Storage used ");
-  // p = stpcpy(p, itoa(storage.getTotalUsedSize(), 10));
+  // p = stpcpy(p, msg_itoa(storage.getTotalUsedSize(), 10));
   // p = stpcpy(p, (const char*)" deleted ");
-  // p = stpcpy(p, itoa(storage.getDeletedSize(), 10));
+  // p = stpcpy(p, msg_itoa(storage.getDeletedSize(), 10));
   // p = stpcpy(p, (const char*)" free ");
-  // p = stpcpy(p, itoa(storage.getFreeSize(), 10));
+  // p = stpcpy(p, msg_itoa(storage.getFreeSize(), 10));
   // p = stpcpy(p, (const char*)" total ");
-  // p = stpcpy(p, itoa(storage.getTotalAllocatedSize(), 10));
+  // p = stpcpy(p, msg_itoa(storage.getTotalAllocatedSize(), 10));
   // sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
@@ -149,48 +149,48 @@ void MidiController::sendProgramStats(){
 #ifdef DEBUG_DWT
     p = stpcpy(p, (const char*)"CPU: ");
     float percent = (program.getCyclesPerBlock()/settings.audio_blocksize) / (float)ARM_CYCLES_PER_SAMPLE;
-    p = stpcpy(p, itoa(ceilf(percent*100), 10));
+    p = stpcpy(p, msg_itoa(ceilf(percent*100), 10));
     p = stpcpy(p, (const char*)"% ");
 #endif /* DEBUG_DWT */
 #ifdef DEBUG_STACK
     p = stpcpy(p, (const char*)"Stack: ");
     int stack = program.getProgramStackUsed();
-    p = stpcpy(p, itoa(stack, 10));
+    p = stpcpy(p, msg_itoa(stack, 10));
     p = stpcpy(p, (const char*)" Heap: ");
 #else
     p = stpcpy(p, (const char*)"Memory: ");
 #endif /* DEBUG_STACK */
     int mem = program.getHeapMemoryUsed();
-    p = stpcpy(p, itoa(mem, 10));
+    p = stpcpy(p, msg_itoa(mem, 10));
     break;
   }
   case MEM_ERROR:
     p = stpcpy(p, (const char*)"Memory Error 0x");
-    p = stpcpy(p, itoa(err, 16));
+    p = stpcpy(p, msg_itoa(err, 16));
     break;
   case BUS_ERROR:
     p = stpcpy(p, (const char*)"Bus Error 0x");
-    p = stpcpy(p, itoa(err, 16));
+    p = stpcpy(p, msg_itoa(err, 16));
     break;
   case USAGE_ERROR:
     p = stpcpy(p, (const char*)"Usage Error 0x");
-    p = stpcpy(p, itoa(err, 16));
+    p = stpcpy(p, msg_itoa(err, 16));
     break;
   case NMI_ERROR:
     p = stpcpy(p, (const char*)"Non-maskable Interrupt 0x");
-    p = stpcpy(p, itoa(err, 16));
+    p = stpcpy(p, msg_itoa(err, 16));
     break;
   case HARDFAULT_ERROR:
     p = stpcpy(p, (const char*)"HardFault Error 0x");
-    p = stpcpy(p, itoa(err, 16));
+    p = stpcpy(p, msg_itoa(err, 16));
     break;
   case PROGRAM_ERROR:
     p = stpcpy(p, (const char*)"Missing or Invalid Program 0x");
-    p = stpcpy(p, itoa(err, 16));
+    p = stpcpy(p, msg_itoa(err, 16));
     break;
   default:
     p = stpcpy(p, (const char*)"Unknown Error 0x");
-    p = stpcpy(p, itoa(err, 16));
+    p = stpcpy(p, msg_itoa(err, 16));
     break;
   }
   sendSysEx((uint8_t*)buffer, p-buffer);
@@ -225,7 +225,7 @@ void MidiController::sendConfigurationSetting(const char* name, uint32_t value){
   buffer[0] = SYSEX_CONFIGURATION_COMMAND;
   char* p = &buffer[1];
   p = stpcpy(p, name);
-  p = stpcpy(p, itoa(value, 16));
+  p = stpcpy(p, msg_itoa(value, 16));
   sendSysEx((uint8_t*)buffer, p-buffer);
 }
 
@@ -234,11 +234,11 @@ void MidiController::sendDeviceId(){
   char buffer[32];
   buffer[0] = SYSEX_DEVICE_ID;
   char* p = &buffer[1];
-  p = stpcpy(p, itoa(deviceId[0], 16, 8));
+  p = stpcpy(p, msg_itoa(deviceId[0], 16, 8));
   p = stpcpy(p, ":");
-  p = stpcpy(p, itoa(deviceId[1], 16, 8));
+  p = stpcpy(p, msg_itoa(deviceId[1], 16, 8));
   p = stpcpy(p, ":");
-  p = stpcpy(p, itoa(deviceId[2], 16, 8));
+  p = stpcpy(p, msg_itoa(deviceId[2], 16, 8));
   sendSysEx((uint8_t*)buffer, p-buffer);
 }
 

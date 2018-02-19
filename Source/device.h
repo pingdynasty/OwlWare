@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "v12i"
+#define FIRMWARE_VERSION             "A v12i"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
