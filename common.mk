@@ -3,9 +3,9 @@ ELF=$(BUILD)/OwlWare.elf
 BIN=$(BUILD)/OwlWare.bin
 
 # Tool path
-TOOLROOT ?= Tools/gcc-arm-none-eabi-7-2017-q4-major/bin/
+TOOLROOT ?= ~/bin/gcc-arm-none-eabi-7-2018-q2-update/bin/
 STLINK ?= $(TEMPLATEROOT)/Tools/stlink/
-DFUUTIL ?= $(TEMPLATEROOT)/Tools/dfu-util/dfu-util
+DFUUTIL ?= dfu-util
 
 # Tools
 CC=$(TOOLROOT)arm-none-eabi-gcc

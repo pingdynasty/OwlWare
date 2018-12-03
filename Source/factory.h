@@ -11,49 +11,49 @@
 #include "PhaserPatch.hpp"
 #include "EnvelopeFilterPatch.hpp"
 
-#include "Faust/SmoothDelayPatch.hpp"
-#include "LpfDelayPatch.hpp"
-#include "SimpleStereoDelayPatch.hpp"
-#include "SlapBackEchoPatch.hpp"
-#include "PingPongDelayPatch.hpp"
-#include "DubDelayPatch.hpp"
-#include "TempoSyncedStereoDelayPatch.hpp"
-#include "TempoSyncedPingPongDelayPatch.hpp"
+/* #include "Faust/SmoothDelayPatch.hpp" */
+/* #include "LpfDelayPatch.hpp" */
+/* #include "SimpleStereoDelayPatch.hpp" */
+/* #include "SlapBackEchoPatch.hpp" */
+/* #include "PingPongDelayPatch.hpp" */
+/* #include "DubDelayPatch.hpp" */
+/* #include "TempoSyncedStereoDelayPatch.hpp" */
+/* #include "TempoSyncedPingPongDelayPatch.hpp" */
 
-#include "PsycheFilterPatch.hpp"
-#include "Qompression.hpp"
-#include "Guitarix/GuitarixOverdrivePatch.hpp"
-#include "Guitarix/GuitarixOscTubePatch.hpp"
-#include "Guitarix/GuitarixDistortion1Patch.hpp"
-#include "Guitarix/GuitarixBMfpPatch.hpp"
-#include "Guitarix/GuitarixCompressorPatch.hpp"
-// #include "Guitarix/GuitarixDunwahPatch.hpp"
-#include "Guitarix/GuitarixMoogPatch.hpp"
-#include "Guitarix/GuitarixFlangerGXPatch.hpp"
-#include "Guitarix/GuitarixTonePatch.hpp"
-#include "ComplexorPatch.hpp"
-#include "DigitalMayhemPatch.hpp"
-#include "GhostNotePatch.hpp"
-#include "Faust/HarpAutoPatch.hpp"
-#include "Contest/SirenPatch.hpp"
-#include "VibroFlangePatch.hpp"
-#include "mdaPorts/MdaStereoPatch.hpp"
-#include "mdaPorts/MdaTransientPatch.hpp"
-#include "OliLarkin/XFMPatch.hpp"
+/* #include "PsycheFilterPatch.hpp" */
+/* #include "Qompression.hpp" */
+/* #include "Guitarix/GuitarixOverdrivePatch.hpp" */
+/* #include "Guitarix/GuitarixOscTubePatch.hpp" */
+/* #include "Guitarix/GuitarixDistortion1Patch.hpp" */
+/* #include "Guitarix/GuitarixBMfpPatch.hpp" */
+/* #include "Guitarix/GuitarixCompressorPatch.hpp" */
+/* // #include "Guitarix/GuitarixDunwahPatch.hpp" */
+/* #include "Guitarix/GuitarixMoogPatch.hpp" */
+/* #include "Guitarix/GuitarixFlangerGXPatch.hpp" */
+/* #include "Guitarix/GuitarixTonePatch.hpp" */
+/* #include "ComplexorPatch.hpp" */
+/* #include "DigitalMayhemPatch.hpp" */
+/* #include "GhostNotePatch.hpp" */
+/* #include "Faust/HarpAutoPatch.hpp" */
+/* #include "Contest/SirenPatch.hpp" */
+/* #include "VibroFlangePatch.hpp" */
+/* #include "mdaPorts/MdaStereoPatch.hpp" */
+/* #include "mdaPorts/MdaTransientPatch.hpp" */
+/* #include "OliLarkin/XFMPatch.hpp" */
 
-#include "Faust/AutoWahPatch.hpp"
-#include "StereoPatch.hpp"
+/* #include "Faust/AutoWahPatch.hpp" */
+/* #include "StereoPatch.hpp" */
 
-// #include "RingModulatorPatch.hpp"
+/* // #include "RingModulatorPatch.hpp" */
 
-#include "OliLarkin/BlipperPatch.hpp"
-#include "OliLarkin/DroneBoxPatch.hpp"
-#include "OliLarkin/StereoFreqShifterPatch.hpp"
-#include "OliLarkin/DualFreqShifterPatch.hpp"
-#include "OliLarkin/DualPitchShifterPatch.hpp"
-#include "OliLarkin/ThruZeroFlangerPatch.hpp"
-#include "OliLarkin/WeirdPhaserPatch.hpp"
-#include "OliLarkin/XFMPatch.hpp"
+/* #include "OliLarkin/BlipperPatch.hpp" */
+/* #include "OliLarkin/DroneBoxPatch.hpp" */
+/* #include "OliLarkin/StereoFreqShifterPatch.hpp" */
+/* #include "OliLarkin/DualFreqShifterPatch.hpp" */
+/* #include "OliLarkin/DualPitchShifterPatch.hpp" */
+/* #include "OliLarkin/ThruZeroFlangerPatch.hpp" */
+/* #include "OliLarkin/WeirdPhaserPatch.hpp" */
+/* #include "OliLarkin/XFMPatch.hpp" */
 
 /* #include "GainPatch.hpp" */
 /* #include "SimpleStereoDelayPatch.hpp" */
