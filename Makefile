@@ -9,12 +9,12 @@ ifndef PLATFORM
 endif
 
 ifeq ($(CONFIG),Debug)
-  CPPFLAGS = -g -Wall -Wcpp -Wunused-function -DDEBUG -DUSE_FULL_ASSERT
+  CPPFLAGS = -g -Wall -Wcpp -Wunused-function -DDEBUG -DUSE_FULL_ASSERT -D_GNU_SOURCE=1
   ASFLAGS  = -g
 endif
 
 ifeq ($(CONFIG),Release)
-  CPPFLAGS = -O2
+  CPPFLAGS = -O2 -D_GNU_SOURCE=1
 #  CPPFLAGS += -flto
 #  LDFLAGS += -flto
 endif
