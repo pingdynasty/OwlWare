@@ -3,9 +3,9 @@ ELF=$(BUILD)/OwlWare.elf
 BIN=$(BUILD)/OwlWare.bin
 
 # Tool path
-TOOLROOT ?= Tools/gcc-arm-none-eabi-7-2017-q4-major/bin/
+TOOLROOT ?= /usr/bin/
 STLINK ?= $(TEMPLATEROOT)/Tools/stlink/
-DFUUTIL ?= $(TEMPLATEROOT)/Tools/dfu-util/dfu-util
+DFUUTIL ?= $(TOOLROOT)dfu-util
 
 # Tools
 CC=$(TOOLROOT)arm-none-eabi-gcc
@@ -16,8 +16,8 @@ AS=$(TOOLROOT)arm-none-eabi-as
 GDB=$(TOOLROOT)arm-none-eabi-gdb
 OBJCOPY=$(TOOLROOT)arm-none-eabi-objcopy
 OBJDUMP=$(TOOLROOT)arm-none-eabi-objdump
-STFLASH=$(STLINK)st-flash
-STUTIL=$(STLINK)st-util
+STFLASH=$(STLINK)build/Release/st-flash
+STUTIL=$(STLINK)build/Release/src/gdbserver/st-util
 BOOTLOADER ?= $(TEMPLATEROOT)/Libraries/OwlBoot/OwlBoot.bin
 
 # Set up search path

@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "v14"
+#define FIRMWARE_VERSION             "xclk"
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -156,7 +156,7 @@
 #define MANAGER_TASK_STACK_SIZE          (512/sizeof(portSTACK_TYPE))
 #define FLASH_TASK_STACK_SIZE            (512/sizeof(portSTACK_TYPE))
 #define PC_TASK_STACK_SIZE               (512/sizeof(portSTACK_TYPE))
-#define ARM_CYCLES_PER_SAMPLE            3500 /* 168MHz / 48kHz */
+#define ARM_CYCLES_PER_SAMPLE            5000 /* 240MHz / 48kHz */
 
 #ifdef  USE_FULL_ASSERT
 #ifdef __cplusplus
