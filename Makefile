@@ -14,7 +14,7 @@ ifeq ($(CONFIG),Debug)
 endif
 
 ifeq ($(CONFIG),Release)
-  CPPFLAGS = -O2
+  CPPFLAGS = -O3
 #  CPPFLAGS += -flto
 #  LDFLAGS += -flto
 endif
@@ -25,6 +25,7 @@ endif
 
 LDFLAGS += -Wl,--gc-sections
 LDSCRIPT = Source/flash.ld
+
 
 CPPFLAGS += --specs=nano.specs
 CPPFLAGS += -DEXTERNAL_SRAM -DARM_CORTEX
@@ -81,9 +82,12 @@ include $(TEMPLATEROOT)/f4.mk
 
 DFUCMD = $(DFUUTIL) -d 0483:df11 -c 1 -i 0 -a 0
 deploy: bootloader
-	@echo Flashing OWL $(PLATFORM) firmware
-	$(DFUCMD) -s 0x080E0000 -D binaries/patch0.bin
-	$(DFUCMD) -s 0x080C0000 -D binaries/patch1.bin
-	$(DFUCMD) -s 0x080A0000 -D binaries/patch2.bin
-	$(DFUCMD) -s 0x08080000 -D binaries/patch3.bin
-	$(DFUCMD) -s 0x8008000:leave -D binaries/OwlWare-v12-$(PLATFORM).bin
+	@echo Flashing OWL $(PLATFORM) firmware with $(BIN)
+	#$(DFUCMD) -s 0x080E0000 -D binaries/patch0.bin
+	#$(DFUCMD) -s 0x080C0000 -D binaries/patch1.bin
+	#$(DFUCMD) -s 0x080A0000 -D binaries/patch2.bin
+	#$(DFUCMD) -s 0x08080000 -D binaries/patch3.bin
+	$(DFUCMD) -s 0x8008000:leave -D Build/OwlWare.bin
+
+compile:
+	@$(MAKE) -s all
