@@ -14,7 +14,7 @@ ifeq ($(CONFIG),Debug)
 endif
 
 ifeq ($(CONFIG),Release)
-  CPPFLAGS = -O2
+  CPPFLAGS = -O3
 #  CPPFLAGS += -flto
 #  LDFLAGS += -flto
 endif
@@ -25,6 +25,7 @@ endif
 
 LDFLAGS += -Wl,--gc-sections
 LDSCRIPT = Source/flash.ld
+
 
 CPPFLAGS += --specs=nano.specs
 CPPFLAGS += -DEXTERNAL_SRAM -DARM_CORTEX
