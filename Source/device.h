@@ -106,7 +106,8 @@
 #endif /* OWLMODULAR */
 
 #define MIDI_OMNI_CHANNEL            (-1)
-#define MIDI_OUTPUT_CHANNEL          0
+#define MIDI_INPUT_CHANNEL           4
+#define MIDI_OUTPUT_CHANNEL          4
 #define MIDI_MAX_MESSAGE_SIZE        256
 #define NOF_ADC_VALUES               5
 #define NOF_PARAMETERS               40

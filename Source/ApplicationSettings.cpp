@@ -34,7 +34,7 @@ void ApplicationSettings::reset(){
   input_scalar = AUDIO_INPUT_SCALAR;
   output_offset = AUDIO_OUTPUT_OFFSET;
   output_scalar = AUDIO_OUTPUT_SCALAR;
-  midi_input_channel = MIDI_OMNI_CHANNEL;
+  midi_input_channel = MIDI_INPUT_CHANNEL;
   midi_output_channel = MIDI_OUTPUT_CHANNEL;
 }
 
