@@ -3,7 +3,9 @@
 
 #include <inttypes.h>
 
-#define FIRMWARE_VERSION             "D v12i"
+#define FIRMWARE_VERSION             "A v12h"
+#define MIDI_INPUT_CHANNEL           1
+#define MIDI_OUTPUT_CHANNEL          1
 
 /* #define DEFINE_OWL_SYSTICK */
 /* if DEFINE_OWL_SYSTICK is defined, undefine xPortSysTickHandler in FreeRTOSConfig.h */
@@ -106,8 +108,6 @@
 #endif /* OWLMODULAR */
 
 #define MIDI_OMNI_CHANNEL            (-1)
-#define MIDI_INPUT_CHANNEL           4
-#define MIDI_OUTPUT_CHANNEL          4
 #define MIDI_MAX_MESSAGE_SIZE        256
 #define NOF_ADC_VALUES               5
 #define NOF_PARAMETERS               40
