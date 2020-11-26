@@ -5,7 +5,7 @@ BIN=$(BUILD)/OwlWare.bin
 # Tool path
 TOOLROOT ?= Tools/gcc-arm-none-eabi-7-2017-q4-major/bin/
 STLINK ?= $(TEMPLATEROOT)/Tools/stlink/
-DFUUTIL ?= $(TEMPLATEROOT)/Tools/dfu-util/dfu-util
+DFUUTIL ?= dfu-util
 
 # Tools
 CC=$(TOOLROOT)arm-none-eabi-gcc
@@ -18,7 +18,6 @@ OBJCOPY=$(TOOLROOT)arm-none-eabi-objcopy
 OBJDUMP=$(TOOLROOT)arm-none-eabi-objdump
 STFLASH=$(STLINK)st-flash
 STUTIL=$(STLINK)st-util
-BOOTLOADER ?= $(TEMPLATEROOT)/Libraries/OwlBoot/OwlBoot.bin
 
 # Set up search path
 vpath %.cpp $(TEMPLATEROOT)/Source
@@ -101,10 +100,6 @@ as: $(ELF)
 dfu: $(BIN)
 	$(DFUUTIL) -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8008000:leave -D $(BIN)
 	@echo Uploaded $(BIN) to OWL firmware
-
-bootloader: $(BOOTLOADER)
-	$(DFUUTIL) -d 0483:df11 -c 1 -i 0 -a 0 -s 0x8000000 -D $(BOOTLOADER)
-	@echo Uploaded $(BOOTLOADER) to OWL bootsector
 
 # pull in dependencies
 -include $(OBJS:.o=.d)
