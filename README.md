@@ -3,7 +3,7 @@ Firmware for the OWL programmable effects pedal.
 
 All code licensed under the Gnu GPL unless otherwise stated.
 
-See http://hoxtonowl.com for more details.
+The OwlWare firmware in this repository has been superceded by [OpenWare](https://github.com/pingdynasty/OwlWare). For more details see [www.rebeltech.org](https://www.rebeltech.org), the [community forum](community.rebeltech.org), or refer to [www.openwarelab.org](https://www.openwarelab.org/) for documentation.
 
 
 # Prerequisites
@@ -70,4 +70,4 @@ In the __OwlWare__ directory, type in:
 [owlware-zip]: https://github.com/pingdynasty/OwlWare/archive/master.zip
 [owlpatches-zip]: https://github.com/pingdynasty/OwlPatches/archive/master.zip
 [cygwin]: http://www.cygwin.com
-[owl-nest]: http://hoxtonowl.com/software/owlnest
+[owl-nest]: https://github.com/pingdynasty/OwlNest
