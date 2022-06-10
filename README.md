@@ -3,7 +3,7 @@ Firmware for the OWL programmable effects pedal.
 
 All code licensed under the Gnu GPL unless otherwise stated.
 
-The OwlWare firmware in this repository has been superceded by [OpenWare](https://github.com/pingdynasty/OwlWare). For more details see [www.rebeltech.org](https://www.rebeltech.org), the [community forum](community.rebeltech.org), or refer to [www.openwarelab.org](https://www.openwarelab.org/) for documentation.
+The OwlWare firmware in this repository has been superceded by [OpenWare](https://github.com/pingdynasty/OpenWare). For more details see [www.rebeltech.org](https://www.rebeltech.org), the [community forum](community.rebeltech.org), or refer to [www.openwarelab.org](https://www.openwarelab.org/) for documentation.
 
 
 # Prerequisites
